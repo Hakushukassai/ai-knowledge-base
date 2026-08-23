@@ -18,14 +18,16 @@ Claude Codeの設定(hooks)とSkillのコピーが、変更のたびに自動で
    cp ~/knowledge-base/claude-config/settings.json ~/.claude/settings.json
    ```
 
-3. Skillと、hook用の補助スクリプトをコピーする
+3. Skill・hook用の補助スクリプト・カスタムコマンドをコピーする
    ```bash
-   mkdir -p ~/.claude/skills ~/.claude/hooks
+   mkdir -p ~/.claude/skills ~/.claude/hooks ~/.claude/commands
    cp -r ~/knowledge-base/claude-config/skills/* ~/.claude/skills/
    cp -r ~/knowledge-base/claude-config/hooks/* ~/.claude/hooks/
+   cp -r ~/knowledge-base/claude-config/commands/* ~/.claude/commands/
    ```
    (`hooks/`には、機密情報チェックやSkill使用回数の記録に使う
-   Pythonスクリプトが入っています。無いとhookの一部が動きません)
+   Pythonスクリプトが入っています。無いとhookの一部が動きません。
+   `commands/`には `/kb-sync` などのカスタムコマンドが入っています)
 
 4. ダッシュボードの数字を初期化する
    ```bash
@@ -37,9 +39,13 @@ Claude Codeの設定(hooks)とSkillのコピーが、変更のたびに自動で
 
 ## 動作の仕組み(参考)
 
-- `knowledge-base`の中身(rules/candidates/incidents等)を変更すると、
-  `/clear`するたびに自動でコミット→GitHubへのpushまで行われます
+- 作業が終わったら `/exit` と打ってから閉じる(×ボタンでいきなり
+  閉じない)。`/clear`でも同様に動くが、その場合は会話がリセットされる。
+  どちらの場合も、自動でHANDOFF.md書き出し→知識ベースへの反映→
+  GitHubへのpushまで行われる
+- 会話を終わらせずに今すぐ反映したい場合は `/kb-sync` と打つ
+  (セッションはそのまま続く)
 - 別のパソコン側では、作業を始める前に `git pull` すれば最新の
-  知識ベース・設定・Skillを取り込めます(このパソコン側の`/clear`が
-  自動で`git pull`もしてくれますが、他のパソコンから戻ってきた直後は
-  念のため手動で`git pull`しておくと確実です)
+  知識ベース・設定・Skill・コマンドを取り込めます(このパソコン側の
+  `/exit`や`/clear`が自動で`git pull`もしてくれますが、他のパソコンから
+  戻ってきた直後は念のため手動で`git pull`しておくと確実です)
