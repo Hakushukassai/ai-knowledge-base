@@ -1,12 +1,12 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-23T03:57:42Z",
+  "generated_at": "2026-08-23T04:23:04Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 5,
-    "chars": 5336
+    "count": 8,
+    "chars": 9652
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@ window.STATS_DATA = {
     "count": 0,
     "chars": 0
   },
-  "total_chars": 6375,
+  "total_chars": 10691,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -169,6 +169,22 @@ window.STATS_DATA = {
       "candidates_count": 5,
       "incidents_count": 1,
       "total_chars": 6375
+    },
+    {
+      "date": "2026-08-23T04:21:40Z",
+      "summary": "[候補] 何が起きたか / [候補] 何が起きたか ほか1件",
+      "rules_count": 1,
+      "candidates_count": 8,
+      "incidents_count": 1,
+      "total_chars": 10691
+    },
+    {
+      "date": "2026-08-23T04:23:04Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 8,
+      "incidents_count": 1,
+      "total_chars": 10691
     }
   ],
   "items": {
@@ -228,6 +244,24 @@ window.STATS_DATA = {
         "solution_summary": "本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。"
       },
       {
+        "filename": "2026-08-23-torch-dll-winerror1114-background-thread.md",
+        "title": "Windows+PyTorchで「重い処理をバックグラウンドスレッドで初めて呼ぶ」設計はDLL初期化エラー(WinErr",
+        "content": "# [候補] Windows+PyTorchで「重い処理をバックグラウンドスレッドで初めて呼ぶ」設計はDLL初期化エラー(WinError 1114)の温床になりうる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [windows, pytorch, threading, dll]\ndate: 2026-08-23\n\n## 何が起きたか\nWindows上でtorch(easyocrが内部で使用)を初めてimportする処理を、メインスレッドではなく新しく作ったバックグラウンドスレッド(監視ループ用のスレッド)の中で行う設計にしたところ、`OSError: [WinError 1114] DLL初期化ルーチンの実行に失敗しました(c10.dll)`が発生した。\n\n## わかったこと・今の対応\n原因は完全には確定できなかった(意図的な再現実験ではエラー自体を再現できなかった)。ただし「torchのようなネイティブDLLを持つライブラリの初回importを、メインスレッド以外の、生成されたばかりのスレッドで行う」設計自体がWindowsで不安定さの原因になりうるという一般的な事例と矛盾しない状況だった。対応として、重い処理を呼ぶ前に、アプリ起動時・ワーカースレッド起動前のメインスレッドで対象ライブラリを同期的に一度だけ初期化する「warmup」関数を用意し、必ずそこで初回importを済ませてから他のスレッドを起動するようにした。原因を確定できなくても、初期化コストを1回に集約できる副次効果もあり実施する価値がある。\n\n## 詳しい経緯\nプロジェクトでは、カメラ映像を継続的にポーリングする常時監視ループを`threading.Thread`で新規スレッドとして起動し、そのスレッドの中で初めて重い認識処理(内部で`import easyocr`→`import torch`)を呼び出す設計にしていた。それまでの実行経路(Flaskのリクエストスレッド等)では既にeasyocr/torchの初期化を経験済みだったが、この監視スレッドの経路だけは新規に追加されたものであり、かつ実機性能試験でも(監視対象の画面が一度も検知条件を満たさなかったため)この重い処理の経路自体を一度も実際に通していなかった。\n\nその状態でユーザーが実際にこの経路を初めて通したところ、`c10.dll`のDLL初期化失敗(`WinError 1114`)が発生した。以前、同種のエラーが「複数のPythonプロセスの一時的な競合」として説明されたことがあったが、その時点ではこの「新規バックグラウンドスレッドでの初回import」という状況自体が存在しなかったため、同じ説明が今回にも当てはまるかは不明だった。\n\n原因調査として、(a)単純にバックグラウンドスレッドで`import torch`するだけの再現スクリプト、(b)`cv2.VideoCapture(CAP_DSHOW)`でカメラを開いて数フレーム読んだ後、同じスレッドで`easyocr.Reader()`を初期化する、より実際の構成に近い再現スクリプト、の両方を試したが、いずれもエラーを再現できなかった。Windowsのローダーロック絡みの問題は本質的にタイミング依存で、他プロセスの状態・ドライバ・アンチウイルスのスキャン等の外的要因に敏感なことが多いため、「再現できなかった=原因ではない」とは言い切れない。\n\nそのため、原因を確定させることよりも、「初回importの発生スレッドを常にメインスレッドに固定する」という、副作用がなく実利のある対策を先に実施する判断をした。具体的には、ライブラリのシングルトン初期化関数(`get_reader()`相当)を、ワーカースレッドを起動する処理(`start()`相当)の中で、スレッド生成の直前にメインスレッド側で同期的に呼び出す形にした。これにより2回目以降のimportはPythonの`sys.modules`キャッシュを参照するだけになり、ワーカースレッド側でのネイティブDLLロードが原理的に発生しなくなる。\n\n## まだ確認できていないこと\n- この対策で実際にWinError 1114が再発しなくなったかどうかは、エラーが実際に発生していた本番同等の状況(このプロジェクトでは実機カメラでゲーム画面を継続的に映した状態)でまだ検証できていない\n- 「バックグラウンドスレッドでの初回import」が本当に必要十分な発生条件なのか、他の要因(同時に起動していた別プロセスの有無等)が絡んでいたのかは切り分けられていない\n- 他のネイティブDLL依存ライブラリ(torch以外の重い機械学習ライブラリ等)でも同様の現象が起きるかは未検証\n\n## 昇格の条件\n別のプロジェクトでも「Windows環境でtorch等のネイティブDLL依存ライブラリを、新規スレッドで初めてimportした際にDLL初期化エラーが起きた」事例が確認されたら rules/ に昇格する。\n",
+        "tags": [
+          "windows",
+          "pytorch",
+          "threading",
+          "dll"
+        ],
+        "projects": [
+          "pokemon-champions-BattleAI"
+        ],
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "Windows上でtorch(easyocrが内部で使用)を初めてimportする処理を、メインスレッドではなく新しく作ったバックグラウンドスレッド(監視ループ用のスレッド)の中で…",
+        "solution_summary": "原因は完全には確定できなかった(意図的な再現実験ではエラー自体を再現できなかった)。ただし「torchのようなネイティブDLLを持つライブラリの初回importを、メインスレッド以…"
+      },
+      {
         "filename": "2026-08-23-small-crop-color-sampling-alignment-sensitivity.md",
         "title": "小さいクロップ窓での代表色抽出は数px のズレで背景色に汚染される",
         "content": "# [候補] 小さいクロップ窓での代表色抽出は数px のズレで背景色に汚染される\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [画像処理, 座標校正]\ndate: 2026-08-23\n\n## 何が起きたか\n小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。\n\n## わかったこと・今の対応\n切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。\n\n## 詳しい経緯\nゲーム画面のUIバッジ(性別アイコン等、40x30px程度の小さい円)から\n「中間輝度の画素だけを残して中央値を取る」方式で代表色を抽出する処理を、\n別レイアウトの画面向けに新しい座標で再校正していたところ、目分量で\n決めた座標(本来のアイコン位置から左に約12px、上下にも数px分の余分な\nマージンを含む窓)では、既知で女性のはずのアイコンが軒並み「男性」と\n誤判定される現象が起きた。\n\n原因を調べたところ、窓が実際のアイコン位置からズレていたことで、\n背景色(カードの紫グラデーション)の割合がアイコン自体の画素数を\n上回り、中央値の計算結果が背景色にほぼ支配されていた(背景の紫が\nたまたま「男性=青系」の参照色に近い色味だったため、誤判定として\n現れた)。窓を実測(10px刻みの目盛りを焼き込んだ拡大画像で目視確認)\nした正確な範囲に絞り込んだところ解消した。\n\n大きい領域(100px角以上等)であれば数px のズレは全体に対する割合が\n小さく吸収されるが、40x30px程度の小さいバッジ/アイコンを対象にした\n色抽出・テンプレートマッチングでは、同じ数px のズレが致命的な誤判定を\n生む。小さい対象への座標校正は「だいたい合っている」では不十分で、\n実測ベースでピクセル単位まで詰める必要がある。\n\n## まだ確認できていないこと\n- 「小さい対象では座標ズレの影響が非線形に大きくなる」という一般化が、\n  色抽出以外の手法(テンプレートマッチング等)にも同程度に当てはまるか\n  は定量的には未検証(テンプレートマッチングは窓が多少広くても内部で\n  スケール探索するため、色抽出ほど脆弱ではない可能性がある)\n- 対象サイズと許容ズレ量の関係(例: 対象の何%以内のズレなら安全か)を\n  定量化した基準は未確立\n\n## 昇格の条件\n別のプロジェクトでも「小さいUI要素の色/特徴抽出が数pxの座標ズレで\n破綻する」ケースが確認されたら rules/ に昇格する。\n",
@@ -242,6 +276,38 @@ window.STATS_DATA = {
         "stale": false,
         "problem_summary": "小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。",
         "solution_summary": "切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。"
+      },
+      {
+        "filename": "2026-08-23-sessionend-timeout-budget.md",
+        "title": "何が起きたか",
+        "content": "status: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, hooks]\ndate: 2026-08-23\n\n## 何が起きたか\nSessionEndフックに複数のhook(会話内容をAIに判断させて文章を書く「prompt」タイプを含む)を並べていたが、どのhookにも`timeout`を指定していなかった。\n\n## わかったこと・今の対応\nSessionEndフックだけは特別に、`timeout`を指定しない場合「複数のhook全部合わせてわずか1.5秒」しか実行時間が無い(他のイベントでは`command`が600秒・`prompt`が30秒などもっと長いデフォルトがあるのに、SessionEndだけこの短い上限になる)。AIに考えさせる処理を含める場合は、各hookに`\"timeout\": 60`のように明示的に長い値を指定しておくこと(SessionEndの上限は最大60秒までしか引き上げられない)。\n\n## 詳しい経緯\n公式ドキュメントのhookタイムアウトの説明に「SessionEndフックは1.5秒の予算を共有する。設定でより長いper-hookのtimeoutを指定すれば、その値まで予算を引き上げる(最大60秒まで)」という趣旨の記述がある。これはSessionEnd特有の制約で、他のイベント(PostToolUse等)には無い。今回のケースでは、会話内容を要約してファイルに書き出すprompt型hookを4つ、git操作を含むcommand型hookを4つ、計8個をSessionEndに並べていたが、どれにも`timeout`が無かったため、理論上は1.5秒で強制終了されてもおかしくない状態だった。実際にはこれまで一部の自動コミットが成功していた記録があるため常に1.5秒で切られていたわけではなさそうだが(処理量やタイミング次第で偶然間に合っていた可能性がある)、確実性を欠く設定だった。全hookに`\"timeout\": 60`を追加することでこの問題を解消した。\n\n## まだ確認できていないこと\n- 8個のhook(4つのAI判断+4つのコマンド)を60秒以内に確実に終わらせられるかは、処理量が増えた場合に再度検証が必要\n- 「1.5秒の予算」が具体的にどのタイミングで計測開始されるか(hook chain全体の開始からか、各hook個別の累積か)は未確認\n",
+        "tags": [
+          "claude-code",
+          "hooks"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "SessionEndフックに複数のhook(会話内容をAIに判断させて文章を書く「prompt」タイプを含む)を並べていたが、どのhookにも`timeout`を指定していなかった…",
+        "solution_summary": "SessionEndフックだけは特別に、`timeout`を指定しない場合「複数のhook全部合わせてわずか1.5秒」しか実行時間が無い(他のイベントでは`command`が600…"
+      },
+      {
+        "filename": "2026-08-23-sessionend-matcher-clear-only.md",
+        "title": "何が起きたか",
+        "content": "status: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, hooks]\ndate: 2026-08-23\n\n## 何が起きたか\nClaude CodeのSessionEndフックに`matcher: \"clear\"`とだけ書いていたら、ユーザーが`/clear`と入力した時にしか動かなかった。ターミナルを閉じる・Ctrl+Cで終了するといった普段の終わらせ方では、一度も発動していなかった。\n\n## わかったこと・今の対応\n`matcher`に`\"clear|prompt_input_exit\"`のようにパイプ区切りで複数の終了理由を書けば、両方のタイミングで発動するようになる。`matcher`は配列ではなく文字列でなければならない点にも注意が必要(`[\"clear\", \"prompt_input_exit\"]`という配列指定は設定のバリデーションでエラーになる)。\n\n## 詳しい経緯\nSessionEndイベントの`matcher`が取りうる値は`clear`・`resume`・`logout`・`prompt_input_exit`・`other`の5種類。`clear`はユーザーが明示的に`/clear`した場合のみ発動し、ターミナルを閉じる・Ctrl+C・`/exit`はいずれも`prompt_input_exit`に分類される。複数の値を1つのhookエントリで拾いたい場合、PostToolUseのツール名マッチャーで使われる「パイプ区切り(`\"Edit|Write\"`)」や「カンマ区切り」の記法が、SessionEndの終了理由マッチングでもそのまま使える(公式ドキュメントのmatcherパターン表: 英数字・アンダースコア・ハイフン・スペース・カンマ・パイプのみで構成される値は「完全一致、または`|`か`,`区切りの複数完全一致」として評価される、との記述で確認)。配列形式は`settings.json`の実際のJSONスキーマで`matcher`が`type: string`と定義されているため使えず、保存時にエラーで弾かれる。\n\n## まだ確認できていないこと\n- ウィンドウの×ボタン(強制的に閉じる操作)が`prompt_input_exit`扱いになるかは、公式ドキュメントに明記が無く未確認\n- VS Code拡張機能上で、チャットパネルだけを閉じた場合とVS Code自体を閉じた場合とで扱いに違いがあるかも未確認\n",
+        "tags": [
+          "claude-code",
+          "hooks"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "Claude CodeのSessionEndフックに`matcher: \"clear\"`とだけ書いていたら、ユーザーが`/clear`と入力した時にしか動かなかった。ターミナルを閉…",
+        "solution_summary": "`matcher`に`\"clear|prompt_input_exit\"`のようにパイプ区切りで複数の終了理由を書けば、両方のタイミングで発動するようになる。`matcher`は配…"
       },
       {
         "filename": "2026-08-23-easyocr-small-kana-confusion-not-fixable-by-preprocessing.md",
