@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-23T02:51:59Z",
+  "generated_at": "2026-08-23T03:20:01Z",
   "rules": {
     "count": 1,
     "chars": 540
@@ -128,6 +128,14 @@
     },
     {
       "date": "2026-08-23T02:51:59Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 5,
+      "incidents_count": 1,
+      "total_chars": 6375
+    },
+    {
+      "date": "2026-08-23T03:20:01Z",
       "summary": "新しい記録なし(数値のみ再集計)",
       "rules_count": 1,
       "candidates_count": 5,

@@ -18,11 +18,14 @@ Claude Codeの設定(hooks)とSkillのコピーが、変更のたびに自動で
    cp ~/knowledge-base/claude-config/settings.json ~/.claude/settings.json
    ```
 
-3. Skillをコピーする
+3. Skillと、hook用の補助スクリプトをコピーする
    ```bash
-   mkdir -p ~/.claude/skills
+   mkdir -p ~/.claude/skills ~/.claude/hooks
    cp -r ~/knowledge-base/claude-config/skills/* ~/.claude/skills/
+   cp -r ~/knowledge-base/claude-config/hooks/* ~/.claude/hooks/
    ```
+   (`hooks/`には、機密情報チェックやSkill使用回数の記録に使う
+   Pythonスクリプトが入っています。無いとhookの一部が動きません)
 
 4. ダッシュボードの数字を初期化する
    ```bash

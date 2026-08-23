@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "echo '## 知識ベース(rules)' && cat ~/knowledge-base/rules/*.md 2>/dev/null; echo '## 昇格の提案(あれば)' && cat ~/knowledge-base/PROMOTION-SUGGESTIONS.md 2>/dev/null"
+            "command": "(cd ~/knowledge-base 2>/dev/null && git pull --quiet 2>/dev/null); mkdir -p ~/.claude/skills 2>/dev/null; cp -rn ~/knowledge-base/claude-config/skills/* ~/.claude/skills/ 2>/dev/null; if [ -f ~/knowledge-base/SECURITY-WARNING.md ]; then echo '## ⚠ 機密情報チェックで警告あり(pushが止まっています)' && cat ~/knowledge-base/SECURITY-WARNING.md; fi; echo '## 知識ベース(rules。Skill化済みのものは省略)' && python3 ~/.claude/hooks/print_unskilled_rules.py 2>/dev/null; echo '## 昇格の提案(あれば)' && cat ~/knowledge-base/PROMOTION-SUGGESTIONS.md 2>/dev/null"
           }
         ]
       }
@@ -34,11 +34,15 @@
           },
           {
             "type": "command",
-            "command": "mkdir -p ~/knowledge-base/claude-config/skills 2>/dev/null; cp ~/.claude/settings.json ~/knowledge-base/claude-config/settings.json 2>/dev/null; rm -rf ~/knowledge-base/claude-config/skills/* 2>/dev/null; cp -r ~/.claude/skills/* ~/knowledge-base/claude-config/skills/ 2>/dev/null; true"
+            "command": "mkdir -p ~/knowledge-base/claude-config/skills ~/knowledge-base/claude-config/hooks 2>/dev/null; cp ~/.claude/settings.json ~/knowledge-base/claude-config/settings.json 2>/dev/null; rm -rf ~/knowledge-base/claude-config/skills/* 2>/dev/null; cp -r ~/.claude/skills/* ~/knowledge-base/claude-config/skills/ 2>/dev/null; cp -r ~/.claude/hooks/* ~/knowledge-base/claude-config/hooks/ 2>/dev/null; true"
           },
           {
             "type": "command",
             "command": "cd ~/knowledge-base 2>/dev/null && git add -A 2>/dev/null && (git diff --cached --quiet || git commit -m \"auto: $(date -u +%Y-%m-%dT%H:%M:%SZ)\" --quiet) 2>/dev/null; true"
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/scan_and_push.py 2>/dev/null; true"
           }
         ]
       }

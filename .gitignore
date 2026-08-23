@@ -7,3 +7,6 @@ Thumbs.db
 # あえてコミット対象にする(除外しない)。.manifest.json だけは
 # 「前回実行時との差分」を覚えておくための内部メモなので除外する。
 docs/.manifest.json
+
+# 機密情報チェックで見つかった警告(ローカルだけのメモ、pushしない)
+SECURITY-WARNING.md
