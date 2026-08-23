@@ -1,6 +1,13 @@
 {
   "effortLevel": "xhigh",
   "model": "sonnet",
+  "permissions": {
+    "allow": [
+      "Bash(python3 ~/.claude/hooks/scan_and_push.py:*)",
+      "Bash(python3 ~/.claude/hooks/archive_stale_candidates.py:*)",
+      "Bash(bash ~/knowledge-base/scripts/generate_stats.sh:*)"
+    ]
+  },
   "hooks": {
     "SessionStart": [
       {
