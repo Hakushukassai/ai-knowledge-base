@@ -1,0 +1,11 @@
+#!/bin/sh
+# 本物のgit pre-commitフック。手動でのgit commitでも、Claude Code経由でも、
+# どの経路からコミットしようとしても必ず通る。
+#
+# 有効にするには、このリポジトリで一度だけ以下を実行する:
+#   git config core.hooksPath .githooks
+#
+# knowledge-base/README.md および claude-config/SETUP.md も参照。
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+python3 "$HOME/.claude/hooks/scan_secrets.py" "$REPO_ROOT"
