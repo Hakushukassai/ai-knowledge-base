@@ -14,7 +14,7 @@
     ],
     "SessionEnd": [
       {
-        "matcher": "clear",
+        "matcher": "clear|prompt_input_exit",
         "hooks": [
           { "type": "prompt", "prompt": "このセッションの内容を、現在のプロジェクトディレクトリの HANDOFF.md に knowledge-base/HANDOFF-TEMPLATE.md の形式で書き出して(上書きではなく追記)。既存のHANDOFF.mdが無ければ新規作成する。" },
           { "type": "prompt", "prompt": "この会話で、他プロジェクトでも再利用できそうな技術的発見(バグの直し方・設計判断・ライブラリの癖など)があれば、~/knowledge-base/candidates/ に YYYY-MM-DD-短い説明.md というファイル名で書き出して。フォーマットは status: candidate / observed_count: 1 / observed_in: [プロジェクト名] / tags: [関連する技術領域やジャンルを1〜3個、例: godot, python, 画像処理] / date、に続けて本文は次の見出し構成にすること: 「## 何が起きたか」(専門用語をできるだけ避け、平易な言葉で1〜3文の要約)/ 「## わかったこと・今の対応」(結論や暫定的な対処法を平易な言葉で1〜3文。まだ対処法が無ければ「まだ対処法が見つかっていない」と明記する。このセクションは必ず書くこと、空にしない)/ 「## 詳しい経緯」(技術的な詳細、既存の書き方と同程度の詳しさで良い)/ 「## まだ確認できていないこと」。再利用性のある発見が無ければ何もしない。" },
