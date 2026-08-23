@@ -47,13 +47,15 @@ def count_chars(paths):
 
 
 def first_title(path):
-    """ファイルの最初の見出し行(# で始まる行)を一言タイトルとして取り出す。
-    見出しに既に [候補] 等の印が付いていれば、二重表示にならないよう外す。"""
+    """ファイルの最初の見出し行(# 1個で始まる、いわゆるH1)を一言タイトルとして
+    取り出す。## 以下の小見出し(「## 何が起きたか」等)は誤ってタイトル扱い
+    しないよう、明示的に除外する。見出しに既に [候補] 等の印が付いていれば、
+    二重表示にならないよう外す。H1が無ければファイル名をそのまま使う。"""
     try:
         with open(path, encoding='utf-8') as f:
             for line in f:
                 line = line.strip()
-                if line.startswith('#'):
+                if line.startswith('#') and not line.startswith('##'):
                     title = line.lstrip('#').strip()
                     title = re.sub(r'^\[[^\]]*\]\s*', '', title)
                     return title[:60]
@@ -146,7 +148,7 @@ total_chars = sum(chars.values())
 items = {}
 for cat, paths in categories.items():
     entries = []
-    for p in sorted(paths, reverse=True):
+    for p in sorted(paths, key=os.path.getmtime, reverse=True):
         content = read_content(p)
         file_date = find_date(content)
         age_days = days_since(file_date, now_dt)
@@ -172,7 +174,7 @@ for cat, paths in categories.items():
 # 90日以上動きのなかった候補は archive_stale_candidates.py によって
 # candidates/archive/ に移動されている。削除ではなく移動なので、
 # ここで別カテゴリとして読み込み直し、ダッシュボードから引き続き見られるようにする。
-archive_paths = sorted(glob.glob(os.path.join(kb_dir, 'candidates', 'archive', '*.md')), reverse=True)
+archive_paths = sorted(glob.glob(os.path.join(kb_dir, 'candidates', 'archive', '*.md')), key=os.path.getmtime, reverse=True)
 archived_entries = []
 for p in archive_paths:
     content = read_content(p)
@@ -346,6 +348,25 @@ with open('docs/stats-data.js', 'w', encoding='utf-8') as f:
     f.write('window.STATS_DATA = ')
     json.dump(data, f, ensure_ascii=False, indent=2)
     f.write(';\n')
+
+# GitHub Pages(ブラウザ)側がstats-data.jsを古いままキャッシュして
+# 反映が遅く見える問題への対策: 実行のたびに ?v=... の値を変えて、
+# index.htmlの読み込み先を強制的に変える(file://での直接閲覧には影響しない)
+version_tag = re.sub(r'[-:TZ]', '', now)
+index_path = 'docs/index.html'
+try:
+    with open(index_path, encoding='utf-8') as f:
+        html = f.read()
+    new_html = re.sub(
+        r'(<script src="stats-data\.js)(\?v=[^"]*)?(")',
+        rf'\g<1>?v={version_tag}\g<3>',
+        html,
+    )
+    if new_html != html:
+        with open(index_path, 'w', encoding='utf-8') as f:
+            f.write(new_html)
+except OSError:
+    pass
 
 print(f'更新しました: {out_path}')
 print(f'今回の変更: {summary}')

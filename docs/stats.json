@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-23T04:26:22Z",
+  "generated_at": "2026-08-23T04:40:07Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
     "count": 9,
-    "chars": 10623
+    "chars": 10807
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@
     "count": 0,
     "chars": 0
   },
-  "total_chars": 11662,
+  "total_chars": 11846,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -193,6 +193,14 @@
       "candidates_count": 9,
       "incidents_count": 1,
       "total_chars": 11662
+    },
+    {
+      "date": "2026-08-23T04:40:07Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 9,
+      "incidents_count": 1,
+      "total_chars": 11846
     }
   ],
   "items": {
@@ -218,38 +226,52 @@
     ],
     "candidates": [
       {
-        "filename": "2026-08-example-candidate.md",
-        "title": "AudioStreamPlayerのバス切り替えタイミング",
-        "content": "# [候補] AudioStreamPlayerのバス切り替えタイミング\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [DEPTH//]\ntags: [godot, オーディオ, ゲーム開発]\ndate: 2026-08-20\n\n## 何が起きたか\nシーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。\n\n## わかったこと・今の対応\nシーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。\n\n## まだ確認できていないこと\n- Polypulseの時にあった「OGG/PhaseLoopMusicの音切れ」と同一原因か未確認\n- 他のプロジェクトでも再現するか未確認\n\n## 昇格の条件\n別のプロジェクトでも同じ現象が確認されたら rules/ に昇格し、\nincidents/ に詳細ログを残す。\n",
+        "filename": "2026-08-23-claude-code-exit-not-always-available.md",
+        "title": "Claude Codeの`/exit`コマンドは環境によっては使えないことがある",
+        "content": "# [候補] Claude Codeの`/exit`コマンドは環境によっては使えないことがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, hooks]\ndate: 2026-08-23\n\n## 何が起きたか\n「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available in this environment」と表示され、使えなかった。\n\n## わかったこと・今の対応\n`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案内として`/exit`だけを教えるのは不十分で、使えるか事前に確認するか、代替手段(このプロジェクトでは独自に作った`/kb-sync`コマンド)も併せて用意しておくべき。\n\n## 詳しい経緯\nこのユーザーはClaude Codeを、通常のターミナルCLIではなく何らかのラッパーアプリ/独自環境(ツール名に`mcp__ccd_*`のようなプレフィックスが付くカスタムMCPサーバー群が存在する環境)経由で使っている。そのため、標準的なCLIでは動くはずの`/exit`スラッシュコマンドが、この環境では未実装扱いになっていた。一方で、`~/.claude/commands/`に置いた独自のカスタムスラッシュコマンド(`/kb-sync`)は、この環境でも直接タイプするだけで(新しいセッションを待たずに)問題なく認識・実行できた。つまり「ビルトインのスラッシュコマンドが環境によって使えないことがある」一方で「ユーザー定義のカスタムコマンドは同じセッション内でも比較的すぐに使えるようになる」という非対称性がある。\n\n## まだ確認できていないこと\n- どの具体的な環境(VS Code拡張機能・デスクトップアプリ・Web版・サードパーティのラッパーなど)で`/exit`が使えない/使えるのかの一覧は未確認\n- カスタムコマンドが「同じセッション内で作成後すぐ使える」のが常に保証された挙動か、たまたま今回は動いただけなのかは未確認\n",
         "tags": [
-          "godot",
-          "オーディオ",
-          "ゲーム開発"
+          "claude-code",
+          "hooks"
         ],
         "projects": [
-          "DEPTH//"
-        ],
-        "days_old": 3,
-        "stale": false,
-        "problem_summary": "シーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。",
-        "solution_summary": "シーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。"
-      },
-      {
-        "filename": "2026-08-23-windows-python3-stub-broken.md",
-        "title": "Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける",
-        "content": "# [候補] Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [ai-dev-knowledge-system]\ntags: [windows, python, 環境構築]\ndate: 2026-08-23\n\n## 何が起きたか\nWindows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。\n\n## わかったこと・今の対応\n本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。\n\n## 詳しい経緯\nこのマシン(Windows + Git Bash環境)で `python3` を実行すると、\n実際のPythonではなく `C:\\Users\\owner\\AppData\\Local\\Microsoft\\WindowsApps\\python3.exe`\n(Microsoft Store の AppInstallerPythonRedirector.exe へのシンボリックリンク)が\n呼ばれてしまい、正常に動作しない(`print()`すら実行できず、意味不明な\n出力とexit code 49で終了する)。\n\n一方 `python`(3ではなく)コマンドも同じWindowsAppsのstubを指しているが、\n`py`ランチャーは正常に動作する。実体のPythonは\n`C:\\Users\\owner\\AppData\\Local\\Programs\\Python\\Python312\\python.exe` にあり、\nこれを直接PATHに通す(またはシムスクリプトを作る)ことで回避できる。\n\nシェルスクリプト(bashやhookコマンド)内で `python3` をハードコードしていると、\nこのマシン・この手のWindows環境では静かに失敗する、または不可解な出力になる\n点に注意。\n\n## まだ確認できていないこと\n- 他のWindowsマシン/ユーザー環境でも同じスタブ配置になっているか未確認\n  (Microsoft Store版Pythonのインストール有無に依存する可能性)\n- `python3` を直接使わず `py -3` や絶対パス指定に統一するのが\n  一般的な回避策として十分か未検証\n\n## 昇格の条件\n別のプロジェクト、または別セッションでも同じ現象(`python3`がスタブに\n化けて動かない)が確認されたら rules/ に昇格する。\n",
-        "tags": [
-          "windows",
-          "python",
-          "環境構築"
-        ],
-        "projects": [
-          "ai-dev-knowledge-system"
+          "knowledge-base"
         ],
         "days_old": 0,
         "stale": false,
-        "problem_summary": "Windows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。",
-        "solution_summary": "本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。"
+        "problem_summary": "「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available…",
+        "solution_summary": "`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案…"
+      },
+      {
+        "filename": "2026-08-23-sessionend-timeout-budget.md",
+        "title": "Claude CodeのSessionEndフックはtimeout未指定だと合計1.5秒しか実行時間が無い",
+        "content": "# [候補] Claude CodeのSessionEndフックはtimeout未指定だと合計1.5秒しか実行時間が無い\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, hooks]\ndate: 2026-08-23\n\n## 何が起きたか\nSessionEndフックに複数のhook(会話内容をAIに判断させて文章を書く「prompt」タイプを含む)を並べていたが、どのhookにも`timeout`を指定していなかった。\n\n## わかったこと・今の対応\nSessionEndフックだけは特別に、`timeout`を指定しない場合「複数のhook全部合わせてわずか1.5秒」しか実行時間が無い(他のイベントでは`command`が600秒・`prompt`が30秒などもっと長いデフォルトがあるのに、SessionEndだけこの短い上限になる)。AIに考えさせる処理を含める場合は、各hookに`\"timeout\": 60`のように明示的に長い値を指定しておくこと(SessionEndの上限は最大60秒までしか引き上げられない)。\n\n## 詳しい経緯\n公式ドキュメントのhookタイムアウトの説明に「SessionEndフックは1.5秒の予算を共有する。設定でより長いper-hookのtimeoutを指定すれば、その値まで予算を引き上げる(最大60秒まで)」という趣旨の記述がある。これはSessionEnd特有の制約で、他のイベント(PostToolUse等)には無い。今回のケースでは、会話内容を要約してファイルに書き出すprompt型hookを4つ、git操作を含むcommand型hookを4つ、計8個をSessionEndに並べていたが、どれにも`timeout`が無かったため、理論上は1.5秒で強制終了されてもおかしくない状態だった。実際にはこれまで一部の自動コミットが成功していた記録があるため常に1.5秒で切られていたわけではなさそうだが(処理量やタイミング次第で偶然間に合っていた可能性がある)、確実性を欠く設定だった。全hookに`\"timeout\": 60`を追加することでこの問題を解消した。\n\n## まだ確認できていないこと\n- 8個のhook(4つのAI判断+4つのコマンド)を60秒以内に確実に終わらせられるかは、処理量が増えた場合に再度検証が必要\n- 「1.5秒の予算」が具体的にどのタイミングで計測開始されるか(hook chain全体の開始からか、各hook個別の累積か)は未確認\n",
+        "tags": [
+          "claude-code",
+          "hooks"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "SessionEndフックに複数のhook(会話内容をAIに判断させて文章を書く「prompt」タイプを含む)を並べていたが、どのhookにも`timeout`を指定していなかった…",
+        "solution_summary": "SessionEndフックだけは特別に、`timeout`を指定しない場合「複数のhook全部合わせてわずか1.5秒」しか実行時間が無い(他のイベントでは`command`が600…"
+      },
+      {
+        "filename": "2026-08-23-sessionend-matcher-clear-only.md",
+        "title": "Claude CodeのSessionEndフックは`matcher: \"clear\"`だけだと`/clear`以外で発",
+        "content": "# [候補] Claude CodeのSessionEndフックは`matcher: \"clear\"`だけだと`/clear`以外で発動しない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, hooks]\ndate: 2026-08-23\n\n## 何が起きたか\nClaude CodeのSessionEndフックに`matcher: \"clear\"`とだけ書いていたら、ユーザーが`/clear`と入力した時にしか動かなかった。ターミナルを閉じる・Ctrl+Cで終了するといった普段の終わらせ方では、一度も発動していなかった。\n\n## わかったこと・今の対応\n`matcher`に`\"clear|prompt_input_exit\"`のようにパイプ区切りで複数の終了理由を書けば、両方のタイミングで発動するようになる。`matcher`は配列ではなく文字列でなければならない点にも注意が必要(`[\"clear\", \"prompt_input_exit\"]`という配列指定は設定のバリデーションでエラーになる)。\n\n## 詳しい経緯\nSessionEndイベントの`matcher`が取りうる値は`clear`・`resume`・`logout`・`prompt_input_exit`・`other`の5種類。`clear`はユーザーが明示的に`/clear`した場合のみ発動し、ターミナルを閉じる・Ctrl+C・`/exit`はいずれも`prompt_input_exit`に分類される。複数の値を1つのhookエントリで拾いたい場合、PostToolUseのツール名マッチャーで使われる「パイプ区切り(`\"Edit|Write\"`)」や「カンマ区切り」の記法が、SessionEndの終了理由マッチングでもそのまま使える(公式ドキュメントのmatcherパターン表: 英数字・アンダースコア・ハイフン・スペース・カンマ・パイプのみで構成される値は「完全一致、または`|`か`,`区切りの複数完全一致」として評価される、との記述で確認)。配列形式は`settings.json`の実際のJSONスキーマで`matcher`が`type: string`と定義されているため使えず、保存時にエラーで弾かれる。\n\n## まだ確認できていないこと\n- ウィンドウの×ボタン(強制的に閉じる操作)が`prompt_input_exit`扱いになるかは、公式ドキュメントに明記が無く未確認\n- VS Code拡張機能上で、チャットパネルだけを閉じた場合とVS Code自体を閉じた場合とで扱いに違いがあるかも未確認\n",
+        "tags": [
+          "claude-code",
+          "hooks"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "Claude CodeのSessionEndフックに`matcher: \"clear\"`とだけ書いていたら、ユーザーが`/clear`と入力した時にしか動かなかった。ターミナルを閉…",
+        "solution_summary": "`matcher`に`\"clear|prompt_input_exit\"`のようにパイプ区切りで複数の終了理由を書けば、両方のタイミングで発動するようになる。`matcher`は配…"
       },
       {
         "filename": "2026-08-23-torch-dll-winerror1114-background-thread.md",
@@ -270,52 +292,21 @@
         "solution_summary": "原因は完全には確定できなかった(意図的な再現実験ではエラー自体を再現できなかった)。ただし「torchのようなネイティブDLLを持つライブラリの初回importを、メインスレッド以…"
       },
       {
-        "filename": "2026-08-23-small-crop-color-sampling-alignment-sensitivity.md",
-        "title": "小さいクロップ窓での代表色抽出は数px のズレで背景色に汚染される",
-        "content": "# [候補] 小さいクロップ窓での代表色抽出は数px のズレで背景色に汚染される\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [画像処理, 座標校正]\ndate: 2026-08-23\n\n## 何が起きたか\n小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。\n\n## わかったこと・今の対応\n切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。\n\n## 詳しい経緯\nゲーム画面のUIバッジ(性別アイコン等、40x30px程度の小さい円)から\n「中間輝度の画素だけを残して中央値を取る」方式で代表色を抽出する処理を、\n別レイアウトの画面向けに新しい座標で再校正していたところ、目分量で\n決めた座標(本来のアイコン位置から左に約12px、上下にも数px分の余分な\nマージンを含む窓)では、既知で女性のはずのアイコンが軒並み「男性」と\n誤判定される現象が起きた。\n\n原因を調べたところ、窓が実際のアイコン位置からズレていたことで、\n背景色(カードの紫グラデーション)の割合がアイコン自体の画素数を\n上回り、中央値の計算結果が背景色にほぼ支配されていた(背景の紫が\nたまたま「男性=青系」の参照色に近い色味だったため、誤判定として\n現れた)。窓を実測(10px刻みの目盛りを焼き込んだ拡大画像で目視確認)\nした正確な範囲に絞り込んだところ解消した。\n\n大きい領域(100px角以上等)であれば数px のズレは全体に対する割合が\n小さく吸収されるが、40x30px程度の小さいバッジ/アイコンを対象にした\n色抽出・テンプレートマッチングでは、同じ数px のズレが致命的な誤判定を\n生む。小さい対象への座標校正は「だいたい合っている」では不十分で、\n実測ベースでピクセル単位まで詰める必要がある。\n\n## まだ確認できていないこと\n- 「小さい対象では座標ズレの影響が非線形に大きくなる」という一般化が、\n  色抽出以外の手法(テンプレートマッチング等)にも同程度に当てはまるか\n  は定量的には未検証(テンプレートマッチングは窓が多少広くても内部で\n  スケール探索するため、色抽出ほど脆弱ではない可能性がある)\n- 対象サイズと許容ズレ量の関係(例: 対象の何%以内のズレなら安全か)を\n  定量化した基準は未確立\n\n## 昇格の条件\n別のプロジェクトでも「小さいUI要素の色/特徴抽出が数pxの座標ズレで\n破綻する」ケースが確認されたら rules/ に昇格する。\n",
+        "filename": "2026-08-23-cv2-tm-ccorr-normed-bright-template-bias.md",
+        "title": "cv2.TM_CCORR_NORMEDは明るい/淡色テンプレートが無関係な領域にも高スコアを出しやすい",
+        "content": "# [候補] cv2.TM_CCORR_NORMEDは明るい/淡色テンプレートが無関係な領域にも高スコアを出しやすい\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [OpenCV, 画像処理, テンプレートマッチング]\ndate: 2026-08-23\n\n## 何が起きたか\nOpenCVの`TM_CCORR_NORMED`という比較方法を使うと、明るい画像は内容と無関係な場所にも高い一致スコアを出してしまう。\n\n## わかったこと・今の対応\n別の比較方法(`TM_CCOEFF_NORMED`)に切り替えると、既存の検証済みケースの精度が落ちてしまったため、今回は不採用。切り替えを検討する際は、既知の正解データで必ず事前確認が必要。\n\n## 詳しい経緯\nOpenCVの`cv2.matchTemplate`で`cv2.TM_CCORR_NORMED`(平均値を減算しない\n正規化相関)を使ってポケモンのアイコン(128x128、アルファマスク付き)を\n複数種族の中から一致度で当てるテンプレートマッチングを行っていたところ、\n明度の高い/淡い配色のテンプレート(白いネズミの集団のアイコン、暗色だが\nコントラストが高いアイコン等)が、内容と無関係な複数の背景領域に対しても\n不自然に高い(かつ複数の異なる入力でほぼ同一値になる)スコアを返す現象が\n見つかった。実測では、全く異なる3つの入力領域に対して同じテンプレートが\n判で押したように同一スコア(0.946)を返していた。\n\n原因として、`TM_CCORR_NORMED`は平均値を減算しない正規化相関のため、\nテンプレート自体が明るい(または高コントラストな)場合、内容の一致度に\n関わらず明るい/コントラストの強い背景と広く相関してしまう性質がある\nと推測される。\n\n対策として`cv2.TM_CCOEFF_NORMED`(平均値減算あり)への切り替えを試したが、\n既存の検証済み6種の的中精度(6/6が1位)のうち3種(ヤドラン・ガブリアス・\nオーロンゲ)が1位から陥落する明確な精度低下が確認できたため不採用とした。\nつまり「CCOEFFの方が理論的に望ましい」という一般論だけで安易に切り替える\nと、既存の検証済みケースを壊すリスクがある。切り替えを検討する際は必ず\n既知の正解セットに対する回帰テストを実測すること。\n\n## まだ確認できていないこと\n- 他のテンプレートマッチング用途(ポケモン以外のアイコン認識、UI要素検出等)\n  でも同様の「明るいテンプレートの広範囲高スコア」現象が再現するか未確認\n- マスク付きTM_CCOEFF_NORMEDではなく、テンプレート側だけ事前に平均値を\n  引く、あるいはTM_CCORR_NORMEDのままテンプレートの明度分散でスコアを\n  正規化する等、精度を落とさずにこの偏りだけを抑える方法は未検証\n- 全テンプレート(このプロジェクトでは1000種近い)を総当たりでこの現象の\n  有無をスクリーニングする調査はまだ行っていない(2種のみ発見済み)\n\n## 昇格の条件\n別のプロジェクト(ポケモン以外のアイコン/スプライト認識用途)でも\nTM_CCORR_NORMEDの明るいテンプレート偏りが確認されたら rules/ に昇格する。\n",
         "tags": [
+          "OpenCV",
           "画像処理",
-          "座標校正"
+          "テンプレートマッチング"
         ],
         "projects": [
           "pokemon-champions-BattleAI"
         ],
         "days_old": 0,
         "stale": false,
-        "problem_summary": "小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。",
-        "solution_summary": "切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。"
-      },
-      {
-        "filename": "2026-08-23-sessionend-timeout-budget.md",
-        "title": "何が起きたか",
-        "content": "status: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, hooks]\ndate: 2026-08-23\n\n## 何が起きたか\nSessionEndフックに複数のhook(会話内容をAIに判断させて文章を書く「prompt」タイプを含む)を並べていたが、どのhookにも`timeout`を指定していなかった。\n\n## わかったこと・今の対応\nSessionEndフックだけは特別に、`timeout`を指定しない場合「複数のhook全部合わせてわずか1.5秒」しか実行時間が無い(他のイベントでは`command`が600秒・`prompt`が30秒などもっと長いデフォルトがあるのに、SessionEndだけこの短い上限になる)。AIに考えさせる処理を含める場合は、各hookに`\"timeout\": 60`のように明示的に長い値を指定しておくこと(SessionEndの上限は最大60秒までしか引き上げられない)。\n\n## 詳しい経緯\n公式ドキュメントのhookタイムアウトの説明に「SessionEndフックは1.5秒の予算を共有する。設定でより長いper-hookのtimeoutを指定すれば、その値まで予算を引き上げる(最大60秒まで)」という趣旨の記述がある。これはSessionEnd特有の制約で、他のイベント(PostToolUse等)には無い。今回のケースでは、会話内容を要約してファイルに書き出すprompt型hookを4つ、git操作を含むcommand型hookを4つ、計8個をSessionEndに並べていたが、どれにも`timeout`が無かったため、理論上は1.5秒で強制終了されてもおかしくない状態だった。実際にはこれまで一部の自動コミットが成功していた記録があるため常に1.5秒で切られていたわけではなさそうだが(処理量やタイミング次第で偶然間に合っていた可能性がある)、確実性を欠く設定だった。全hookに`\"timeout\": 60`を追加することでこの問題を解消した。\n\n## まだ確認できていないこと\n- 8個のhook(4つのAI判断+4つのコマンド)を60秒以内に確実に終わらせられるかは、処理量が増えた場合に再度検証が必要\n- 「1.5秒の予算」が具体的にどのタイミングで計測開始されるか(hook chain全体の開始からか、各hook個別の累積か)は未確認\n",
-        "tags": [
-          "claude-code",
-          "hooks"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "SessionEndフックに複数のhook(会話内容をAIに判断させて文章を書く「prompt」タイプを含む)を並べていたが、どのhookにも`timeout`を指定していなかった…",
-        "solution_summary": "SessionEndフックだけは特別に、`timeout`を指定しない場合「複数のhook全部合わせてわずか1.5秒」しか実行時間が無い(他のイベントでは`command`が600…"
-      },
-      {
-        "filename": "2026-08-23-sessionend-matcher-clear-only.md",
-        "title": "何が起きたか",
-        "content": "status: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, hooks]\ndate: 2026-08-23\n\n## 何が起きたか\nClaude CodeのSessionEndフックに`matcher: \"clear\"`とだけ書いていたら、ユーザーが`/clear`と入力した時にしか動かなかった。ターミナルを閉じる・Ctrl+Cで終了するといった普段の終わらせ方では、一度も発動していなかった。\n\n## わかったこと・今の対応\n`matcher`に`\"clear|prompt_input_exit\"`のようにパイプ区切りで複数の終了理由を書けば、両方のタイミングで発動するようになる。`matcher`は配列ではなく文字列でなければならない点にも注意が必要(`[\"clear\", \"prompt_input_exit\"]`という配列指定は設定のバリデーションでエラーになる)。\n\n## 詳しい経緯\nSessionEndイベントの`matcher`が取りうる値は`clear`・`resume`・`logout`・`prompt_input_exit`・`other`の5種類。`clear`はユーザーが明示的に`/clear`した場合のみ発動し、ターミナルを閉じる・Ctrl+C・`/exit`はいずれも`prompt_input_exit`に分類される。複数の値を1つのhookエントリで拾いたい場合、PostToolUseのツール名マッチャーで使われる「パイプ区切り(`\"Edit|Write\"`)」や「カンマ区切り」の記法が、SessionEndの終了理由マッチングでもそのまま使える(公式ドキュメントのmatcherパターン表: 英数字・アンダースコア・ハイフン・スペース・カンマ・パイプのみで構成される値は「完全一致、または`|`か`,`区切りの複数完全一致」として評価される、との記述で確認)。配列形式は`settings.json`の実際のJSONスキーマで`matcher`が`type: string`と定義されているため使えず、保存時にエラーで弾かれる。\n\n## まだ確認できていないこと\n- ウィンドウの×ボタン(強制的に閉じる操作)が`prompt_input_exit`扱いになるかは、公式ドキュメントに明記が無く未確認\n- VS Code拡張機能上で、チャットパネルだけを閉じた場合とVS Code自体を閉じた場合とで扱いに違いがあるかも未確認\n",
-        "tags": [
-          "claude-code",
-          "hooks"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "Claude CodeのSessionEndフックに`matcher: \"clear\"`とだけ書いていたら、ユーザーが`/clear`と入力した時にしか動かなかった。ターミナルを閉…",
-        "solution_summary": "`matcher`に`\"clear|prompt_input_exit\"`のようにパイプ区切りで複数の終了理由を書けば、両方のタイミングで発動するようになる。`matcher`は配…"
+        "problem_summary": "OpenCVの`TM_CCORR_NORMED`という比較方法を使うと、明るい画像は内容と無関係な場所にも高い一致スコアを出してしまう。",
+        "solution_summary": "別の比較方法(`TM_CCOEFF_NORMED`)に切り替えると、既存の検証済みケースの精度が落ちてしまったため、今回は不採用。切り替えを検討する際は、既知の正解データで必ず事前…"
       },
       {
         "filename": "2026-08-23-easyocr-small-kana-confusion-not-fixable-by-preprocessing.md",
@@ -334,37 +325,54 @@
         "solution_summary": "画質を上げても二値化(白黒に変換する処理)を変えても直らなかった。前処理では直せない、モデル自体の限界の可能性が高い。他のOCRエンジンを試すか、辞書で後から補正する方法はまだ試せ…"
       },
       {
-        "filename": "2026-08-23-cv2-tm-ccorr-normed-bright-template-bias.md",
-        "title": "cv2.TM_CCORR_NORMEDは明るい/淡色テンプレートが無関係な領域にも高スコアを出しやすい",
-        "content": "# [候補] cv2.TM_CCORR_NORMEDは明るい/淡色テンプレートが無関係な領域にも高スコアを出しやすい\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [OpenCV, 画像処理, テンプレートマッチング]\ndate: 2026-08-23\n\n## 何が起きたか\nOpenCVの`TM_CCORR_NORMED`という比較方法を使うと、明るい画像は内容と無関係な場所にも高い一致スコアを出してしまう。\n\n## わかったこと・今の対応\n別の比較方法(`TM_CCOEFF_NORMED`)に切り替えると、既存の検証済みケースの精度が落ちてしまったため、今回は不採用。切り替えを検討する際は、既知の正解データで必ず事前確認が必要。\n\n## 詳しい経緯\nOpenCVの`cv2.matchTemplate`で`cv2.TM_CCORR_NORMED`(平均値を減算しない\n正規化相関)を使ってポケモンのアイコン(128x128、アルファマスク付き)を\n複数種族の中から一致度で当てるテンプレートマッチングを行っていたところ、\n明度の高い/淡い配色のテンプレート(白いネズミの集団のアイコン、暗色だが\nコントラストが高いアイコン等)が、内容と無関係な複数の背景領域に対しても\n不自然に高い(かつ複数の異なる入力でほぼ同一値になる)スコアを返す現象が\n見つかった。実測では、全く異なる3つの入力領域に対して同じテンプレートが\n判で押したように同一スコア(0.946)を返していた。\n\n原因として、`TM_CCORR_NORMED`は平均値を減算しない正規化相関のため、\nテンプレート自体が明るい(または高コントラストな)場合、内容の一致度に\n関わらず明るい/コントラストの強い背景と広く相関してしまう性質がある\nと推測される。\n\n対策として`cv2.TM_CCOEFF_NORMED`(平均値減算あり)への切り替えを試したが、\n既存の検証済み6種の的中精度(6/6が1位)のうち3種(ヤドラン・ガブリアス・\nオーロンゲ)が1位から陥落する明確な精度低下が確認できたため不採用とした。\nつまり「CCOEFFの方が理論的に望ましい」という一般論だけで安易に切り替える\nと、既存の検証済みケースを壊すリスクがある。切り替えを検討する際は必ず\n既知の正解セットに対する回帰テストを実測すること。\n\n## まだ確認できていないこと\n- 他のテンプレートマッチング用途(ポケモン以外のアイコン認識、UI要素検出等)\n  でも同様の「明るいテンプレートの広範囲高スコア」現象が再現するか未確認\n- マスク付きTM_CCOEFF_NORMEDではなく、テンプレート側だけ事前に平均値を\n  引く、あるいはTM_CCORR_NORMEDのままテンプレートの明度分散でスコアを\n  正規化する等、精度を落とさずにこの偏りだけを抑える方法は未検証\n- 全テンプレート(このプロジェクトでは1000種近い)を総当たりでこの現象の\n  有無をスクリーニングする調査はまだ行っていない(2種のみ発見済み)\n\n## 昇格の条件\n別のプロジェクト(ポケモン以外のアイコン/スプライト認識用途)でも\nTM_CCORR_NORMEDの明るいテンプレート偏りが確認されたら rules/ に昇格する。\n",
+        "filename": "2026-08-23-small-crop-color-sampling-alignment-sensitivity.md",
+        "title": "小さいクロップ窓での代表色抽出は数px のズレで背景色に汚染される",
+        "content": "# [候補] 小さいクロップ窓での代表色抽出は数px のズレで背景色に汚染される\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [画像処理, 座標校正]\ndate: 2026-08-23\n\n## 何が起きたか\n小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。\n\n## わかったこと・今の対応\n切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。\n\n## 詳しい経緯\nゲーム画面のUIバッジ(性別アイコン等、40x30px程度の小さい円)から\n「中間輝度の画素だけを残して中央値を取る」方式で代表色を抽出する処理を、\n別レイアウトの画面向けに新しい座標で再校正していたところ、目分量で\n決めた座標(本来のアイコン位置から左に約12px、上下にも数px分の余分な\nマージンを含む窓)では、既知で女性のはずのアイコンが軒並み「男性」と\n誤判定される現象が起きた。\n\n原因を調べたところ、窓が実際のアイコン位置からズレていたことで、\n背景色(カードの紫グラデーション)の割合がアイコン自体の画素数を\n上回り、中央値の計算結果が背景色にほぼ支配されていた(背景の紫が\nたまたま「男性=青系」の参照色に近い色味だったため、誤判定として\n現れた)。窓を実測(10px刻みの目盛りを焼き込んだ拡大画像で目視確認)\nした正確な範囲に絞り込んだところ解消した。\n\n大きい領域(100px角以上等)であれば数px のズレは全体に対する割合が\n小さく吸収されるが、40x30px程度の小さいバッジ/アイコンを対象にした\n色抽出・テンプレートマッチングでは、同じ数px のズレが致命的な誤判定を\n生む。小さい対象への座標校正は「だいたい合っている」では不十分で、\n実測ベースでピクセル単位まで詰める必要がある。\n\n## まだ確認できていないこと\n- 「小さい対象では座標ズレの影響が非線形に大きくなる」という一般化が、\n  色抽出以外の手法(テンプレートマッチング等)にも同程度に当てはまるか\n  は定量的には未検証(テンプレートマッチングは窓が多少広くても内部で\n  スケール探索するため、色抽出ほど脆弱ではない可能性がある)\n- 対象サイズと許容ズレ量の関係(例: 対象の何%以内のズレなら安全か)を\n  定量化した基準は未確立\n\n## 昇格の条件\n別のプロジェクトでも「小さいUI要素の色/特徴抽出が数pxの座標ズレで\n破綻する」ケースが確認されたら rules/ に昇格する。\n",
         "tags": [
-          "OpenCV",
           "画像処理",
-          "テンプレートマッチング"
+          "座標校正"
         ],
         "projects": [
           "pokemon-champions-BattleAI"
         ],
         "days_old": 0,
         "stale": false,
-        "problem_summary": "OpenCVの`TM_CCORR_NORMED`という比較方法を使うと、明るい画像は内容と無関係な場所にも高い一致スコアを出してしまう。",
-        "solution_summary": "別の比較方法(`TM_CCOEFF_NORMED`)に切り替えると、既存の検証済みケースの精度が落ちてしまったため、今回は不採用。切り替えを検討する際は、既知の正解データで必ず事前…"
+        "problem_summary": "小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。",
+        "solution_summary": "切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。"
       },
       {
-        "filename": "2026-08-23-claude-code-exit-not-always-available.md",
-        "title": "何が起きたか",
-        "content": "status: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, hooks]\ndate: 2026-08-23\n\n## 何が起きたか\n「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available in this environment」と表示され、使えなかった。\n\n## わかったこと・今の対応\n`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案内として`/exit`だけを教えるのは不十分で、使えるか事前に確認するか、代替手段(このプロジェクトでは独自に作った`/kb-sync`コマンド)も併せて用意しておくべき。\n\n## 詳しい経緯\nこのユーザーはClaude Codeを、通常のターミナルCLIではなく何らかのラッパーアプリ/独自環境(ツール名に`mcp__ccd_*`のようなプレフィックスが付くカスタムMCPサーバー群が存在する環境)経由で使っている。そのため、標準的なCLIでは動くはずの`/exit`スラッシュコマンドが、この環境では未実装扱いになっていた。一方で、`~/.claude/commands/`に置いた独自のカスタムスラッシュコマンド(`/kb-sync`)は、この環境でも直接タイプするだけで(新しいセッションを待たずに)問題なく認識・実行できた。つまり「ビルトインのスラッシュコマンドが環境によって使えないことがある」一方で「ユーザー定義のカスタムコマンドは同じセッション内でも比較的すぐに使えるようになる」という非対称性がある。\n\n## まだ確認できていないこと\n- どの具体的な環境(VS Code拡張機能・デスクトップアプリ・Web版・サードパーティのラッパーなど)で`/exit`が使えない/使えるのかの一覧は未確認\n- カスタムコマンドが「同じセッション内で作成後すぐ使える」のが常に保証された挙動か、たまたま今回は動いただけなのかは未確認\n",
+        "filename": "2026-08-23-windows-python3-stub-broken.md",
+        "title": "Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける",
+        "content": "# [候補] Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [ai-dev-knowledge-system]\ntags: [windows, python, 環境構築]\ndate: 2026-08-23\n\n## 何が起きたか\nWindows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。\n\n## わかったこと・今の対応\n本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。\n\n## 詳しい経緯\nこのマシン(Windows + Git Bash環境)で `python3` を実行すると、\n実際のPythonではなく `C:\\Users\\owner\\AppData\\Local\\Microsoft\\WindowsApps\\python3.exe`\n(Microsoft Store の AppInstallerPythonRedirector.exe へのシンボリックリンク)が\n呼ばれてしまい、正常に動作しない(`print()`すら実行できず、意味不明な\n出力とexit code 49で終了する)。\n\n一方 `python`(3ではなく)コマンドも同じWindowsAppsのstubを指しているが、\n`py`ランチャーは正常に動作する。実体のPythonは\n`C:\\Users\\owner\\AppData\\Local\\Programs\\Python\\Python312\\python.exe` にあり、\nこれを直接PATHに通す(またはシムスクリプトを作る)ことで回避できる。\n\nシェルスクリプト(bashやhookコマンド)内で `python3` をハードコードしていると、\nこのマシン・この手のWindows環境では静かに失敗する、または不可解な出力になる\n点に注意。\n\n## まだ確認できていないこと\n- 他のWindowsマシン/ユーザー環境でも同じスタブ配置になっているか未確認\n  (Microsoft Store版Pythonのインストール有無に依存する可能性)\n- `python3` を直接使わず `py -3` や絶対パス指定に統一するのが\n  一般的な回避策として十分か未検証\n\n## 昇格の条件\n別のプロジェクト、または別セッションでも同じ現象(`python3`がスタブに\n化けて動かない)が確認されたら rules/ に昇格する。\n",
         "tags": [
-          "claude-code",
-          "hooks"
+          "windows",
+          "python",
+          "環境構築"
         ],
         "projects": [
-          "knowledge-base"
+          "ai-dev-knowledge-system"
         ],
         "days_old": 0,
         "stale": false,
-        "problem_summary": "「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available…",
-        "solution_summary": "`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案…"
+        "problem_summary": "Windows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。",
+        "solution_summary": "本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。"
+      },
+      {
+        "filename": "2026-08-example-candidate.md",
+        "title": "AudioStreamPlayerのバス切り替えタイミング",
+        "content": "# [候補] AudioStreamPlayerのバス切り替えタイミング\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [DEPTH//]\ntags: [godot, オーディオ, ゲーム開発]\ndate: 2026-08-20\n\n## 何が起きたか\nシーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。\n\n## わかったこと・今の対応\nシーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。\n\n## まだ確認できていないこと\n- Polypulseの時にあった「OGG/PhaseLoopMusicの音切れ」と同一原因か未確認\n- 他のプロジェクトでも再現するか未確認\n\n## 昇格の条件\n別のプロジェクトでも同じ現象が確認されたら rules/ に昇格し、\nincidents/ に詳細ログを残す。\n",
+        "tags": [
+          "godot",
+          "オーディオ",
+          "ゲーム開発"
+        ],
+        "projects": [
+          "DEPTH//"
+        ],
+        "days_old": 3,
+        "stale": false,
+        "problem_summary": "シーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。",
+        "solution_summary": "シーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。"
       }
     ],
     "incidents": [

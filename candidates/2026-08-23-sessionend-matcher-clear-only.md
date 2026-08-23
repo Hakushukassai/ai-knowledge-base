@@ -1,3 +1,5 @@
+# [候補] Claude CodeのSessionEndフックは`matcher: "clear"`だけだと`/clear`以外で発動しない
+
 status: candidate
 observed_count: 1
 observed_in: [knowledge-base]

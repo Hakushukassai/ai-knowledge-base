@@ -1,3 +1,5 @@
+# [候補] Claude Codeの`/exit`コマンドは環境によっては使えないことがある
+
 status: candidate
 observed_count: 1
 observed_in: [knowledge-base]

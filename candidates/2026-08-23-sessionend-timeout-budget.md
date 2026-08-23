@@ -1,3 +1,5 @@
+# [候補] Claude CodeのSessionEndフックはtimeout未指定だと合計1.5秒しか実行時間が無い
+
 status: candidate
 observed_count: 1
 observed_in: [knowledge-base]
