@@ -2,3 +2,8 @@ Thumbs.db
 .DS_Store
 *.tmp
 .skill_usage.log
+
+# generate_stats.sh が自動生成するファイル(各マシンで作られる)
+dashboard/stats.json
+dashboard/stats-data.js
+dashboard/.manifest.json

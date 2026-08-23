@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>学びの記録 — AI開発ナレッジベース</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Zen+Old+Mincho:wght@600;900&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #f2f2f5;
+    --bg-panel: #ffffff;
+    --line: #e5e5ea;
+    --ink: #1c1c1e;
+    --ink-dim: #8a8a8e;
+    --accent: #2f6fa0;
+    --rule-color: #2f7a4a;
+    --candidate-color: #b8802f;
+    --incident-color: #b5493f;
+  }
+  *{box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:'Noto Sans JP', sans-serif;
+    min-height:100vh;
+    padding: 24px 16px 60px;
+  }
+  .wrap{max-width: 480px; margin:0 auto;}
+
+  /* --- ホームのタイトル --- */
+  .home-header{margin-bottom: 20px;}
+  .home-header h1{
+    font-family: 'Zen Old Mincho', serif;
+    font-weight: 900;
+    font-size: 26px;
+  }
+  .home-header .sub{
+    color: var(--ink-dim);
+    font-size: 13px;
+    margin-top: 6px;
+    line-height: 1.6;
+  }
+  .home-header .updated{
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-top: 8px;
+  }
+
+  /* --- サブ画面のナビバー --- */
+  .nav-bar{
+    display:flex;
+    align-items:center;
+    margin-bottom: 14px;
+    min-height: 22px;
+  }
+  .nav-back{
+    font-family: inherit;
+    font-size: 15px;
+    color: var(--accent);
+    background:none;
+    border:none;
+    cursor:pointer;
+    padding: 4px 4px 4px 0;
+  }
+  .screen-title{
+    margin-top: 6px;
+    margin-bottom: 4px;
+  }
+  .screen-title h2{
+    font-family: 'Zen Old Mincho', serif;
+    font-weight: 900;
+    font-size: 22px;
+  }
+  .screen-title .count-sub{
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-top: 4px;
+  }
+
+  /* --- 昇格バナー(ホームのみ) --- */
+  .promotion-banner{
+    background: #fdf3e0;
+    border: 1px solid #e8c98a;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+  }
+  .promotion-banner .banner-title{
+    font-size: 13px;
+    font-weight: 700;
+    color: #8a6a2f;
+    margin-bottom: 4px;
+  }
+  .promotion-banner .banner-body{
+    font-size: 12px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--ink);
+  }
+  .stale-banner{
+    background: #fbe9e2;
+    border: 1px solid #e3b6a2;
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 700;
+    color: #a0632f;
+  }
+
+  /* --- 検索 --- */
+  .search-box{
+    width: 100%;
+    font-family: inherit;
+    font-size: 15px;
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+    margin-bottom: 16px;
+  }
+  .search-box:focus{outline: 2px solid var(--accent);}
+
+  /* --- iOS風リスト --- */
+  .ios-list{
+    background: var(--bg-panel);
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    margin-bottom: 20px;
+  }
+  .ios-row{
+    display:flex;
+    align-items:center;
+    gap: 10px;
+    padding: 13px 14px;
+    border-bottom: 1px solid var(--line);
+    cursor: pointer;
+    background: var(--bg-panel);
+    width: 100%;
+    text-align: left;
+    font-family: inherit;
+    border-left: none; border-right: none; border-top: none;
+  }
+  .ios-list .ios-row:last-child{border-bottom: none;}
+  .ios-row:active{background: #f0efe9;}
+  .ios-row .row-dot{
+    width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
+  }
+  .ios-row .row-main{flex: 1; min-width: 0;}
+  .ios-row .row-label{
+    font-size: 14.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ios-row .row-sub{
+    font-size: 12px;
+    color: var(--ink-dim);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .ios-row .row-value{
+    color: var(--ink-dim);
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .ios-row .chevron{
+    color: #c7c5be;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  /* --- タグ絞り込み(一覧画面用) --- */
+  .tag-filter{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+  }
+  .tag-chip{
+    font-family: inherit;
+    font-size: 11px;
+    padding: 4px 11px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--bg-panel);
+    color: var(--ink-dim);
+    cursor: pointer;
+  }
+  .tag-chip.active{background: var(--ink); color: #fff; border-color: var(--ink);}
+  .filter-label{
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-dim);
+    margin-bottom: 6px;
+  }
+
+  /* --- 詳細画面 --- */
+  .detail-card{
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .detail-filename{
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-bottom: 10px;
+  }
+  .detail-tags{display:flex; flex-wrap:wrap; gap:5px; margin-bottom: 12px;}
+  .detail-tag{
+    font-size: 10px;
+    padding: 2px 9px;
+    border-radius: 8px;
+    background: #eeece5;
+    color: var(--ink-dim);
+  }
+  .detail-badge{
+    display:inline-block;
+    font-size: 11px;
+    padding: 2px 9px;
+    border-radius: 10px;
+    margin-bottom: 12px;
+  }
+  .detail-badge.installed{background: #e2eef7; color: #2f6fa0;}
+  .detail-badge.missing{background: #f5e9de; color: #a0632f;}
+  .detail-badge.none{background: #eeece5; color: var(--ink-dim);}
+  .detail-block{margin-bottom: 14px;}
+  .detail-block .block-label{
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 8px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-bottom: 6px;
+  }
+  .detail-block.problem .block-label{background: #f3ece0; color: #8a6a2f;}
+  .detail-block.solution .block-label{background: #e3f0ee; color: #2f6f66;}
+  .detail-block .block-text{font-size: 14px; line-height: 1.7;}
+  .detail-fulltext{
+    margin-top: 4px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-size: 13px;
+    line-height: 1.7;
+    white-space: pre-wrap;
+    word-break: break-word;
+    color: var(--ink);
+  }
+  .detail-fulltext-label{
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-dim);
+    margin-bottom: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+  }
+
+  .empty{
+    color: var(--ink-dim);
+    font-size: 12px;
+    padding: 28px 0;
+    text-align:center;
+  }
+
+  footer{
+    color: var(--ink-dim);
+    font-size: 11px;
+    line-height: 1.7;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  code{
+    background: var(--bg-panel);
+    border: 1px solid var(--line);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+
+<script src="stats-data.js"></script>
+<script>
+function escapeHtml(s){
+  return String(s).replace(/[&<>"']/g, ch => ({
+    '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+  }[ch]));
+}
+
+const CAT_LABEL = {rules: 'ルール(確定)', candidates: '候補', incidents: '事例ログ'};
+const CAT_COLOR = {rules: 'var(--rule-color)', candidates: 'var(--candidate-color)', incidents: 'var(--incident-color)'};
+
+let statsData = null;
+let screenStack = [{view: 'home'}];
+let activeTag = null;
+let activeProject = null;
+let searchQuery = '';
+
+function push(screen){ screenStack.push(screen); activeTag = null; activeProject = null; renderApp(); window.scrollTo(0,0); }
+function pop(){ if (screenStack.length > 1){ screenStack.pop(); renderApp(); window.scrollTo(0,0); } }
+
+function makeRow({label, sub, value, dotColor, onClick}){
+  const row = document.createElement('button');
+  row.className = 'ios-row';
+  row.type = 'button';
+  const dot = dotColor ? `<span class="row-dot" style="background:${dotColor}"></span>` : '';
+  row.innerHTML = `
+    ${dot}
+    <div class="row-main">
+      <div class="row-label">${escapeHtml(label)}</div>
+      ${sub ? `<div class="row-sub">${escapeHtml(sub)}</div>` : ''}
+    </div>
+    ${value !== undefined ? `<span class="row-value">${escapeHtml(String(value))}</span>` : ''}
+    <span class="chevron">›</span>
+  `;
+  row.onclick = onClick;
+  return row;
+}
+
+const PAGE_SIZE = 5;
+
+function makeList(rows){
+  const list = document.createElement('div');
+  list.className = 'ios-list';
+  if (rows.length === 0){
+    list.innerHTML = '<div class="empty">まだありません</div>';
+    return list;
+  }
+
+  rows.slice(0, PAGE_SIZE).forEach(r => list.appendChild(r));
+
+  if (rows.length > PAGE_SIZE){
+    const remaining = rows.slice(PAGE_SIZE);
+    const moreBtn = document.createElement('button');
+    moreBtn.type = 'button';
+    moreBtn.className = 'ios-row show-more-row';
+    moreBtn.innerHTML = `<div class="row-main"><div class="row-label" style="color:var(--accent); text-align:center;">さらに${remaining.length}件を表示</div></div>`;
+    moreBtn.onclick = () => {
+      remaining.forEach(r => list.insertBefore(r, moreBtn));
+      moreBtn.remove();
+    };
+    list.appendChild(moreBtn);
+  }
+  return list;
+}
+
+/* ---------- 検索 ---------- */
+function searchAll(query){
+  const q = query.toLowerCase();
+  const results = [];
+  ['rules', 'candidates', 'incidents'].forEach(cat => {
+    (statsData.items[cat] || []).forEach(item => {
+      const haystack = [item.title, item.content, ...(item.tags || [])].join(' ').toLowerCase();
+      if (haystack.includes(q)){
+        results.push({cat, item});
+      }
+    });
+  });
+  return results;
+}
+
+/* ---------- ホーム画面 ---------- */
+function renderHome(content){
+  const header = document.createElement('div');
+  header.className = 'home-header';
+  header.innerHTML = `
+    <h1>学びの記録</h1>
+    <p class="sub">AIと一緒に作業する中で得た気づきを、プロジェクトをまたいで記録しています。</p>
+    <div class="updated">最終更新: ${new Date(statsData.generated_at).toLocaleString('ja-JP')}</div>
+  `;
+  content.appendChild(header);
+
+  const searchInput = document.createElement('input');
+  searchInput.type = 'search';
+  searchInput.className = 'search-box';
+  searchInput.placeholder = 'キーワードで検索';
+  searchInput.value = searchQuery;
+  searchInput.oninput = (e) => {
+    searchQuery = e.target.value;
+    renderHomeBody(bodyBox);
+  };
+  content.appendChild(searchInput);
+
+  const bodyBox = document.createElement('div');
+  content.appendChild(bodyBox);
+  renderHomeBody(bodyBox);
+}
+
+function renderHomeBody(bodyBox){
+  bodyBox.innerHTML = '';
+
+  if (searchQuery.trim()){
+    const results = searchAll(searchQuery.trim());
+    const rows = results.map(({cat, item}) => makeRow({
+      label: item.title,
+      sub: CAT_LABEL[cat],
+      dotColor: CAT_COLOR[cat],
+      onClick: () => push({view: 'detail', cat, filename: item.filename})
+    }));
+    bodyBox.appendChild(makeList(rows));
+    return;
+  }
+
+  if (statsData.promotion_suggestions){
+    const banner = document.createElement('div');
+    banner.className = 'promotion-banner';
+    banner.innerHTML = `
+      <div class="banner-title">💡 昇格の提案があります</div>
+      <div class="banner-body">${escapeHtml(statsData.promotion_suggestions)}</div>
+    `;
+    bodyBox.appendChild(banner);
+  }
+
+  if (statsData.stale_count > 0){
+    const staleBanner = document.createElement('div');
+    staleBanner.className = 'stale-banner';
+    staleBanner.textContent = `⏳ ${statsData.stale_count}件の候補が30日以上更新されていません`;
+    staleBanner.onclick = () => push({view: 'list', cat: 'candidates'});
+    bodyBox.appendChild(staleBanner);
+  }
+
+  const rows = [];
+  ['rules', 'candidates', 'incidents'].forEach(cat => {
+    rows.push(makeRow({
+      label: CAT_LABEL[cat],
+      value: statsData[cat].count,
+      dotColor: CAT_COLOR[cat],
+      onClick: () => push({view: 'list', cat})
+    }));
+  });
+  rows.push(makeRow({
+    label: 'Skill一覧',
+    value: (statsData.skills || []).length,
+    onClick: () => push({view: 'skills'})
+  }));
+  rows.push(makeRow({
+    label: '更新履歴',
+    onClick: () => push({view: 'history'})
+  }));
+  bodyBox.appendChild(makeList(rows));
+}
+
+/* ---------- カテゴリ一覧画面 ---------- */
+function itemSubtext(cat, item){
+  const text = cat === 'rules' ? item.solution_summary : (item.problem_summary || item.solution_summary);
+  return text || '';
+}
+
+function buildFilterRow(labelText, options, active, onSelect){
+  const wrap = document.createElement('div');
+  const label = document.createElement('div');
+  label.className = 'filter-label';
+  label.textContent = labelText;
+  wrap.appendChild(label);
+
+  const box = document.createElement('div');
+  box.className = 'tag-filter';
+  const allBtn = document.createElement('button');
+  allBtn.className = 'tag-chip' + (active === null ? ' active' : '');
+  allBtn.textContent = 'すべて';
+  allBtn.onclick = () => onSelect(null);
+  box.appendChild(allBtn);
+  options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'tag-chip' + (active === opt ? ' active' : '');
+    btn.textContent = opt;
+    btn.onclick = () => onSelect(active === opt ? null : opt);
+    box.appendChild(btn);
+  });
+  wrap.appendChild(box);
+  return wrap;
+}
+
+function renderCategoryList(content, cat){
+  const allEntries = statsData.items[cat] || [];
+  const allTags = [...new Set(allEntries.flatMap(e => e.tags || []))].sort();
+  const allProjects = [...new Set(allEntries.flatMap(e => e.projects || []))].sort();
+
+  if (allTags.length > 0){
+    content.appendChild(buildFilterRow('タグ', allTags, activeTag, (v) => { activeTag = v; renderApp(); }));
+  }
+  if (allProjects.length > 0){
+    content.appendChild(buildFilterRow('プロジェクト', allProjects, activeProject, (v) => { activeProject = v; renderApp(); }));
+  }
+
+  const entries = allEntries.filter(e =>
+    (!activeTag || (e.tags || []).includes(activeTag)) &&
+    (!activeProject || (e.projects || []).includes(activeProject))
+  );
+
+  const rows = entries.map(item => makeRow({
+    label: (item.stale ? '⏳ ' : '') + item.title,
+    sub: itemSubtext(cat, item),
+    dotColor: cat === 'rules' && item.skill_installed ? '#2f6fa0' : null,
+    onClick: () => push({view: 'detail', cat, filename: item.filename})
+  }));
+  content.appendChild(makeList(rows));
+}
+
+/* ---------- 項目の詳細画面 ---------- */
+function renderItemDetail(content, cat, filename){
+  const item = (statsData.items[cat] || []).find(e => e.filename === filename);
+  const card = document.createElement('div');
+  card.className = 'detail-card';
+
+  if (!item){
+    card.innerHTML = '<div class="empty">見つかりませんでした</div>';
+    content.appendChild(card);
+    return;
+  }
+
+  let badge = '';
+  if (cat === 'rules'){
+    if (item.skill_installed){
+      badge = `<span class="detail-badge installed">✓ Skill化済み: ${escapeHtml(item.skill_name)}</span>`;
+    } else if (item.skill_name){
+      badge = `<span class="detail-badge missing">⚠ Skill未検出: ${escapeHtml(item.skill_name)}</span>`;
+    } else {
+      badge = `<span class="detail-badge none">未Skill化</span>`;
+    }
+  }
+
+  const tags = (item.tags && item.tags.length)
+    ? `<div class="detail-tags">${item.tags.map(t => `<span class="detail-tag">${escapeHtml(t)}</span>`).join('')}</div>`
+    : '';
+  const projects = (item.projects && item.projects.length)
+    ? `<div class="detail-tags">${item.projects.map(p => `<span class="detail-tag">📁 ${escapeHtml(p)}</span>`).join('')}</div>`
+    : '';
+
+  let staleNote = '';
+  if (item.stale){
+    staleNote = `<span class="detail-badge missing">⏳ ${item.days_old}日間、動きがありません</span>`;
+  }
+
+  let blocks = '';
+  if (item.problem_summary){
+    blocks += `<div class="detail-block problem"><div class="block-label">問題</div><div class="block-text">${escapeHtml(item.problem_summary)}</div></div>`;
+  }
+  if (item.solution_summary){
+    const label = cat === 'rules' ? 'ルール' : '対応';
+    blocks += `<div class="detail-block solution"><div class="block-label">${label}</div><div class="block-text">${escapeHtml(item.solution_summary)}</div></div>`;
+  }
+
+  card.innerHTML = `
+    <div class="detail-filename">${escapeHtml(item.filename)}</div>
+    ${badge}
+    ${staleNote}
+    ${projects}
+    ${tags}
+    ${blocks}
+    <div class="detail-fulltext-label">全文</div>
+    <div class="detail-fulltext">${escapeHtml(item.content)}</div>
+  `;
+  content.appendChild(card);
+}
+
+/* ---------- Skill一覧・詳細 ---------- */
+function renderSkillsList(content){
+  const skills = statsData.skills || [];
+  const rows = skills.map(skill => makeRow({
+    label: skill.name,
+    sub: `${skill.usage_count}回使用・${skill.linked_to_rule ? 'ルールと紐付け済み' : 'ルール未紐付け'}`,
+    dotColor: skill.linked_to_rule ? '#2f6fa0' : '#c7c5be',
+    onClick: () => push({view: 'skill-detail', name: skill.name})
+  }));
+  content.appendChild(makeList(rows));
+}
+
+function renderSkillDetail(content, name){
+  const skill = (statsData.skills || []).find(s => s.name === name);
+  const card = document.createElement('div');
+  card.className = 'detail-card';
+  if (!skill){
+    card.innerHTML = '<div class="empty">見つかりませんでした</div>';
+  } else {
+    const badge = skill.linked_to_rule
+      ? '<span class="detail-badge installed">✓ ルールと紐付け済み</span>'
+      : '<span class="detail-badge none">ルール未紐付け</span>';
+    card.innerHTML = `
+      <div class="detail-filename">${escapeHtml(skill.folder_name)}/SKILL.md</div>
+      ${badge}
+      <div class="detail-block solution">
+        <div class="block-label">使用回数</div>
+        <div class="block-text">${skill.usage_count}回</div>
+      </div>
+      <div class="detail-block solution">
+        <div class="block-label">発動条件・説明</div>
+        <div class="block-text">${escapeHtml(skill.description)}</div>
+      </div>
+    `;
+  }
+  content.appendChild(card);
+}
+
+/* ---------- 更新履歴 ---------- */
+function dominantCategory(h){
+  const s = h.summary || '';
+  const tags = (s.match(/\[(ルール|候補|事例)\]/g) || []).map(t => t.slice(1, -1));
+  const unique = [...new Set(tags)];
+  if (unique.length === 1) return {'ルール':'rules', '候補':'candidates', '事例':'incidents'}[unique[0]];
+  return null;
+}
+
+function renderHistoryList(content){
+  const history = [...(statsData.history || [])].reverse();
+  const rows = history.map((h, i) => {
+    const dateStr = new Date(h.date).toLocaleDateString('ja-JP', {year:'numeric', month:'2-digit', day:'2-digit'});
+    const cat = dominantCategory(h);
+    return makeRow({
+      label: h.summary || '(記録なし)',
+      sub: dateStr,
+      dotColor: cat ? CAT_COLOR[cat] : null,
+      onClick: () => push({view: 'history-detail', index: i})
+    });
+  });
+  content.appendChild(makeList(rows));
+}
+
+function renderHistoryDetail(content, index){
+  const history = [...(statsData.history || [])].reverse();
+  const h = history[index];
+  const card = document.createElement('div');
+  card.className = 'detail-card';
+  if (!h){
+    card.innerHTML = '<div class="empty">見つかりませんでした</div>';
+  } else {
+    const dateStr = new Date(h.date).toLocaleString('ja-JP');
+    card.innerHTML = `
+      <div class="detail-filename">${escapeHtml(dateStr)}</div>
+      <div class="detail-block solution">
+        <div class="block-label">内容</div>
+        <div class="block-text">${escapeHtml(h.summary || '(記録なし)')}</div>
+      </div>
+      <div class="detail-fulltext-label">その時点の累計</div>
+      <div class="detail-fulltext">ルール ${h.rules_count} 件・候補 ${h.candidates_count} 件・事例 ${h.incidents_count} 件
+合計 ${h.total_chars.toLocaleString()} 文字</div>
+    `;
+  }
+  content.appendChild(card);
+}
+
+/* ---------- 画面タイトル ---------- */
+function screenTitle(screen){
+  switch(screen.view){
+    case 'list': return CAT_LABEL[screen.cat];
+    case 'detail': {
+      const item = (statsData.items[screen.cat] || []).find(e => e.filename === screen.filename);
+      return item ? item.title : '詳細';
+    }
+    case 'skills': return 'Skill一覧';
+    case 'skill-detail': return screen.name;
+    case 'history': return '更新履歴';
+    case 'history-detail': return '履歴の詳細';
+    default: return '';
+  }
+}
+
+function screenCountSub(screen){
+  if (screen.view === 'list'){
+    const c = statsData[screen.cat];
+    return `${c.count}件・${c.chars.toLocaleString()}文字`;
+  }
+  if (screen.view === 'skills'){
+    return `${(statsData.skills || []).length}件`;
+  }
+  return '';
+}
+
+/* ---------- 全体の描画 ---------- */
+function renderApp(){
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  const screen = screenStack[screenStack.length - 1];
+
+  if (screen.view === 'home'){
+    renderHome(app);
+  } else {
+    const navBar = document.createElement('div');
+    navBar.className = 'nav-bar';
+    const backBtn = document.createElement('button');
+    backBtn.className = 'nav-back';
+    backBtn.textContent = '‹ 戻る';
+    backBtn.onclick = pop;
+    navBar.appendChild(backBtn);
+    app.appendChild(navBar);
+
+    const titleBox = document.createElement('div');
+    titleBox.className = 'screen-title';
+    const countSub = screenCountSub(screen);
+    titleBox.innerHTML = `<h2>${escapeHtml(screenTitle(screen))}</h2>${countSub ? `<div class="count-sub">${escapeHtml(countSub)}</div>` : ''}`;
+    app.appendChild(titleBox);
+
+    const content = document.createElement('div');
+    app.appendChild(content);
+
+    switch(screen.view){
+      case 'list': renderCategoryList(content, screen.cat); break;
+      case 'detail': renderItemDetail(content, screen.cat, screen.filename); break;
+      case 'skills': renderSkillsList(content); break;
+      case 'skill-detail': renderSkillDetail(content, screen.name); break;
+      case 'history': renderHistoryList(content); break;
+      case 'history-detail': renderHistoryDetail(content, screen.index); break;
+    }
+  }
+
+  if (screen.view === 'home'){
+    const footer = document.createElement('footer');
+    footer.innerHTML = `
+      このページは <code>scripts/generate_stats.sh</code> を実行するたびに内容が更新されます。<br>
+      ファイルをダブルクリックするだけで(サーバーを起動せずに)直接開いて見られます。
+    `;
+    app.appendChild(footer);
+  }
+}
+
+async function load(){
+  let data = window.STATS_DATA;
+  if (!data){
+    try{
+      const res = await fetch('stats.json?_=' + Date.now());
+      data = await res.json();
+    }catch(e){
+      document.getElementById('app').innerHTML = '<div class="empty">データを読み込めませんでした。scripts/generate_stats.sh を一度実行してください。</div>';
+      return;
+    }
+  }
+  statsData = data;
+  renderApp();
+}
+load();
+</script>
+</body>
+</html>
