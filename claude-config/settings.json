@@ -16,43 +16,19 @@
       {
         "matcher": "clear",
         "hooks": [
-          {
-            "type": "prompt",
-            "prompt": "このセッションの内容を、現在のプロジェクトディレクトリの HANDOFF.md に knowledge-base/HANDOFF-TEMPLATE.md の形式で書き出して(上書きではなく追記)。既存のHANDOFF.mdが無ければ新規作成する。"
-          },
-          {
-            "type": "prompt",
-            "prompt": "この会話で、他プロジェクトでも再利用できそうな技術的発見(バグの直し方・設計判断・ライブラリの癖など)があれば、~/knowledge-base/candidates/ に YYYY-MM-DD-短い説明.md というファイル名で書き出して。フォーマットは status: candidate / observed_count: 1 / observed_in: [プロジェクト名] / tags: [関連する技術領域やジャンルを1〜3個、例: godot, python, 画像処理] / date、に続けて本文は次の見出し構成にすること: 「## 何が起きたか」(専門用語をできるだけ避け、平易な言葉で1〜3文の要約)/ 「## わかったこと・今の対応」(結論や暫定的な対処法を平易な言葉で1〜3文。まだ対処法が無ければ「まだ対処法が見つかっていない」と明記する。このセクションは必ず書くこと、空にしない)/ 「## 詳しい経緯」(技術的な詳細、既存の書き方と同程度の詳しさで良い)/ 「## まだ確認できていないこと」。再利用性のある発見が無ければ何もしない。"
-          },
-          {
-            "type": "prompt",
-            "prompt": "knowledge-base/candidates/ の中の全ファイルを読み、内容的に同じ技術的発見を指している候補が、異なるプロジェクト(observed_inが異なる)にまたがって複数存在するか判断して。該当する組み合わせがあれば、knowledge-base/PROMOTION-SUGGESTIONS.md に『## 候補: ファイル名A と ファイル名B』という見出しと、なぜ同じ発見だと判断したかの理由、rules/への昇格を検討してほしい旨を追記する(既存内容は消さず追記。同じ組み合わせが既に書かれていれば重複追加しない)。また、既存の提案が参照しているファイルがcandidates/に存在しなくなっていれば(昇格済み等)、その提案は削除する。該当する組み合わせが1つも無ければ、このファイルには何もしない(新規作成もしない)。"
-          },
-          {
-            "type": "command",
-            "command": "SCRIPT=\"$HOME/knowledge-base/scripts/generate_stats.sh\"; [ -f \"$SCRIPT\" ] && bash \"$SCRIPT\" 2>/dev/null || true"
-          },
-          {
-            "type": "command",
-            "command": "mkdir -p ~/knowledge-base/claude-config/skills ~/knowledge-base/claude-config/hooks 2>/dev/null; cp ~/.claude/settings.json ~/knowledge-base/claude-config/settings.json 2>/dev/null; rm -rf ~/knowledge-base/claude-config/skills/* 2>/dev/null; cp -r ~/.claude/skills/* ~/knowledge-base/claude-config/skills/ 2>/dev/null; cp -r ~/.claude/hooks/* ~/knowledge-base/claude-config/hooks/ 2>/dev/null; true"
-          },
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/scan_and_push.py 2>/dev/null; true"
-          }
+          { "type": "prompt", "prompt": "このセッションの内容を、現在のプロジェクトディレクトリの HANDOFF.md に knowledge-base/HANDOFF-TEMPLATE.md の形式で書き出して(上書きではなく追記)。既存のHANDOFF.mdが無ければ新規作成する。" },
+          { "type": "prompt", "prompt": "この会話で、他プロジェクトでも再利用できそうな技術的発見(バグの直し方・設計判断・ライブラリの癖など)があれば、~/knowledge-base/candidates/ に YYYY-MM-DD-短い説明.md というファイル名で書き出して。フォーマットは status: candidate / observed_count: 1 / observed_in: [プロジェクト名] / tags: [関連する技術領域やジャンルを1〜3個、例: godot, python, 画像処理] / date、に続けて本文は次の見出し構成にすること: 「## 何が起きたか」(専門用語をできるだけ避け、平易な言葉で1〜3文の要約)/ 「## わかったこと・今の対応」(結論や暫定的な対処法を平易な言葉で1〜3文。まだ対処法が無ければ「まだ対処法が見つかっていない」と明記する。このセクションは必ず書くこと、空にしない)/ 「## 詳しい経緯」(技術的な詳細、既存の書き方と同程度の詳しさで良い)/ 「## まだ確認できていないこと」。再利用性のある発見が無ければ何もしない。" },
+          { "type": "prompt", "prompt": "knowledge-base/candidates/ の中の全ファイルを読み、内容的に同じ技術的発見を指している候補が、異なるプロジェクト(observed_inが異なる)にまたがって複数存在するか判断して。該当する組み合わせがあれば、knowledge-base/PROMOTION-SUGGESTIONS.md に『## 候補: ファイル名A と ファイル名B』という見出し、なぜ同じ発見だと判断したかの理由、rules/への昇格を検討してほしい旨、それに続けて次の昇格前チェックリストを追記する: 「昇格前の確認: ・3件目の似た事例が出ても驚かない程度に一般的な話か / ・プロジェクトごとの前提条件の違いが大きすぎないか / ・「いつ・何をすべきか」を一言で言えるルール文にできるか」(既存内容は消さず追記。同じ組み合わせが既に書かれていれば重複追加しない)。また、既存の提案が参照しているファイルがcandidates/に存在しなくなっていれば(昇格済み等)、その提案は削除する。該当する組み合わせが1つも無ければ、このファイルには何もしない(新規作成もしない)。" },
+          { "type": "prompt", "prompt": "この会話中にSkillが使われていたか、~/knowledge-base/.skill_usage.log の末尾(このセッション中と思われる直近のタイムスタンプ)を確認して。使われていたSkillがあれば、この会話の流れからそのSkillの提案が実際に役立ったかを判断し、有効(役に立った)・微妙(部分的、または効果が怪しい)・不明(判断材料が無い)のいずれかと、15字程度の一言理由を、~/knowledge-base/.skill_effectiveness.log に1行、日時・Skill名・判定・理由の4項目をこの順にタブ文字1つずつで区切って追記する。Skillが1つも使われていなければ、このファイルには何もしない。" },
+          { "type": "command", "command": "python3 ~/.claude/hooks/archive_stale_candidates.py 2>/dev/null; true" },
+          { "type": "command", "command": "SCRIPT=\"$HOME/knowledge-base/scripts/generate_stats.sh\"; [ -f \"$SCRIPT\" ] && bash \"$SCRIPT\" 2>/dev/null || true" },
+          { "type": "command", "command": "mkdir -p ~/knowledge-base/claude-config/skills ~/knowledge-base/claude-config/hooks 2>/dev/null; cp ~/.claude/settings.json ~/knowledge-base/claude-config/settings.json 2>/dev/null; rm -rf ~/knowledge-base/claude-config/skills/* 2>/dev/null; cp -r ~/.claude/skills/* ~/knowledge-base/claude-config/skills/ 2>/dev/null; cp -r ~/.claude/hooks/* ~/knowledge-base/claude-config/hooks/ 2>/dev/null; true" },
+          { "type": "command", "command": "python3 ~/.claude/hooks/scan_and_push.py 2>/dev/null; true" }
         ]
       }
     ],
     "PostToolUse": [
-      {
-        "matcher": "Skill",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "python3 ~/.claude/hooks/log_skill_usage.py 2>/dev/null; true"
-          }
-        ]
-      }
+      { "matcher": "Skill", "hooks": [ { "type": "command", "command": "python3 ~/.claude/hooks/log_skill_usage.py 2>/dev/null; true" } ] }
     ]
   }
 }

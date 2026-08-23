@@ -2,6 +2,7 @@ Thumbs.db
 .DS_Store
 *.tmp
 .skill_usage.log
+.skill_effectiveness.log
 
 # docs/stats.json と docs/stats-data.js は GitHub Pages で配信するために
 # あえてコミット対象にする(除外しない)。.manifest.json だけは

@@ -9,8 +9,11 @@
 1. `knowledge-base/docs/index.html` をダブルクリックして開く(またはGitHub Pagesのページを開く)
 2. 「中身を見る」で `候補` と `事例ログ` の各項目を開いて目視で確認する
    (`ルール` は昇格時に一度確認済みのはずなので優先度は低い)
-3. 機密情報が含まれていたら、該当ファイルを直接編集するか削除する
-   (ファイルの場所: `knowledge-base/candidates/` または `knowledge-base/incidents/`)
+3. ホーム画面に「アーカイブ」が表示されていれば、そちらも同様に確認する
+   (90日以上動きのなかった候補が自動でここに移動される。中身は候補と同じ)
+4. 機密情報が含まれていたら、該当ファイルを直接編集するか削除する
+   (ファイルの場所: `knowledge-base/candidates/`、`knowledge-base/candidates/archive/`、
+   または `knowledge-base/incidents/`)
 
 ## 特に注意する情報
 

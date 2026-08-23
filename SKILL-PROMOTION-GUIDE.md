@@ -32,3 +32,18 @@
 
 - ルール: `rules/godot-optimization.md`
 - Skill: `%USERPROFILE%\.claude\skills\godot-optimization\SKILL.md`
+
+## Skillを引退させたいとき
+
+古くなった・別のSkillに統合したい・誤発動が多いなどの理由でSkillを
+使わなくしたい場合は、Claude Codeに次のように頼む:
+
+「`<スキル名>` のSkillを引退させて」
+
+内部では `python3 ~/.claude/hooks/retire_skill.py <スキル名>` が実行され、
+- `~/.claude/skills/<スキル名>/` が `knowledge-base/claude-config/skills-archive/`
+  に移動される(削除ではないので中身は残る。Claude Codeは以後自動使用しない)
+- 対応する `rules/*.md` に `skill_status: retired` が追記される
+
+ダッシュボードのSkill一覧画面の下部「引退済み」に表示されるようになる。
+判断自体(引退させるかどうか)は昇格と同じく人が決めることで、自動化はしない。

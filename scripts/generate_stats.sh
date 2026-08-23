@@ -165,8 +165,31 @@ for cat, paths in categories.items():
             skill_name = find_skill_name(content)
             entry['skill_name'] = skill_name
             entry['skill_installed'] = skill_is_installed(skill_name)
+            entry['skill_retired'] = bool(re.search(r'^skill_status:\s*retired\s*$', content, re.MULTILINE))
         entries.append(entry)
     items[cat] = entries
+
+# 90日以上動きのなかった候補は archive_stale_candidates.py によって
+# candidates/archive/ に移動されている。削除ではなく移動なので、
+# ここで別カテゴリとして読み込み直し、ダッシュボードから引き続き見られるようにする。
+archive_paths = sorted(glob.glob(os.path.join(kb_dir, 'candidates', 'archive', '*.md')), reverse=True)
+archived_entries = []
+for p in archive_paths:
+    content = read_content(p)
+    file_date = find_date(content)
+    age_days = days_since(file_date, now_dt)
+    archived_entries.append({
+        'filename': os.path.basename(p),
+        'title': first_title(p),
+        'content': content,
+        'tags': find_tags(content),
+        'projects': find_projects(content),
+        'days_old': age_days,
+        'stale': True,
+        'problem_summary': extract_section(content, PROBLEM_HEADINGS['candidates']),
+        'solution_summary': extract_section(content, SOLUTION_HEADINGS['candidates']),
+    })
+items['archived'] = archived_entries
 
 promotion_suggestions_path = os.path.join(kb_dir, 'PROMOTION-SUGGESTIONS.md')
 promotion_suggestions = read_content(promotion_suggestions_path).strip() or None
@@ -182,6 +205,20 @@ if os.path.isfile(usage_log_path):
             parts = line.strip().split('\t')
             if len(parts) == 2:
                 skill_usage_counts[parts[1]] = skill_usage_counts.get(parts[1], 0) + 1
+
+# Skillの効果測定(SessionEndのプロンプト型フックが会話内容から判断して記録する)
+effectiveness_log_path = os.path.join(kb_dir, '.skill_effectiveness.log')
+skill_effectiveness = {}
+if os.path.isfile(effectiveness_log_path):
+    with open(effectiveness_log_path, encoding='utf-8') as f:
+        for line in f:
+            parts = line.rstrip('\n').split('\t')
+            if len(parts) >= 3:
+                ts, skill_name, verdict = parts[0], parts[1], parts[2]
+                reason = parts[3] if len(parts) > 3 else ''
+                skill_effectiveness.setdefault(skill_name, []).append({
+                    'date': ts, 'verdict': verdict, 'reason': reason,
+                })
 
 
 def parse_skill_frontmatter(skill_md_path):
@@ -211,12 +248,33 @@ if os.path.isdir(skills_dir):
             continue
         parsed_name, description = parse_skill_frontmatter(skill_md)
         skill_key = parsed_name or name
+        records = sorted(skill_effectiveness.get(skill_key, []), key=lambda r: r['date'], reverse=True)
+        summary = {}
+        for r in records:
+            summary[r['verdict']] = summary.get(r['verdict'], 0) + 1
         all_skills.append({
             'folder_name': name,
             'name': skill_key,
             'description': description or '(説明文なし)',
             'linked_to_rule': skill_key in linked_skill_names,
             'usage_count': skill_usage_counts.get(skill_key, 0),
+            'effectiveness_summary': summary,
+            'effectiveness_recent': records[:5],
+        })
+
+# 引退させたSkill(retire_skill.py で ~/.claude/skills/ から移動済み)の一覧
+retired_skills_dir = os.path.join(kb_dir, 'claude-config', 'skills-archive')
+retired_skills = []
+if os.path.isdir(retired_skills_dir):
+    for name in sorted(os.listdir(retired_skills_dir)):
+        skill_md = os.path.join(retired_skills_dir, name, 'SKILL.md')
+        if not os.path.isfile(skill_md):
+            continue
+        parsed_name, description = parse_skill_frontmatter(skill_md)
+        retired_skills.append({
+            'folder_name': name,
+            'name': parsed_name or name,
+            'description': description or '(説明文なし)',
         })
 
 current_files = set(category_of.keys())
@@ -270,11 +328,13 @@ data = {
     'rules': {'count': counts['rules'], 'chars': chars['rules']},
     'candidates': {'count': counts['candidates'], 'chars': chars['candidates']},
     'incidents': {'count': counts['incidents'], 'chars': chars['incidents']},
+    'archived': {'count': len(archived_entries), 'chars': count_chars(archive_paths)},
     'total_chars': total_chars,
     'history': history,
     'items': items,
     'promotion_suggestions': promotion_suggestions,
     'skills': all_skills,
+    'retired_skills': retired_skills,
     'stale_count': stale_count,
 }
 

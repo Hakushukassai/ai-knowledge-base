@@ -298,8 +298,8 @@ function escapeHtml(s){
   }[ch]));
 }
 
-const CAT_LABEL = {rules: 'ルール(確定)', candidates: '候補', incidents: '事例ログ'};
-const CAT_COLOR = {rules: 'var(--rule-color)', candidates: 'var(--candidate-color)', incidents: 'var(--incident-color)'};
+const CAT_LABEL = {rules: 'ルール(確定)', candidates: '候補', incidents: '事例ログ', archived: 'アーカイブ'};
+const CAT_COLOR = {rules: 'var(--rule-color)', candidates: 'var(--candidate-color)', incidents: 'var(--incident-color)', archived: 'var(--ink-dim)'};
 
 let statsData = null;
 let screenStack = [{view: 'home'}];
@@ -359,7 +359,7 @@ function makeList(rows){
 function searchAll(query){
   const q = query.toLowerCase();
   const results = [];
-  ['rules', 'candidates', 'incidents'].forEach(cat => {
+  ['rules', 'candidates', 'incidents', 'archived'].forEach(cat => {
     (statsData.items[cat] || []).forEach(item => {
       const haystack = [item.title, item.content, ...(item.tags || [])].join(' ').toLowerCase();
       if (haystack.includes(q)){
@@ -448,6 +448,15 @@ function renderHomeBody(bodyBox){
     label: '更新履歴',
     onClick: () => push({view: 'history'})
   }));
+  if ((statsData.archived || {}).count > 0){
+    rows.push(makeRow({
+      label: 'アーカイブ',
+      sub: '90日以上動きのなかった候補',
+      value: statsData.archived.count,
+      dotColor: 'var(--ink-dim)',
+      onClick: () => push({view: 'list', cat: 'archived'})
+    }));
+  }
   bodyBox.appendChild(makeList(rows));
 }
 
@@ -522,7 +531,9 @@ function renderItemDetail(content, cat, filename){
 
   let badge = '';
   if (cat === 'rules'){
-    if (item.skill_installed){
+    if (item.skill_retired){
+      badge = `<span class="detail-badge none">🗄 Skill引退済み: ${escapeHtml(item.skill_name)}</span>`;
+    } else if (item.skill_installed){
       badge = `<span class="detail-badge installed">✓ Skill化済み: ${escapeHtml(item.skill_name)}</span>`;
     } else if (item.skill_name){
       badge = `<span class="detail-badge missing">⚠ Skill未検出: ${escapeHtml(item.skill_name)}</span>`;
@@ -566,27 +577,67 @@ function renderItemDetail(content, cat, filename){
 }
 
 /* ---------- Skill一覧・詳細 ---------- */
+function skillSubtext(skill){
+  const parts = [`${skill.usage_count}回使用`];
+  const bits = Object.entries(skill.effectiveness_summary || {}).map(([k, v]) => `${k}${v}`).join('・');
+  if (bits) parts.push(bits);
+  parts.push(skill.linked_to_rule ? 'ルールと紐付け済み' : 'ルール未紐付け');
+  return parts.join('・');
+}
+
 function renderSkillsList(content){
   const skills = statsData.skills || [];
   const rows = skills.map(skill => makeRow({
     label: skill.name,
-    sub: `${skill.usage_count}回使用・${skill.linked_to_rule ? 'ルールと紐付け済み' : 'ルール未紐付け'}`,
+    sub: skillSubtext(skill),
     dotColor: skill.linked_to_rule ? '#2f6fa0' : '#c7c5be',
     onClick: () => push({view: 'skill-detail', name: skill.name})
   }));
   content.appendChild(makeList(rows));
+
+  const retired = statsData.retired_skills || [];
+  if (retired.length > 0){
+    const label = document.createElement('div');
+    label.className = 'filter-label';
+    label.textContent = '引退済み';
+    content.appendChild(label);
+    const retiredRows = retired.map(skill => makeRow({
+      label: skill.name,
+      sub: '自動では使われません',
+      dotColor: '#c7c5be',
+      onClick: () => push({view: 'skill-detail', name: skill.name, retired: true})
+    }));
+    content.appendChild(makeList(retiredRows));
+  }
 }
 
-function renderSkillDetail(content, name){
-  const skill = (statsData.skills || []).find(s => s.name === name);
+function renderSkillDetail(content, name, retired){
+  const skill = retired
+    ? (statsData.retired_skills || []).find(s => s.name === name)
+    : (statsData.skills || []).find(s => s.name === name);
   const card = document.createElement('div');
   card.className = 'detail-card';
   if (!skill){
     card.innerHTML = '<div class="empty">見つかりませんでした</div>';
+  } else if (retired){
+    card.innerHTML = `
+      <div class="detail-filename">${escapeHtml(skill.folder_name)}/SKILL.md</div>
+      <span class="detail-badge none">🗄 引退済み(自動では使われません)</span>
+      <div class="detail-block solution">
+        <div class="block-label">発動条件・説明(引退前)</div>
+        <div class="block-text">${escapeHtml(skill.description)}</div>
+      </div>
+    `;
   } else {
     const badge = skill.linked_to_rule
       ? '<span class="detail-badge installed">✓ ルールと紐付け済み</span>'
       : '<span class="detail-badge none">ルール未紐付け</span>';
+    const effRecent = skill.effectiveness_recent || [];
+    const effBlock = effRecent.length > 0 ? `
+      <div class="detail-block solution">
+        <div class="block-label">評価(直近${effRecent.length}件)</div>
+        <div class="block-text">${effRecent.map(r => `${escapeHtml((r.date || '').slice(0, 10))}: ${escapeHtml(r.verdict)}${r.reason ? ' — ' + escapeHtml(r.reason) : ''}`).join('<br>')}</div>
+      </div>` : '';
     card.innerHTML = `
       <div class="detail-filename">${escapeHtml(skill.folder_name)}/SKILL.md</div>
       ${badge}
@@ -594,6 +645,7 @@ function renderSkillDetail(content, name){
         <div class="block-label">使用回数</div>
         <div class="block-text">${skill.usage_count}回</div>
       </div>
+      ${effBlock}
       <div class="detail-block solution">
         <div class="block-label">発動条件・説明</div>
         <div class="block-text">${escapeHtml(skill.description)}</div>
@@ -708,7 +760,7 @@ function renderApp(){
       case 'list': renderCategoryList(content, screen.cat); break;
       case 'detail': renderItemDetail(content, screen.cat, screen.filename); break;
       case 'skills': renderSkillsList(content); break;
-      case 'skill-detail': renderSkillDetail(content, screen.name); break;
+      case 'skill-detail': renderSkillDetail(content, screen.name, screen.retired); break;
       case 'history': renderHistoryList(content); break;
       case 'history-detail': renderHistoryDetail(content, screen.index); break;
     }

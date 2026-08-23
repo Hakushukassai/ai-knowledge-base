@@ -1,5 +1,5 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-23T03:20:01Z",
+  "generated_at": "2026-08-23T03:57:42Z",
   "rules": {
     "count": 1,
     "chars": 540
@@ -11,6 +11,10 @@ window.STATS_DATA = {
   "incidents": {
     "count": 1,
     "chars": 499
+  },
+  "archived": {
+    "count": 0,
+    "chars": 0
   },
   "total_chars": 6375,
   "history": [
@@ -141,6 +145,30 @@ window.STATS_DATA = {
       "candidates_count": 5,
       "incidents_count": 1,
       "total_chars": 6375
+    },
+    {
+      "date": "2026-08-23T03:55:06Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 5,
+      "incidents_count": 1,
+      "total_chars": 6375
+    },
+    {
+      "date": "2026-08-23T03:57:00Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 5,
+      "incidents_count": 1,
+      "total_chars": 6375
+    },
+    {
+      "date": "2026-08-23T03:57:42Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 5,
+      "incidents_count": 1,
+      "total_chars": 6375
     }
   ],
   "items": {
@@ -160,7 +188,8 @@ window.STATS_DATA = {
         "problem_summary": null,
         "solution_summary": "敵や弾丸など同一メッシュの大量インスタンスは、個別の Node ではなく MultiMeshInstance3D を使う。個別 Node は 200 体を超えたあたりから _pro…",
         "skill_name": "godot-optimization",
-        "skill_installed": true
+        "skill_installed": true,
+        "skill_retired": false
       }
     ],
     "candidates": [
@@ -260,7 +289,8 @@ window.STATS_DATA = {
         "problem_summary": "雑魚敵を30体以上同時に倒すと、弾丸ノードが同時に150個近く発生し、 フレームレートが60→22まで落ちた。",
         "solution_summary": "MultiMeshInstance3D + 独自の当たり判定計算に置き換え、 150個発生時でも58fps以上を維持できるようになった。"
       }
-    ]
+    ],
+    "archived": []
   },
   "promotion_suggestions": null,
   "skills": [
@@ -269,8 +299,11 @@ window.STATS_DATA = {
       "name": "godot-optimization",
       "description": "Godot 4でのゲーム開発中、敵・弾丸・アイテムなど見た目が同じオブジェクトを大量に生成する設計や実装を相談されたら必ず使うこと。個別のNode(CharacterBody3D等)で大量インスタンスを扱おうとしている相談、パフォーマンス低下(フレームレート低下・カクつき)の相談、大量スポーン・弾幕システムの実装、MultiMeshInstance3Dに関する質問では特に必ず参照する。「敵が大量に出る」「弾がたくさん飛ぶ」「同じメッシュを何百個も並べる」といった話が出たら発動すること。",
       "linked_to_rule": true,
-      "usage_count": 1
+      "usage_count": 1,
+      "effectiveness_summary": {},
+      "effectiveness_recent": []
     }
   ],
+  "retired_skills": [],
   "stale_count": 0
 };
