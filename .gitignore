@@ -3,7 +3,7 @@ Thumbs.db
 *.tmp
 .skill_usage.log
 
-# generate_stats.sh が自動生成するファイル(各マシンで作られる)
-docs/stats.json
-docs/stats-data.js
+# docs/stats.json と docs/stats-data.js は GitHub Pages で配信するために
+# あえてコミット対象にする(除外しない)。.manifest.json だけは
+# 「前回実行時との差分」を覚えておくための内部メモなので除外する。
 docs/.manifest.json
