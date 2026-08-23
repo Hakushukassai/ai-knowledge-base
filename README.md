@@ -11,8 +11,8 @@ knowledge-base/
   rules/            確定ルール(2つ以上のプロジェクトで確認済み)
   candidates/       候補(1回だけ観測された仮説)
   incidents/        事例ログ(具体的なトラブルの記録)
-  dashboard/        知識ベースを見るためのビジュアライザ(index.htmlをダブルクリックで開く)
-  scripts/          dashboardの数字を更新するスクリプト
+  docs/             知識ベースを見るためのビジュアライザ(index.htmlをダブルクリック、またはGitHub Pagesで公開)
+  scripts/          docsの数字を更新するスクリプト
   claude-config/    別のパソコンにセットアップするための設定コピー(自動更新される)
   PRIVACY-CHECKLIST.md     機密情報の定期確認手順
   SKILL-PROMOTION-GUIDE.md ルール→Skill化の手順

@@ -1,17 +1,17 @@
 #!/bin/bash
-# knowledge-base/ の中身を数値化して dashboard/stats.json と dashboard/stats-data.js に出力する
+# knowledge-base/ の中身を数値化して docs/stats.json と docs/stats-data.js に出力する
 # 使い方: bash scripts/generate_stats.sh
 # Claude Code の SessionEnd hook (/clear 時) から自動実行される想定
 #
-# 前回実行時との差分(新しく増えたファイル)を dashboard/.manifest.json で
+# 前回実行時との差分(新しく増えたファイル)を docs/.manifest.json で
 # 記憶しておき、その差分から「今回の変更」を一言サマリーとして履歴に残す。
 
 set -e
 cd "$(dirname "$0")/.."
 
 export KB_DIR="$HOME/knowledge-base"
-export OUT="dashboard/stats.json"
-export MANIFEST="dashboard/.manifest.json"
+export OUT="docs/stats.json"
+export MANIFEST="docs/.manifest.json"
 export NOW="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
 python3 << 'PYEOF'
@@ -282,7 +282,7 @@ with open(out_path, 'w', encoding='utf-8') as f:
     json.dump(data, f, ensure_ascii=False, indent=2)
 
 # ダブルクリックでの直接閲覧(file://)でも動くよう、同じデータをJSファイルにも埋め込む
-with open('dashboard/stats-data.js', 'w', encoding='utf-8') as f:
+with open('docs/stats-data.js', 'w', encoding='utf-8') as f:
     f.write('window.STATS_DATA = ')
     json.dump(data, f, ensure_ascii=False, indent=2)
     f.write(';\n')

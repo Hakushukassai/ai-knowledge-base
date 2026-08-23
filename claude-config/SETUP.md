@@ -29,7 +29,7 @@ Claude Codeの設定(hooks)とSkillのコピーが、変更のたびに自動で
    bash ~/knowledge-base/scripts/generate_stats.sh
    ```
 
-5. `~/knowledge-base/dashboard/index.html` をダブルクリックして開けば、
+5. `~/knowledge-base/docs/index.html` をダブルクリックして開けば、
    同じ内容が表示されるはずです。
 
 ## 動作の仕組み(参考)
