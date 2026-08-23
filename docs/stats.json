@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-23T04:23:04Z",
+  "generated_at": "2026-08-23T04:26:22Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 8,
-    "chars": 9652
+    "count": 9,
+    "chars": 10623
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@
     "count": 0,
     "chars": 0
   },
-  "total_chars": 10691,
+  "total_chars": 11662,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -185,6 +185,14 @@
       "candidates_count": 8,
       "incidents_count": 1,
       "total_chars": 10691
+    },
+    {
+      "date": "2026-08-23T04:26:22Z",
+      "summary": "[候補] 何が起きたか",
+      "rules_count": 1,
+      "candidates_count": 9,
+      "incidents_count": 1,
+      "total_chars": 11662
     }
   ],
   "items": {
@@ -341,6 +349,22 @@
         "stale": false,
         "problem_summary": "OpenCVの`TM_CCORR_NORMED`という比較方法を使うと、明るい画像は内容と無関係な場所にも高い一致スコアを出してしまう。",
         "solution_summary": "別の比較方法(`TM_CCOEFF_NORMED`)に切り替えると、既存の検証済みケースの精度が落ちてしまったため、今回は不採用。切り替えを検討する際は、既知の正解データで必ず事前…"
+      },
+      {
+        "filename": "2026-08-23-claude-code-exit-not-always-available.md",
+        "title": "何が起きたか",
+        "content": "status: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, hooks]\ndate: 2026-08-23\n\n## 何が起きたか\n「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available in this environment」と表示され、使えなかった。\n\n## わかったこと・今の対応\n`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案内として`/exit`だけを教えるのは不十分で、使えるか事前に確認するか、代替手段(このプロジェクトでは独自に作った`/kb-sync`コマンド)も併せて用意しておくべき。\n\n## 詳しい経緯\nこのユーザーはClaude Codeを、通常のターミナルCLIではなく何らかのラッパーアプリ/独自環境(ツール名に`mcp__ccd_*`のようなプレフィックスが付くカスタムMCPサーバー群が存在する環境)経由で使っている。そのため、標準的なCLIでは動くはずの`/exit`スラッシュコマンドが、この環境では未実装扱いになっていた。一方で、`~/.claude/commands/`に置いた独自のカスタムスラッシュコマンド(`/kb-sync`)は、この環境でも直接タイプするだけで(新しいセッションを待たずに)問題なく認識・実行できた。つまり「ビルトインのスラッシュコマンドが環境によって使えないことがある」一方で「ユーザー定義のカスタムコマンドは同じセッション内でも比較的すぐに使えるようになる」という非対称性がある。\n\n## まだ確認できていないこと\n- どの具体的な環境(VS Code拡張機能・デスクトップアプリ・Web版・サードパーティのラッパーなど)で`/exit`が使えない/使えるのかの一覧は未確認\n- カスタムコマンドが「同じセッション内で作成後すぐ使える」のが常に保証された挙動か、たまたま今回は動いただけなのかは未確認\n",
+        "tags": [
+          "claude-code",
+          "hooks"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available…",
+        "solution_summary": "`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案…"
       }
     ],
     "incidents": [
