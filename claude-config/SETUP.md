@@ -8,7 +8,7 @@ Claude Codeの設定(hooks)とSkillのコピーが、変更のたびに自動で
 
 1. このリポジトリを `%USERPROFILE%\knowledge-base` に clone する
    ```bash
-   git clone <このリポジトリのURL> ~/knowledge-base
+   git clone https://github.com/Hakushukassai/ai-knowledge-base.git ~/knowledge-base
    ```
 
 2. `claude-config/settings.json` の中身を `%USERPROFILE%\.claude\settings.json` に反映する
@@ -35,8 +35,8 @@ Claude Codeの設定(hooks)とSkillのコピーが、変更のたびに自動で
 ## 動作の仕組み(参考)
 
 - `knowledge-base`の中身(rules/candidates/incidents等)を変更すると、
-  `/clear`するたびに自動でこのリポジトリにコミットされます
-  (Gitでの履歴管理。プッシュは自動ではしないので、他のパソコンに
-  反映したい時は `git push` を手動で行ってください)
+  `/clear`するたびに自動でコミット→GitHubへのpushまで行われます
 - 別のパソコン側では、作業を始める前に `git pull` すれば最新の
-  知識ベース・設定・Skillを取り込めます
+  知識ベース・設定・Skillを取り込めます(このパソコン側の`/clear`が
+  自動で`git pull`もしてくれますが、他のパソコンから戻ってきた直後は
+  念のため手動で`git pull`しておくと確実です)
