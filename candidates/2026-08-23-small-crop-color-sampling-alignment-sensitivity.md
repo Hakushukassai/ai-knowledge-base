@@ -3,6 +3,7 @@
 status: candidate
 observed_count: 1
 observed_in: [pokemon-champions-BattleAI]
+tags: [画像処理, 座標校正]
 date: 2026-08-23
 
 ## 何が起きたか

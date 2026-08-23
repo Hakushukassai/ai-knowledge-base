@@ -3,6 +3,7 @@
 status: candidate
 observed_count: 1
 observed_in: [ai-dev-knowledge-system]
+tags: [windows, python, 環境構築]
 date: 2026-08-23
 
 ## 何が起きたか

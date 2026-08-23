@@ -3,6 +3,7 @@
 status: candidate
 observed_count: 1
 observed_in: [DEPTH//]
+tags: [godot, オーディオ, ゲーム開発]
 date: 2026-08-20
 
 ## 何が起きたか
