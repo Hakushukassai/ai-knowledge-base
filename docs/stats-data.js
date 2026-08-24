@@ -1,5 +1,5 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-24T11:26:42Z",
+  "generated_at": "2026-08-24T11:35:49Z",
   "rules": {
     "count": 1,
     "chars": 540
@@ -445,6 +445,14 @@ window.STATS_DATA = {
     {
       "date": "2026-08-24T11:26:42Z",
       "summary": "[候補] ブラウザ操作ツールでの座標クリックは、要素がずれてサイレントに外れることがある / [候補] Claude Codeは自分自身の`~/.claude/settings.json`を書き換えられない ほか17件",
+      "rules_count": 1,
+      "candidates_count": 28,
+      "incidents_count": 1,
+      "total_chars": 33018
+    },
+    {
+      "date": "2026-08-24T11:35:49Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
       "rules_count": 1,
       "candidates_count": 28,
       "incidents_count": 1,
@@ -1242,7 +1250,7 @@ window.STATS_DATA = {
       "name": "godot-audio",
       "description": ">",
       "linked_to_rule": false,
-      "usage_count": 0,
+      "usage_count": 1,
       "effectiveness_summary": {},
       "effectiveness_recent": []
     },

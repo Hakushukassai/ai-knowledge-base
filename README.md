@@ -39,9 +39,11 @@ knowledge-base/
 
 | タイミング | 役割 |
 |---|---|
-| SessionStart | `rules/` の中身と、昇格提案があれば読み込ませる |
+| SessionStart | `git pull` → `claude-config/`(skills・hooks・commands・settings.json)を`~/.claude/`に反映 → `rules/`の中身と、昇格提案があれば読み込ませる |
 | SessionEnd(`/clear`時) | HANDOFF.md生成 → 候補の自動記録(証拠の積み増し含む) → 昇格提案・統合提案の判定 → 参照実績の記録 → dashboard更新 → `claude-config/`の同期 → Gitへの自動コミット |
 | PostToolUse(Skillの利用時) | どのSkillが何回使われたかを記録 |
+
+**別PCとの同期について**: SessionStartのたびに、他のPCで加えられたhooks・commands・settings.jsonの変更が自動で取り込まれる(skillsだけは既存ファイルを上書きしない)。2026-08-24に、この同期がskillsにしか効いておらず、hooks/commands/settings.jsonの改善が別PCに伝わっていなかった不具合を修正した。
 
 ## 知識の昇格ルール(質のコントロール)
 
