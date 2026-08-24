@@ -86,3 +86,8 @@ source_url: <取得元URL>
 | `claude-vision` | 見送り | プラグイン形式、Webカメラ権限、pip install必要 |
 | `godot-ai-builder` | 見送り | SKILL.md16件+MCPサーバー、フレームワーク規模 |
 | `gamedev-claude-plugins` | 見送り | プラグインマーケットプレイス形式 |
+| `godot-audio` | 導入・発動確認済み | DEPTH//の音声バス切り替えバグに関連。フロントマター完備 |
+| `godot-physics` | 導入・発動確認済み | RESODIVE/DEPTH//の衝突判定に関連。フロントマター完備 |
+| `godot-signals-groups` | 導入・発動確認済み | フロントマター完備 |
+| `godot-3d-essentials` | 導入・発動確認済み | godot-optimizationが3D前提と判明したため導入。フロントマター完備 |
+| `game-ai` | 導入・発動確認済み | `skills/disciplines/`配下のエンジン非依存Skill。参照ファイル2件、フロントマター完備 |
