@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-23T04:40:07Z",
+  "generated_at": "2026-08-24T05:17:40Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 9,
-    "chars": 10807
+    "count": 11,
+    "chars": 12802
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@
     "count": 0,
     "chars": 0
   },
-  "total_chars": 11846,
+  "total_chars": 13841,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -201,6 +201,22 @@
       "candidates_count": 9,
       "incidents_count": 1,
       "total_chars": 11846
+    },
+    {
+      "date": "2026-08-24T05:13:22Z",
+      "summary": "記録を開始しました(既存 11件)",
+      "rules_count": 1,
+      "candidates_count": 9,
+      "incidents_count": 1,
+      "total_chars": 11846
+    },
+    {
+      "date": "2026-08-24T05:17:40Z",
+      "summary": "[候補] Claude Codeは自分自身の`~/.claude/settings.json`を書き換えられない / [候補] `gh auth login`はClaude Code経由ではなく独立したターミナルで実行する必要がある",
+      "rules_count": 1,
+      "candidates_count": 11,
+      "incidents_count": 1,
+      "total_chars": 13841
     }
   ],
   "items": {
@@ -226,20 +242,107 @@
     ],
     "candidates": [
       {
-        "filename": "2026-08-23-claude-code-exit-not-always-available.md",
-        "title": "Claude Codeの`/exit`コマンドは環境によっては使えないことがある",
-        "content": "# [候補] Claude Codeの`/exit`コマンドは環境によっては使えないことがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, hooks]\ndate: 2026-08-23\n\n## 何が起きたか\n「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available in this environment」と表示され、使えなかった。\n\n## わかったこと・今の対応\n`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案内として`/exit`だけを教えるのは不十分で、使えるか事前に確認するか、代替手段(このプロジェクトでは独自に作った`/kb-sync`コマンド)も併せて用意しておくべき。\n\n## 詳しい経緯\nこのユーザーはClaude Codeを、通常のターミナルCLIではなく何らかのラッパーアプリ/独自環境(ツール名に`mcp__ccd_*`のようなプレフィックスが付くカスタムMCPサーバー群が存在する環境)経由で使っている。そのため、標準的なCLIでは動くはずの`/exit`スラッシュコマンドが、この環境では未実装扱いになっていた。一方で、`~/.claude/commands/`に置いた独自のカスタムスラッシュコマンド(`/kb-sync`)は、この環境でも直接タイプするだけで(新しいセッションを待たずに)問題なく認識・実行できた。つまり「ビルトインのスラッシュコマンドが環境によって使えないことがある」一方で「ユーザー定義のカスタムコマンドは同じセッション内でも比較的すぐに使えるようになる」という非対称性がある。\n\n## まだ確認できていないこと\n- どの具体的な環境(VS Code拡張機能・デスクトップアプリ・Web版・サードパーティのラッパーなど)で`/exit`が使えない/使えるのかの一覧は未確認\n- カスタムコマンドが「同じセッション内で作成後すぐ使える」のが常に保証された挙動か、たまたま今回は動いただけなのかは未確認\n",
+        "filename": "2026-08-24-gh-auth-login-needs-real-terminal.md",
+        "title": "`gh auth login`はClaude Code経由ではなく独立したターミナルで実行する必要がある",
+        "content": "# [候補] `gh auth login`はClaude Code経由ではなく独立したターミナルで実行する必要がある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, git, github, 環境構築]\ndate: 2026-08-24\n\n## 何が起きたか\n`gh auth login`をClaude Codeのチャット上(コードブロックのRunボタン経由)で実行してもらったところ、ユーザーは完了したつもりでも`gh auth status`は未ログインのままだった。\n\n## わかったこと・今の対応\nMacの通常のターミナル(Terminal.appなど)で直接`gh auth login`を実行し直してもらったところ、ブラウザでの認可まできちんと完了し、`gh auth status`で認証済みと確認できた。ブラウザを開いて対話的にコードを入力する必要があるコマンドは、Claude Code経由の実行だと完了しないことがある、という前提で案内した方がよい。\n\n## 詳しい経緯\n1回目は「終わった」という申告を受けて`gh auth status`を確認したが`You are not logged into any GitHub hosts`のままだった。`~/.config/gh`ディレクトリ自体が存在しておらず、認証情報が一切保存されていなかった。原因は明言できていないが、Claude Code経由の実行環境(Bashツール/Runボタン)では、`gh auth login`が要求するブラウザでの対話的な認可フローが正しく完了しなかったと推測される。ユーザーに「Claude Codeのこのチャット上ではなく、Macの通常のターミナルで直接実行してほしい」と案内し直したところ、2回目で`gh auth status`が正常に認証済み(keyring経由)と表示された。\n\n## まだ確認できていないこと\n- 具体的にどの段階(ブラウザが開かない/コード入力ができない/トークン保存ができない等)で失敗していたのかは未確認。\n- SSH認証方式や`--web`オプションなし等、他の`gh auth login`の選択肢でも同様の問題が起きるかは未確認。\n",
         "tags": [
           "claude-code",
-          "hooks"
+          "git",
+          "github",
+          "環境構築"
         ],
         "projects": [
           "knowledge-base"
         ],
         "days_old": 0,
         "stale": false,
-        "problem_summary": "「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available…",
-        "solution_summary": "`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案…"
+        "problem_summary": "`gh auth login`をClaude Codeのチャット上(コードブロックのRunボタン経由)で実行してもらったところ、ユーザーは完了したつもりでも`gh auth sta…",
+        "solution_summary": "Macの通常のターミナル(Terminal.appなど)で直接`gh auth login`を実行し直してもらったところ、ブラウザでの認可まできちんと完了し、`gh auth st…"
+      },
+      {
+        "filename": "2026-08-24-claude-code-cannot-self-edit-settings-json.md",
+        "title": "Claude Codeは自分自身の`~/.claude/settings.json`を書き換えられない",
+        "content": "# [候補] Claude Codeは自分自身の`~/.claude/settings.json`を書き換えられない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, hooks, 環境構築]\ndate: 2026-08-24\n\n## 何が起きたか\nClaude Codeに`~/.claude/settings.json`(hooksの設定ファイル)を新規作成・編集させようとすると、BashツールでもWriteツールでも、auto-modeのクラシファイアに拒否された。\n\n## わかったこと・今の対応\nツールを変えても同じ理由で拒否されるため、回避策ではなく仕様と考えられる。内容をファイルに書き出し、ユーザー本人に自分のターミナルで`cp`させることで設置できた。他の`~/.claude/hooks/`配下のスクリプトファイルや`~/.claude/commands/`は同じ手順で問題なく書き込めたので、`settings.json`(hooks定義そのもの)だけが特別扱いされている可能性が高い。\n\n## 詳しい経緯\n`claude-config/settings.json`の内容を`~/.claude/settings.json`にコピーする際に発生。1回目はBashツールの`cp`コマンドで拒否(`Permission for this action was denied by the Claude Code auto mode classifier`)。2回目はWriteツールで直接書き込みを試したが同様に拒否。3回目にコマンドの中身をスクラッチパッド上のファイルに書き出し、それをユーザー自身のターミナルで`~/.claude/settings.json`にコピーしてもらう形で解決した。\n\n## まだ確認できていないこと\n- ユーザー側の権限設定(permissions allow list等)で、この制限を緩められるかどうかは未確認。\n- `~/.claude/settings.json`以外に同様にブロックされるファイル(例えばプロジェクト直下の`.claude/settings.json`)があるかは未確認。\n",
+        "tags": [
+          "claude-code",
+          "hooks",
+          "環境構築"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "Claude Codeに`~/.claude/settings.json`(hooksの設定ファイル)を新規作成・編集させようとすると、BashツールでもWriteツールでも、au…",
+        "solution_summary": "ツールを変えても同じ理由で拒否されるため、回避策ではなく仕様と考えられる。内容をファイルに書き出し、ユーザー本人に自分のターミナルで`cp`させることで設置できた。他の`~/.cl…"
+      },
+      {
+        "filename": "2026-08-example-candidate.md",
+        "title": "AudioStreamPlayerのバス切り替えタイミング",
+        "content": "# [候補] AudioStreamPlayerのバス切り替えタイミング\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [DEPTH//]\ntags: [godot, オーディオ, ゲーム開発]\ndate: 2026-08-20\n\n## 何が起きたか\nシーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。\n\n## わかったこと・今の対応\nシーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。\n\n## まだ確認できていないこと\n- Polypulseの時にあった「OGG/PhaseLoopMusicの音切れ」と同一原因か未確認\n- 他のプロジェクトでも再現するか未確認\n\n## 昇格の条件\n別のプロジェクトでも同じ現象が確認されたら rules/ に昇格し、\nincidents/ に詳細ログを残す。\n",
+        "tags": [
+          "godot",
+          "オーディオ",
+          "ゲーム開発"
+        ],
+        "projects": [
+          "DEPTH//"
+        ],
+        "days_old": 4,
+        "stale": false,
+        "problem_summary": "シーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。",
+        "solution_summary": "シーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。"
+      },
+      {
+        "filename": "2026-08-23-windows-python3-stub-broken.md",
+        "title": "Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける",
+        "content": "# [候補] Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [ai-dev-knowledge-system]\ntags: [windows, python, 環境構築]\ndate: 2026-08-23\n\n## 何が起きたか\nWindows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。\n\n## わかったこと・今の対応\n本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。\n\n## 詳しい経緯\nこのマシン(Windows + Git Bash環境)で `python3` を実行すると、\n実際のPythonではなく `C:\\Users\\owner\\AppData\\Local\\Microsoft\\WindowsApps\\python3.exe`\n(Microsoft Store の AppInstallerPythonRedirector.exe へのシンボリックリンク)が\n呼ばれてしまい、正常に動作しない(`print()`すら実行できず、意味不明な\n出力とexit code 49で終了する)。\n\n一方 `python`(3ではなく)コマンドも同じWindowsAppsのstubを指しているが、\n`py`ランチャーは正常に動作する。実体のPythonは\n`C:\\Users\\owner\\AppData\\Local\\Programs\\Python\\Python312\\python.exe` にあり、\nこれを直接PATHに通す(またはシムスクリプトを作る)ことで回避できる。\n\nシェルスクリプト(bashやhookコマンド)内で `python3` をハードコードしていると、\nこのマシン・この手のWindows環境では静かに失敗する、または不可解な出力になる\n点に注意。\n\n## まだ確認できていないこと\n- 他のWindowsマシン/ユーザー環境でも同じスタブ配置になっているか未確認\n  (Microsoft Store版Pythonのインストール有無に依存する可能性)\n- `python3` を直接使わず `py -3` や絶対パス指定に統一するのが\n  一般的な回避策として十分か未検証\n\n## 昇格の条件\n別のプロジェクト、または別セッションでも同じ現象(`python3`がスタブに\n化けて動かない)が確認されたら rules/ に昇格する。\n",
+        "tags": [
+          "windows",
+          "python",
+          "環境構築"
+        ],
+        "projects": [
+          "ai-dev-knowledge-system"
+        ],
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "Windows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。",
+        "solution_summary": "本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。"
+      },
+      {
+        "filename": "2026-08-23-torch-dll-winerror1114-background-thread.md",
+        "title": "Windows+PyTorchで「重い処理をバックグラウンドスレッドで初めて呼ぶ」設計はDLL初期化エラー(WinErr",
+        "content": "# [候補] Windows+PyTorchで「重い処理をバックグラウンドスレッドで初めて呼ぶ」設計はDLL初期化エラー(WinError 1114)の温床になりうる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [windows, pytorch, threading, dll]\ndate: 2026-08-23\n\n## 何が起きたか\nWindows上でtorch(easyocrが内部で使用)を初めてimportする処理を、メインスレッドではなく新しく作ったバックグラウンドスレッド(監視ループ用のスレッド)の中で行う設計にしたところ、`OSError: [WinError 1114] DLL初期化ルーチンの実行に失敗しました(c10.dll)`が発生した。\n\n## わかったこと・今の対応\n原因は完全には確定できなかった(意図的な再現実験ではエラー自体を再現できなかった)。ただし「torchのようなネイティブDLLを持つライブラリの初回importを、メインスレッド以外の、生成されたばかりのスレッドで行う」設計自体がWindowsで不安定さの原因になりうるという一般的な事例と矛盾しない状況だった。対応として、重い処理を呼ぶ前に、アプリ起動時・ワーカースレッド起動前のメインスレッドで対象ライブラリを同期的に一度だけ初期化する「warmup」関数を用意し、必ずそこで初回importを済ませてから他のスレッドを起動するようにした。原因を確定できなくても、初期化コストを1回に集約できる副次効果もあり実施する価値がある。\n\n## 詳しい経緯\nプロジェクトでは、カメラ映像を継続的にポーリングする常時監視ループを`threading.Thread`で新規スレッドとして起動し、そのスレッドの中で初めて重い認識処理(内部で`import easyocr`→`import torch`)を呼び出す設計にしていた。それまでの実行経路(Flaskのリクエストスレッド等)では既にeasyocr/torchの初期化を経験済みだったが、この監視スレッドの経路だけは新規に追加されたものであり、かつ実機性能試験でも(監視対象の画面が一度も検知条件を満たさなかったため)この重い処理の経路自体を一度も実際に通していなかった。\n\nその状態でユーザーが実際にこの経路を初めて通したところ、`c10.dll`のDLL初期化失敗(`WinError 1114`)が発生した。以前、同種のエラーが「複数のPythonプロセスの一時的な競合」として説明されたことがあったが、その時点ではこの「新規バックグラウンドスレッドでの初回import」という状況自体が存在しなかったため、同じ説明が今回にも当てはまるかは不明だった。\n\n原因調査として、(a)単純にバックグラウンドスレッドで`import torch`するだけの再現スクリプト、(b)`cv2.VideoCapture(CAP_DSHOW)`でカメラを開いて数フレーム読んだ後、同じスレッドで`easyocr.Reader()`を初期化する、より実際の構成に近い再現スクリプト、の両方を試したが、いずれもエラーを再現できなかった。Windowsのローダーロック絡みの問題は本質的にタイミング依存で、他プロセスの状態・ドライバ・アンチウイルスのスキャン等の外的要因に敏感なことが多いため、「再現できなかった=原因ではない」とは言い切れない。\n\nそのため、原因を確定させることよりも、「初回importの発生スレッドを常にメインスレッドに固定する」という、副作用がなく実利のある対策を先に実施する判断をした。具体的には、ライブラリのシングルトン初期化関数(`get_reader()`相当)を、ワーカースレッドを起動する処理(`start()`相当)の中で、スレッド生成の直前にメインスレッド側で同期的に呼び出す形にした。これにより2回目以降のimportはPythonの`sys.modules`キャッシュを参照するだけになり、ワーカースレッド側でのネイティブDLLロードが原理的に発生しなくなる。\n\n## まだ確認できていないこと\n- この対策で実際にWinError 1114が再発しなくなったかどうかは、エラーが実際に発生していた本番同等の状況(このプロジェクトでは実機カメラでゲーム画面を継続的に映した状態)でまだ検証できていない\n- 「バックグラウンドスレッドでの初回import」が本当に必要十分な発生条件なのか、他の要因(同時に起動していた別プロセスの有無等)が絡んでいたのかは切り分けられていない\n- 他のネイティブDLL依存ライブラリ(torch以外の重い機械学習ライブラリ等)でも同様の現象が起きるかは未検証\n\n## 昇格の条件\n別のプロジェクトでも「Windows環境でtorch等のネイティブDLL依存ライブラリを、新規スレッドで初めてimportした際にDLL初期化エラーが起きた」事例が確認されたら rules/ に昇格する。\n",
+        "tags": [
+          "windows",
+          "pytorch",
+          "threading",
+          "dll"
+        ],
+        "projects": [
+          "pokemon-champions-BattleAI"
+        ],
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "Windows上でtorch(easyocrが内部で使用)を初めてimportする処理を、メインスレッドではなく新しく作ったバックグラウンドスレッド(監視ループ用のスレッド)の中で…",
+        "solution_summary": "原因は完全には確定できなかった(意図的な再現実験ではエラー自体を再現できなかった)。ただし「torchのようなネイティブDLLを持つライブラリの初回importを、メインスレッド以…"
+      },
+      {
+        "filename": "2026-08-23-small-crop-color-sampling-alignment-sensitivity.md",
+        "title": "小さいクロップ窓での代表色抽出は数px のズレで背景色に汚染される",
+        "content": "# [候補] 小さいクロップ窓での代表色抽出は数px のズレで背景色に汚染される\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [画像処理, 座標校正]\ndate: 2026-08-23\n\n## 何が起きたか\n小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。\n\n## わかったこと・今の対応\n切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。\n\n## 詳しい経緯\nゲーム画面のUIバッジ(性別アイコン等、40x30px程度の小さい円)から\n「中間輝度の画素だけを残して中央値を取る」方式で代表色を抽出する処理を、\n別レイアウトの画面向けに新しい座標で再校正していたところ、目分量で\n決めた座標(本来のアイコン位置から左に約12px、上下にも数px分の余分な\nマージンを含む窓)では、既知で女性のはずのアイコンが軒並み「男性」と\n誤判定される現象が起きた。\n\n原因を調べたところ、窓が実際のアイコン位置からズレていたことで、\n背景色(カードの紫グラデーション)の割合がアイコン自体の画素数を\n上回り、中央値の計算結果が背景色にほぼ支配されていた(背景の紫が\nたまたま「男性=青系」の参照色に近い色味だったため、誤判定として\n現れた)。窓を実測(10px刻みの目盛りを焼き込んだ拡大画像で目視確認)\nした正確な範囲に絞り込んだところ解消した。\n\n大きい領域(100px角以上等)であれば数px のズレは全体に対する割合が\n小さく吸収されるが、40x30px程度の小さいバッジ/アイコンを対象にした\n色抽出・テンプレートマッチングでは、同じ数px のズレが致命的な誤判定を\n生む。小さい対象への座標校正は「だいたい合っている」では不十分で、\n実測ベースでピクセル単位まで詰める必要がある。\n\n## まだ確認できていないこと\n- 「小さい対象では座標ズレの影響が非線形に大きくなる」という一般化が、\n  色抽出以外の手法(テンプレートマッチング等)にも同程度に当てはまるか\n  は定量的には未検証(テンプレートマッチングは窓が多少広くても内部で\n  スケール探索するため、色抽出ほど脆弱ではない可能性がある)\n- 対象サイズと許容ズレ量の関係(例: 対象の何%以内のズレなら安全か)を\n  定量化した基準は未確立\n\n## 昇格の条件\n別のプロジェクトでも「小さいUI要素の色/特徴抽出が数pxの座標ズレで\n破綻する」ケースが確認されたら rules/ に昇格する。\n",
+        "tags": [
+          "画像処理",
+          "座標校正"
+        ],
+        "projects": [
+          "pokemon-champions-BattleAI"
+        ],
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。",
+        "solution_summary": "切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。"
       },
       {
         "filename": "2026-08-23-sessionend-timeout-budget.md",
@@ -252,7 +355,7 @@
         "projects": [
           "knowledge-base"
         ],
-        "days_old": 0,
+        "days_old": 1,
         "stale": false,
         "problem_summary": "SessionEndフックに複数のhook(会話内容をAIに判断させて文章を書く「prompt」タイプを含む)を並べていたが、どのhookにも`timeout`を指定していなかった…",
         "solution_summary": "SessionEndフックだけは特別に、`timeout`を指定しない場合「複数のhook全部合わせてわずか1.5秒」しか実行時間が無い(他のイベントでは`command`が600…"
@@ -268,28 +371,26 @@
         "projects": [
           "knowledge-base"
         ],
-        "days_old": 0,
+        "days_old": 1,
         "stale": false,
         "problem_summary": "Claude CodeのSessionEndフックに`matcher: \"clear\"`とだけ書いていたら、ユーザーが`/clear`と入力した時にしか動かなかった。ターミナルを閉…",
         "solution_summary": "`matcher`に`\"clear|prompt_input_exit\"`のようにパイプ区切りで複数の終了理由を書けば、両方のタイミングで発動するようになる。`matcher`は配…"
       },
       {
-        "filename": "2026-08-23-torch-dll-winerror1114-background-thread.md",
-        "title": "Windows+PyTorchで「重い処理をバックグラウンドスレッドで初めて呼ぶ」設計はDLL初期化エラー(WinErr",
-        "content": "# [候補] Windows+PyTorchで「重い処理をバックグラウンドスレッドで初めて呼ぶ」設計はDLL初期化エラー(WinError 1114)の温床になりうる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [windows, pytorch, threading, dll]\ndate: 2026-08-23\n\n## 何が起きたか\nWindows上でtorch(easyocrが内部で使用)を初めてimportする処理を、メインスレッドではなく新しく作ったバックグラウンドスレッド(監視ループ用のスレッド)の中で行う設計にしたところ、`OSError: [WinError 1114] DLL初期化ルーチンの実行に失敗しました(c10.dll)`が発生した。\n\n## わかったこと・今の対応\n原因は完全には確定できなかった(意図的な再現実験ではエラー自体を再現できなかった)。ただし「torchのようなネイティブDLLを持つライブラリの初回importを、メインスレッド以外の、生成されたばかりのスレッドで行う」設計自体がWindowsで不安定さの原因になりうるという一般的な事例と矛盾しない状況だった。対応として、重い処理を呼ぶ前に、アプリ起動時・ワーカースレッド起動前のメインスレッドで対象ライブラリを同期的に一度だけ初期化する「warmup」関数を用意し、必ずそこで初回importを済ませてから他のスレッドを起動するようにした。原因を確定できなくても、初期化コストを1回に集約できる副次効果もあり実施する価値がある。\n\n## 詳しい経緯\nプロジェクトでは、カメラ映像を継続的にポーリングする常時監視ループを`threading.Thread`で新規スレッドとして起動し、そのスレッドの中で初めて重い認識処理(内部で`import easyocr`→`import torch`)を呼び出す設計にしていた。それまでの実行経路(Flaskのリクエストスレッド等)では既にeasyocr/torchの初期化を経験済みだったが、この監視スレッドの経路だけは新規に追加されたものであり、かつ実機性能試験でも(監視対象の画面が一度も検知条件を満たさなかったため)この重い処理の経路自体を一度も実際に通していなかった。\n\nその状態でユーザーが実際にこの経路を初めて通したところ、`c10.dll`のDLL初期化失敗(`WinError 1114`)が発生した。以前、同種のエラーが「複数のPythonプロセスの一時的な競合」として説明されたことがあったが、その時点ではこの「新規バックグラウンドスレッドでの初回import」という状況自体が存在しなかったため、同じ説明が今回にも当てはまるかは不明だった。\n\n原因調査として、(a)単純にバックグラウンドスレッドで`import torch`するだけの再現スクリプト、(b)`cv2.VideoCapture(CAP_DSHOW)`でカメラを開いて数フレーム読んだ後、同じスレッドで`easyocr.Reader()`を初期化する、より実際の構成に近い再現スクリプト、の両方を試したが、いずれもエラーを再現できなかった。Windowsのローダーロック絡みの問題は本質的にタイミング依存で、他プロセスの状態・ドライバ・アンチウイルスのスキャン等の外的要因に敏感なことが多いため、「再現できなかった=原因ではない」とは言い切れない。\n\nそのため、原因を確定させることよりも、「初回importの発生スレッドを常にメインスレッドに固定する」という、副作用がなく実利のある対策を先に実施する判断をした。具体的には、ライブラリのシングルトン初期化関数(`get_reader()`相当)を、ワーカースレッドを起動する処理(`start()`相当)の中で、スレッド生成の直前にメインスレッド側で同期的に呼び出す形にした。これにより2回目以降のimportはPythonの`sys.modules`キャッシュを参照するだけになり、ワーカースレッド側でのネイティブDLLロードが原理的に発生しなくなる。\n\n## まだ確認できていないこと\n- この対策で実際にWinError 1114が再発しなくなったかどうかは、エラーが実際に発生していた本番同等の状況(このプロジェクトでは実機カメラでゲーム画面を継続的に映した状態)でまだ検証できていない\n- 「バックグラウンドスレッドでの初回import」が本当に必要十分な発生条件なのか、他の要因(同時に起動していた別プロセスの有無等)が絡んでいたのかは切り分けられていない\n- 他のネイティブDLL依存ライブラリ(torch以外の重い機械学習ライブラリ等)でも同様の現象が起きるかは未検証\n\n## 昇格の条件\n別のプロジェクトでも「Windows環境でtorch等のネイティブDLL依存ライブラリを、新規スレッドで初めてimportした際にDLL初期化エラーが起きた」事例が確認されたら rules/ に昇格する。\n",
+        "filename": "2026-08-23-easyocr-small-kana-confusion-not-fixable-by-preprocessing.md",
+        "title": "EasyOCRの小さい仮名(ゃ/や等)混同は前処理では直らない",
+        "content": "# [候補] EasyOCRの小さい仮名(ゃ/や等)混同は前処理では直らない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [OCR, 画像処理]\ndate: 2026-08-23\n\n## 何が起きたか\nEasyOCRで、小さい「ゃ」「や」のような拗音の仮名を、大きい仮名と読み間違える。\n\n## わかったこと・今の対応\n画質を上げても二値化(白黒に変換する処理)を変えても直らなかった。前処理では直せない、モデル自体の限界の可能性が高い。他のOCRエンジンを試すか、辞書で後から補正する方法はまだ試せていない。\n\n## 詳しい経緯\nEasyOCR(`[\"ja\",\"en\"]`)でゲーム画面のニックネームテキスト(通常フォント、\n装飾なし)を読ませたところ、「かあちゃん」が「かあちやん」に、\n「マスカーニャ」が「マスカーニヤ」になるなど、拗音を表す小さい仮名\n(ゃ/や、ャ/ヤ)を大きい仮名と混同する誤読が発生した。\n\n二値化+複数閾値探索(`ocr_best_of_thresholds`)、アップスケール2〜5倍を\n一通り試したが、いずれも改善しなかった(誤読結果は同じ「や/ヤ」の\nまま、信頼度だけが0.99台まで上がった=モデルは高い自信を持って\n間違えている)。このことから、この種の誤読は画質・二値化・解像度の\n問題ではなく、EasyOCRの認識モデル自体が小さい仮名と大きい仮名の\nサイズ差(字形はほぼ同じで大きさだけが違う)を安定して区別できない\nという、モデルレベルの限界である可能性が高いと判断した。\n\n前処理をいくら工夫しても直らないタイプの誤読がある、という切り分けの\n基準として: 複数の閾値・複数の拡大率を試しても常に「同じ」誤読結果に\n高信頼度で収束する場合、それは画質側の問題ではなくモデルの限界を\n疑うべき。\n\n## まだ確認できていないこと\n- PaddleOCR/Tesseract等、別のOCRエンジンであれば小さい仮名を正しく\n  区別できるかは未検証(このプロジェクトではEasyOCR以外を実機比較して\n  いない)\n- 小さい仮名が含まれる単語をあらかじめ辞書(既知のニックネーム/技名\n  リスト等)と照合して補正する、という後処理的な回避策の有効性は\n  未検証\n\n## 昇格の条件\n別のプロジェクトでもEasyOCRの小さい仮名混同が確認され、かつ前処理では\n直らないことが再確認されたら rules/ に昇格する。\n",
         "tags": [
-          "windows",
-          "pytorch",
-          "threading",
-          "dll"
+          "OCR",
+          "画像処理"
         ],
         "projects": [
           "pokemon-champions-BattleAI"
         ],
-        "days_old": 0,
+        "days_old": 1,
         "stale": false,
-        "problem_summary": "Windows上でtorch(easyocrが内部で使用)を初めてimportする処理を、メインスレッドではなく新しく作ったバックグラウンドスレッド(監視ループ用のスレッド)の中で…",
-        "solution_summary": "原因は完全には確定できなかった(意図的な再現実験ではエラー自体を再現できなかった)。ただし「torchのようなネイティブDLLを持つライブラリの初回importを、メインスレッド以…"
+        "problem_summary": "EasyOCRで、小さい「ゃ」「や」のような拗音の仮名を、大きい仮名と読み間違える。",
+        "solution_summary": "画質を上げても二値化(白黒に変換する処理)を変えても直らなかった。前処理では直せない、モデル自体の限界の可能性が高い。他のOCRエンジンを試すか、辞書で後から補正する方法はまだ試せ…"
       },
       {
         "filename": "2026-08-23-cv2-tm-ccorr-normed-bright-template-bias.md",
@@ -303,76 +404,26 @@
         "projects": [
           "pokemon-champions-BattleAI"
         ],
-        "days_old": 0,
+        "days_old": 1,
         "stale": false,
         "problem_summary": "OpenCVの`TM_CCORR_NORMED`という比較方法を使うと、明るい画像は内容と無関係な場所にも高い一致スコアを出してしまう。",
         "solution_summary": "別の比較方法(`TM_CCOEFF_NORMED`)に切り替えると、既存の検証済みケースの精度が落ちてしまったため、今回は不採用。切り替えを検討する際は、既知の正解データで必ず事前…"
       },
       {
-        "filename": "2026-08-23-easyocr-small-kana-confusion-not-fixable-by-preprocessing.md",
-        "title": "EasyOCRの小さい仮名(ゃ/や等)混同は前処理では直らない",
-        "content": "# [候補] EasyOCRの小さい仮名(ゃ/や等)混同は前処理では直らない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [OCR, 画像処理]\ndate: 2026-08-23\n\n## 何が起きたか\nEasyOCRで、小さい「ゃ」「や」のような拗音の仮名を、大きい仮名と読み間違える。\n\n## わかったこと・今の対応\n画質を上げても二値化(白黒に変換する処理)を変えても直らなかった。前処理では直せない、モデル自体の限界の可能性が高い。他のOCRエンジンを試すか、辞書で後から補正する方法はまだ試せていない。\n\n## 詳しい経緯\nEasyOCR(`[\"ja\",\"en\"]`)でゲーム画面のニックネームテキスト(通常フォント、\n装飾なし)を読ませたところ、「かあちゃん」が「かあちやん」に、\n「マスカーニャ」が「マスカーニヤ」になるなど、拗音を表す小さい仮名\n(ゃ/や、ャ/ヤ)を大きい仮名と混同する誤読が発生した。\n\n二値化+複数閾値探索(`ocr_best_of_thresholds`)、アップスケール2〜5倍を\n一通り試したが、いずれも改善しなかった(誤読結果は同じ「や/ヤ」の\nまま、信頼度だけが0.99台まで上がった=モデルは高い自信を持って\n間違えている)。このことから、この種の誤読は画質・二値化・解像度の\n問題ではなく、EasyOCRの認識モデル自体が小さい仮名と大きい仮名の\nサイズ差(字形はほぼ同じで大きさだけが違う)を安定して区別できない\nという、モデルレベルの限界である可能性が高いと判断した。\n\n前処理をいくら工夫しても直らないタイプの誤読がある、という切り分けの\n基準として: 複数の閾値・複数の拡大率を試しても常に「同じ」誤読結果に\n高信頼度で収束する場合、それは画質側の問題ではなくモデルの限界を\n疑うべき。\n\n## まだ確認できていないこと\n- PaddleOCR/Tesseract等、別のOCRエンジンであれば小さい仮名を正しく\n  区別できるかは未検証(このプロジェクトではEasyOCR以外を実機比較して\n  いない)\n- 小さい仮名が含まれる単語をあらかじめ辞書(既知のニックネーム/技名\n  リスト等)と照合して補正する、という後処理的な回避策の有効性は\n  未検証\n\n## 昇格の条件\n別のプロジェクトでもEasyOCRの小さい仮名混同が確認され、かつ前処理では\n直らないことが再確認されたら rules/ に昇格する。\n",
+        "filename": "2026-08-23-claude-code-exit-not-always-available.md",
+        "title": "Claude Codeの`/exit`コマンドは環境によっては使えないことがある",
+        "content": "# [候補] Claude Codeの`/exit`コマンドは環境によっては使えないことがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, hooks]\ndate: 2026-08-23\n\n## 何が起きたか\n「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available in this environment」と表示され、使えなかった。\n\n## わかったこと・今の対応\n`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案内として`/exit`だけを教えるのは不十分で、使えるか事前に確認するか、代替手段(このプロジェクトでは独自に作った`/kb-sync`コマンド)も併せて用意しておくべき。\n\n## 詳しい経緯\nこのユーザーはClaude Codeを、通常のターミナルCLIではなく何らかのラッパーアプリ/独自環境(ツール名に`mcp__ccd_*`のようなプレフィックスが付くカスタムMCPサーバー群が存在する環境)経由で使っている。そのため、標準的なCLIでは動くはずの`/exit`スラッシュコマンドが、この環境では未実装扱いになっていた。一方で、`~/.claude/commands/`に置いた独自のカスタムスラッシュコマンド(`/kb-sync`)は、この環境でも直接タイプするだけで(新しいセッションを待たずに)問題なく認識・実行できた。つまり「ビルトインのスラッシュコマンドが環境によって使えないことがある」一方で「ユーザー定義のカスタムコマンドは同じセッション内でも比較的すぐに使えるようになる」という非対称性がある。\n\n## まだ確認できていないこと\n- どの具体的な環境(VS Code拡張機能・デスクトップアプリ・Web版・サードパーティのラッパーなど)で`/exit`が使えない/使えるのかの一覧は未確認\n- カスタムコマンドが「同じセッション内で作成後すぐ使える」のが常に保証された挙動か、たまたま今回は動いただけなのかは未確認\n",
         "tags": [
-          "OCR",
-          "画像処理"
+          "claude-code",
+          "hooks"
         ],
         "projects": [
-          "pokemon-champions-BattleAI"
+          "knowledge-base"
         ],
-        "days_old": 0,
+        "days_old": 1,
         "stale": false,
-        "problem_summary": "EasyOCRで、小さい「ゃ」「や」のような拗音の仮名を、大きい仮名と読み間違える。",
-        "solution_summary": "画質を上げても二値化(白黒に変換する処理)を変えても直らなかった。前処理では直せない、モデル自体の限界の可能性が高い。他のOCRエンジンを試すか、辞書で後から補正する方法はまだ試せ…"
-      },
-      {
-        "filename": "2026-08-23-small-crop-color-sampling-alignment-sensitivity.md",
-        "title": "小さいクロップ窓での代表色抽出は数px のズレで背景色に汚染される",
-        "content": "# [候補] 小さいクロップ窓での代表色抽出は数px のズレで背景色に汚染される\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [画像処理, 座標校正]\ndate: 2026-08-23\n\n## 何が起きたか\n小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。\n\n## わかったこと・今の対応\n切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。\n\n## 詳しい経緯\nゲーム画面のUIバッジ(性別アイコン等、40x30px程度の小さい円)から\n「中間輝度の画素だけを残して中央値を取る」方式で代表色を抽出する処理を、\n別レイアウトの画面向けに新しい座標で再校正していたところ、目分量で\n決めた座標(本来のアイコン位置から左に約12px、上下にも数px分の余分な\nマージンを含む窓)では、既知で女性のはずのアイコンが軒並み「男性」と\n誤判定される現象が起きた。\n\n原因を調べたところ、窓が実際のアイコン位置からズレていたことで、\n背景色(カードの紫グラデーション)の割合がアイコン自体の画素数を\n上回り、中央値の計算結果が背景色にほぼ支配されていた(背景の紫が\nたまたま「男性=青系」の参照色に近い色味だったため、誤判定として\n現れた)。窓を実測(10px刻みの目盛りを焼き込んだ拡大画像で目視確認)\nした正確な範囲に絞り込んだところ解消した。\n\n大きい領域(100px角以上等)であれば数px のズレは全体に対する割合が\n小さく吸収されるが、40x30px程度の小さいバッジ/アイコンを対象にした\n色抽出・テンプレートマッチングでは、同じ数px のズレが致命的な誤判定を\n生む。小さい対象への座標校正は「だいたい合っている」では不十分で、\n実測ベースでピクセル単位まで詰める必要がある。\n\n## まだ確認できていないこと\n- 「小さい対象では座標ズレの影響が非線形に大きくなる」という一般化が、\n  色抽出以外の手法(テンプレートマッチング等)にも同程度に当てはまるか\n  は定量的には未検証(テンプレートマッチングは窓が多少広くても内部で\n  スケール探索するため、色抽出ほど脆弱ではない可能性がある)\n- 対象サイズと許容ズレ量の関係(例: 対象の何%以内のズレなら安全か)を\n  定量化した基準は未確立\n\n## 昇格の条件\n別のプロジェクトでも「小さいUI要素の色/特徴抽出が数pxの座標ズレで\n破綻する」ケースが確認されたら rules/ に昇格する。\n",
-        "tags": [
-          "画像処理",
-          "座標校正"
-        ],
-        "projects": [
-          "pokemon-champions-BattleAI"
-        ],
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。",
-        "solution_summary": "切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。"
-      },
-      {
-        "filename": "2026-08-23-windows-python3-stub-broken.md",
-        "title": "Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける",
-        "content": "# [候補] Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [ai-dev-knowledge-system]\ntags: [windows, python, 環境構築]\ndate: 2026-08-23\n\n## 何が起きたか\nWindows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。\n\n## わかったこと・今の対応\n本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。\n\n## 詳しい経緯\nこのマシン(Windows + Git Bash環境)で `python3` を実行すると、\n実際のPythonではなく `C:\\Users\\owner\\AppData\\Local\\Microsoft\\WindowsApps\\python3.exe`\n(Microsoft Store の AppInstallerPythonRedirector.exe へのシンボリックリンク)が\n呼ばれてしまい、正常に動作しない(`print()`すら実行できず、意味不明な\n出力とexit code 49で終了する)。\n\n一方 `python`(3ではなく)コマンドも同じWindowsAppsのstubを指しているが、\n`py`ランチャーは正常に動作する。実体のPythonは\n`C:\\Users\\owner\\AppData\\Local\\Programs\\Python\\Python312\\python.exe` にあり、\nこれを直接PATHに通す(またはシムスクリプトを作る)ことで回避できる。\n\nシェルスクリプト(bashやhookコマンド)内で `python3` をハードコードしていると、\nこのマシン・この手のWindows環境では静かに失敗する、または不可解な出力になる\n点に注意。\n\n## まだ確認できていないこと\n- 他のWindowsマシン/ユーザー環境でも同じスタブ配置になっているか未確認\n  (Microsoft Store版Pythonのインストール有無に依存する可能性)\n- `python3` を直接使わず `py -3` や絶対パス指定に統一するのが\n  一般的な回避策として十分か未検証\n\n## 昇格の条件\n別のプロジェクト、または別セッションでも同じ現象(`python3`がスタブに\n化けて動かない)が確認されたら rules/ に昇格する。\n",
-        "tags": [
-          "windows",
-          "python",
-          "環境構築"
-        ],
-        "projects": [
-          "ai-dev-knowledge-system"
-        ],
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "Windows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。",
-        "solution_summary": "本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。"
-      },
-      {
-        "filename": "2026-08-example-candidate.md",
-        "title": "AudioStreamPlayerのバス切り替えタイミング",
-        "content": "# [候補] AudioStreamPlayerのバス切り替えタイミング\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [DEPTH//]\ntags: [godot, オーディオ, ゲーム開発]\ndate: 2026-08-20\n\n## 何が起きたか\nシーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。\n\n## わかったこと・今の対応\nシーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。\n\n## まだ確認できていないこと\n- Polypulseの時にあった「OGG/PhaseLoopMusicの音切れ」と同一原因か未確認\n- 他のプロジェクトでも再現するか未確認\n\n## 昇格の条件\n別のプロジェクトでも同じ現象が確認されたら rules/ に昇格し、\nincidents/ に詳細ログを残す。\n",
-        "tags": [
-          "godot",
-          "オーディオ",
-          "ゲーム開発"
-        ],
-        "projects": [
-          "DEPTH//"
-        ],
-        "days_old": 3,
-        "stale": false,
-        "problem_summary": "シーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。",
-        "solution_summary": "シーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。"
+        "problem_summary": "「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available…",
+        "solution_summary": "`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案…"
       }
     ],
     "incidents": [
@@ -382,7 +433,7 @@
         "content": "# [事例] DEPTH// 弾丸大量発生時のフレーム低下\n\ndate: 2026-06-15\nproject: DEPTH//\nrelated_rule: rules/godot-optimization.md\n\n## 何が起きたか\n雑魚敵を30体以上同時に倒すと、弾丸ノードが同時に150個近く発生し、\nフレームレートが60→22まで落ちた。\n\n## 原因\n弾丸を個別の RigidBody3D ノードとして生成していたため、\n_physics_process のオーバーヘッドが線形に増加していた。\n\n## 解決\nMultiMeshInstance3D + 独自の当たり判定計算に置き換え、\n150個発生時でも58fps以上を維持できるようになった。\n\n## 汎用化できそうな知見\n「同一見た目のインスタンスが50体を超えうる設計」は\n最初からMultiMeshInstance3Dを前提にすべき、という判断基準が立った。\n→ RESODIVEの敵AI実装(同様の課題)でも同じ判断が有効だった。\n→ 2案件で確認されたため rules/godot-optimization.md に昇格。\n",
         "tags": [],
         "projects": [],
-        "days_old": 69,
+        "days_old": 70,
         "stale": false,
         "problem_summary": "雑魚敵を30体以上同時に倒すと、弾丸ノードが同時に150個近く発生し、 フレームレートが60→22まで落ちた。",
         "solution_summary": "MultiMeshInstance3D + 独自の当たり判定計算に置き換え、 150個発生時でも58fps以上を維持できるようになった。"
@@ -397,7 +448,7 @@
       "name": "godot-optimization",
       "description": "Godot 4でのゲーム開発中、敵・弾丸・アイテムなど見た目が同じオブジェクトを大量に生成する設計や実装を相談されたら必ず使うこと。個別のNode(CharacterBody3D等)で大量インスタンスを扱おうとしている相談、パフォーマンス低下(フレームレート低下・カクつき)の相談、大量スポーン・弾幕システムの実装、MultiMeshInstance3Dに関する質問では特に必ず参照する。「敵が大量に出る」「弾がたくさん飛ぶ」「同じメッシュを何百個も並べる」といった話が出たら発動すること。",
       "linked_to_rule": true,
-      "usage_count": 1,
+      "usage_count": 0,
       "effectiveness_summary": {},
       "effectiveness_recent": []
     }
