@@ -1,12 +1,12 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-24T16:33:02Z",
+  "generated_at": "2026-08-24T17:19:01Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 38,
-    "chars": 44552
+    "count": 42,
+    "chars": 51759
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@ window.STATS_DATA = {
     "count": 0,
     "chars": 0
   },
-  "total_chars": 45591,
+  "total_chars": 52798,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -505,6 +505,14 @@ window.STATS_DATA = {
       "candidates_count": 38,
       "incidents_count": 1,
       "total_chars": 45591
+    },
+    {
+      "date": "2026-08-24T17:19:01Z",
+      "summary": "[候補] GDScript: `const`に`PackedVector2Array([Vector2(...), ...])`の / [候補] Godot: Container(VBoxContainerなど)に非原点のゼロサイズアンカーを直接設定すると、中身が最 ほか2件",
+      "rules_count": 1,
+      "candidates_count": 42,
+      "incidents_count": 1,
+      "total_chars": 52798
     }
   ],
   "items": {
@@ -536,6 +544,106 @@ window.STATS_DATA = {
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-25-godot-headless-viewport-defaults-to-64x64.md",
+        "title": "Godot: `--headless`実行時、ビューポートは`project.godot`の設定解像度ではなく既定で64",
+        "content": "# [候補] Godot: `--headless`実行時、ビューポートは`project.godot`の設定解像度ではなく既定で64x64になる(`--resolution`指定が必要)\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [resodive]\ntags: [godot, headless, ci, testing]\ndate: 2026-08-25\n\n## 何が起きたか\nGodot 4プロジェクトのUIレイアウト(アンカー計算)に不具合が疑われたため、`godot --headless --path <project> <scene.tscn> --quit-after N`でシーンを起動し、`_ready()`にデバッグ`print()`を仕込んでUI要素の`global_rect`(絶対座標)を確認しようとした。`project.godot`の`window/size`は3840x2160に設定されているにもかかわらず、出力された座標が明らかにおかしい値(意図した位置から大きくズレ、しかも負の値)になっていた。\n\n## わかったこと・今の対応\n`get_viewport().get_visible_rect().size`を直接printして確認したところ、`--headless`実行時のビューポートサイズは`(64.0, 64.0)`という既定値になっており、`project.godot`の`window/size/viewport_width`・`viewport_height`(3840x2160)は反映されていなかった。`--headless`はウィンドウ自体を作成しないため、実際のウィンドウ生成時に行われるはずのビューポートサイズ設定が適用されないと考えられる。\nこれにより、アンカー(`anchor_left`等の0.0〜1.0の割合)を使った位置計算の**絶対座標**は、headless実行結果だけを見ても実機と一致しない・意味を持たない。ただし、**相対的な計算式自体**(「アンカー計算 → その値を使ったオフセット補正」という流れ)が正しいかどうかは、64x64であっても内部的な計算ロジックの整合性チェックとしては有効に使える(実際、64x64を前提に手計算した期待値と、printされた座標が一致することを確認できた)。\n対策: 実際の解像度でのレイアウトを検証したい場合は`--resolution <W>x<H>`オプションを明示的に付ける(例: `--headless --resolution 3840x2160 <scene.tscn>`)。ただしそれでも真のウィンドウ生成とは異なる可能性があるため、最終的な見た目の確認は実機(エディタ実行またはビルド)でユーザーに確認してもらうのが確実。\n\n## 詳しい経緯\nAIエージェント(Claude Code)がGUIを持たない環境で作業しており、Godotエディタの実際の画面をスクリーンショットで確認する手段がなかったため、`--headless`実行時のコンソール出力(print文やエラーメッセージ)だけを頼りにUIの検証を行っていた。この制約下で、スクリプトエラーの検出(構文エラー・型エラー等)には`--headless`実行が非常に有効だった一方、レイアウト・座標の妥当性検証には数値の意味を誤解する罠があった、という教訓。`--resolution`オプションを付けても、実際のウィンドウ生成(ディスプレイドライバの初期化)を伴わない以上、フォントレンダリングやDPI等、他の要素まで実機と完全に一致する保証は無い点に注意。\n\n## まだ確認できていないこと\n- `--resolution`を指定した場合、`get_viewport().get_visible_rect().size`が本当に指定値と一致するかは確認したが、Control全体のレイアウト計算(アンカー・コンテナの再配置)がその解像度を前提に正しく行われるかまでは、間接的な確認(相対計算の整合性)に留まる\n- なぜ既定値が64x64という中途半端な値なのか(Godotエンジン側の設計意図)は未調査\n- 他のGodotバージョンでも同じ既定値(64x64)かは未確認\n",
+        "tags": [
+          "godot",
+          "headless",
+          "ci",
+          "testing"
+        ],
+        "projects": [
+          "resodive"
+        ],
+        "date": "2026-08-25",
+        "days_old": -1,
+        "stale": false,
+        "problem_summary": "Godot 4プロジェクトのUIレイアウト(アンカー計算)に不具合が疑われたため、`godot --headless --path <project> <scene.tscn> -…",
+        "solution_summary": "`get_viewport().get_visible_rect().size`を直接printして確認したところ、`--headless`実行時のビューポートサイズは`(64.0…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-25-godot-container-nonorigin-zero-anchor-hides-children.md",
+        "title": "Godot: Container(VBoxContainerなど)に非原点のゼロサイズアンカーを直接設定すると、中身が最",
+        "content": "# [候補] Godot: Container(VBoxContainerなど)に非原点のゼロサイズアンカーを直接設定すると、中身が最小サイズを持っていても描画されない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [resodive]\ntags: [godot, ui, control]\ndate: 2026-08-25\n\n## 何が起きたか\nGodot 4のGDScriptで、コードから動的にUIを組み立てる際、「画面下端中央の1点」にメニュー項目群(VBoxContainer)を配置し、項目数に応じて自動で高さが決まるようにしたかった。\n\n```gdscript\nvar container := VBoxContainer.new()\ncontainer.anchor_left = 0.5\ncontainer.anchor_right = 0.5\ncontainer.anchor_top = 1.0\ncontainer.anchor_bottom = 1.0   # 4隅とも同じ点=ゼロサイズアンカー\nadd_child(container)\ncontainer.resized.connect(func():\n    container.position = Vector2(-container.size.x * 0.5, -container.size.y - margin)\n)\n# この後 container に複数のButton相当のControlをadd_child\n```\n\n実行すると、ノード自体は存在し(`get_tree()`で辿れる)、`visible=true`にもかかわらず、画面上に中身のボタン群が一切表示されなかった。\n\n## わかったこと・今の対応\nControlは通常、アンカーがゼロサイズ(4隅とも同じ座標)でも、`custom_minimum_size`や(Containerなら)子要素から計算される最小サイズがあればそれを尊重してサイズが確定する……という前提でこのコードを書いたが、実際には**VBoxContainerのようなContainerに、非原点(0,0,0,0以外)のゼロサイズアンカーを直接与えると、中身の最小サイズがあってもサイズが0のまま確定してしまい、結果として子要素も描画上潰れる**(生成場のロジックは通っているのにピクセル上は何も見えない、原因が非常に分かりにくいタイプの不具合)。\n一方、同じセッション内で**別の場所(タイトルロゴ)では全く同じ「ゼロサイズアンカー+resizedで再配置」パターンが正しく動いていた**。違いは、動いていた方は「素のControl(ゼロサイズアンカー、位置決めの基準点としてのみ使う)」の**中に**「デフォルトアンカー(0,0,0,0、原点基準)のVBoxContainer」を**さらに1段ネスト**させていた点。原点基準アンカーのControl/Containerは最小サイズに基づいて素直にサイズが確定するため、これなら問題なく動く。\n対策: Containerを画面上の任意の1点(原点以外)に配置したい場合、Container自身に直接その非原点アンカーを設定せず、①位置決め専用の素のControl(非原点ゼロサイズアンカー)を作り、②その子として、デフォルトアンカー(0,0,0,0)のContainerを置き、③内側のContainerの`resized`シグナルで自身の`position`を補正する、という二段構成にする。\n\n## 詳しい経緯\nユーザーからの実機スクリーンショットで「タイトルとエンブレムは正しく表示されているのに、その下にあるはずのメニュー項目(3つのテキストボタン)が一切見えない」と報告されて発覚した。ヘッドレス実行では起動時のスクリプトエラーは一切出ておらず(ノードの生成自体は正常に完了していた)、静的な検証だけでは検出できなかった。デバッグprintでボタンの`global_rect`を出力したところ、`visible=true`かつ`size`は`(976, 140)`のような妥当な値を持っていた一方、実際の座標計算を追うと、問題のあったコンテナは「アンカー計算上のサイズが0のまま最小サイズが反映されていない」ことが根本原因だと分かった(同じセッション内の別の不具合調査で、`--headless`実行時はビューポートが実際の解像度ではなく既定の64x64になることも判明しており、絶対座標そのものではなく相対的な計算ロジックの整合性で判断した)。\n\n## まだ確認できていないこと\n- 「非原点ゼロサイズアンカー+Container」がなぜ最小サイズを無視するのか、Godotのレイアウトエンジンの正確な内部挙動(ソースコードレベルの根拠)までは確認していない\n- HBoxContainer等、VBoxContainer以外のContainerでも同じ現象が起きるかは未検証(構造上同じ基底クラスなので起きると推測されるが未確認)\n- Godotエディタ上(.tscnで直接アンカーを設定する場合)でも同じ現象になるか、コードから動的生成した場合特有の問題かは未確認\n",
+        "tags": [
+          "godot",
+          "ui",
+          "control"
+        ],
+        "projects": [
+          "resodive"
+        ],
+        "date": "2026-08-25",
+        "days_old": -1,
+        "stale": false,
+        "problem_summary": "Godot 4のGDScriptで、コードから動的にUIを組み立てる際、「画面下端中央の1点」にメニュー項目群(VBoxContainer)を配置し、項目数に応じて自動で高さが決ま…",
+        "solution_summary": "Controlは通常、アンカーがゼロサイズ(4隅とも同じ座標)でも、`custom_minimum_size`や(Containerなら)子要素から計算される最小サイズがあればそれ…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-25-gdscript-const-packedvector2array-not-constant-expression.md",
+        "title": "GDScript: `const`に`PackedVector2Array([Vector2(...), ...])`の",
+        "content": "# [候補] GDScript: `const`に`PackedVector2Array([Vector2(...), ...])`のようなネストした配列コンストラクタは使えない(定数式として畳み込めない)\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [resodive]\ntags: [godot, gdscript]\ndate: 2026-08-25\n\n## 何が起きたか\nGodot 4のGDScriptで、アイコンを線画で描くカスタムControlに、頂点座標の固定リストを`const`で持たせようとした。\n\n```gdscript\nconst HEX_POINTS: PackedVector2Array = PackedVector2Array([\n    Vector2(13, 2), Vector2(23, 8), Vector2(23, 18),\n    Vector2(13, 24), Vector2(3, 18), Vector2(3, 8),\n])\n```\n\nこのスクリプトを参照する別スクリプト(型ヒントとして使用)ごと、実行時に`Parse Error: Assigned value for constant \"HEX_POINTS\" isn't a constant expression.`でコンパイルが失敗した。\n\n## わかったこと・今の対応\n`Color(r,g,b,a)`のような単純な組み込み型コンストラクタは`const`の初期化式として問題なく使えるが(このプロジェクトの既存コードでも多用されていた)、`PackedVector2Array([Vector2(...), Vector2(...), ...])`のように「配列コンストラクタの中に、さらにVector2コンストラクタ呼び出しを複数並べる」形は、GDScriptのコンパイラが定数式として畳み込めず失敗する。単純なコンストラクタと、コンストラクタをネストした配列とで、定数式として許容されるかどうかに差がある。\n対策: `const`ではなく`static var`にする。`static var`は実行時(クラス読み込み時)に一度だけ評価される変数で、定数式である必要が無いため、同じ初期化コードがそのまま動く。値を書き換えない前提なら、実用上`const`との違いはほぼ無い。\n\n## 詳しい経緯\nこのエラーは、当該スクリプト自身だけでなく、そのクラスを型ヒント(`@onready var x: MyClass = ...`)として参照している別スクリプト(player.gd)の側で`Compile Error: Failed to compile depended scripts.`という連鎖的なエラーも引き起こし、さらにシーン側では「型不一致で代入できない」というランタイムエラーにまで波及した。原因のスクリプト自体のエラーメッセージ(`GDScript::reload`のParse Error)を見れば特定は早いが、連鎖エラーだけを見ていると原因箇所の特定に時間がかかる可能性がある。今回はheadless実行(`godot --headless <scene>`)でこれらのエラーメッセージを直接確認できたことで、原因を即座に特定できた。\n\n## まだ確認できていないこと\n- `PackedStringArray([...])`や`PackedFloat32Array([...])`など、他のPacked*Array型でも同様に「単純なリテラルのみ」なら`const`が通り、「コンストラクタ呼び出しを含む要素」だとダメなのか(要素がVector2等のコンストラクタではなく数値/文字列リテラルだけなら通るのか)は未検証\n- Godot 4.6以外のバージョンでも同じ制約か未確認\n",
+        "tags": [
+          "godot",
+          "gdscript"
+        ],
+        "projects": [
+          "resodive"
+        ],
+        "date": "2026-08-25",
+        "days_old": -1,
+        "stale": false,
+        "problem_summary": "Godot 4のGDScriptで、アイコンを線画で描くカスタムControlに、頂点座標の固定リストを`const`で持たせようとした。 ```gdscript const HE…",
+        "solution_summary": "`Color(r,g,b,a)`のような単純な組み込み型コンストラクタは`const`の初期化式として問題なく使えるが(このプロジェクトの既存コードでも多用されていた)、`Pack…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-25-godot-gradient-new-retains-default-color-points.md",
+        "title": "Godot: `Gradient.new()`は既定の色点(黒→白、不透明)を持った状態で生成され、`set_color",
+        "content": "# [候補] Godot: `Gradient.new()`は既定の色点(黒→白、不透明)を持った状態で生成され、`set_color(0,...)`や`add_point()`だけでは消えない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [resodive]\ntags: [godot, gdscript, gradienttexture2d]\ndate: 2026-08-25\n\n## 何が起きたか\nGodot 4のGDScriptで、UI背景にほんのり淡い光の滲みを出す目的で`Gradient.new()`→`GradientTexture2D`(FILL_RADIAL)を動的に生成した。中心を明るく(低アルファの白)、外側を透明にするつもりで、`gradient.set_offset(0, 0.0); gradient.set_color(0, Color(1,1,1,peak_alpha))`で1点目を上書きし、`gradient.add_point(0.72, Color(1,1,1,0.0))`で2点目(透明)を追加した。実行してみると、意図した「淡い光の滲み」ではなく、テクスチャの外周が完全に不透明な白の矩形になってしまい、その上に重ねていた白文字のメニューが真っ白な背景に埋もれて読めなくなった。\n\n## わかったこと・今の対応\n`Gradient.new()`は空の状態では生成されず、**既定で2点(offset 0.0=黒・不透明、offset 1.0=白・不透明)を持った状態**で返ってくる。`set_offset(0,...)`/`set_color(0,...)`はインデックス0の点(既定では黒)を上書きするだけで、インデックス1の既定点(白・不透明)はそのまま残る。`add_point(0.72, 透明)`は3点目を\"追加\"するだけなので、結局「0.0→意図した色、0.72→透明、1.0→既定の白・不透明」という3点構成になり、0.72〜1.0の間で透明から不透明白へ戻ってしまう。\n対策: `gradient.offsets = PackedFloat32Array([...])` と `gradient.colors = PackedColorArray([...])` に、意図する点だけを配列で丸ごと代入する。これは既定点を含め点リスト全体を置き換えるため、既定点が残る余地がない。`set_color()`/`add_point()`の個別呼び出しではなく、常にこの配列一括代入を使うべき。\n\n## 詳しい経緯\n症状は「本来ほぼ見えないはずの装飾要素が、なぜか画面の広い範囲を覆う不透明な白矩形になり、しかもその境界線(テクスチャの矩形の縁)がくっきり見える」という形で現れた。ユーザーが実機のスクリーンショットを送ってくれたことで発覚し、コード上は一見正しく見える(1点目を明示的に上書きし、2点目を追加している)ため、コードレビューだけでは気づきにくいタイプのバグだった。同一セッション内で、背景のグロー用と画面端のビネット用の2箇所で同じパターンを使っており、両方に同じ不具合があった。修正後は配列一括代入に統一した。\n\n## まだ確認できていないこと\n- `Gradient.new()`の既定点の色が本当に常に「黒→白」なのか、Godotのバージョンによって異なる可能性があるかは未確認(4.6.2で確認した事実)\n- `Curve`や`GradientTexture1D`等、Godotの他の「点の集合」型リソースにも同様の既定値問題があるかは未確認\n",
+        "tags": [
+          "godot",
+          "gdscript",
+          "gradienttexture2d"
+        ],
+        "projects": [
+          "resodive"
+        ],
+        "date": "2026-08-25",
+        "days_old": -1,
+        "stale": false,
+        "problem_summary": "Godot 4のGDScriptで、UI背景にほんのり淡い光の滲みを出す目的で`Gradient.new()`→`GradientTexture2D`(FILL_RADIAL)を動…",
+        "solution_summary": "`Gradient.new()`は空の状態では生成されず、**既定で2点(offset 0.0=黒・不透明、offset 1.0=白・不透明)を持った状態**で返ってくる。`set…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
       {
         "filename": "2026-08-25-anti-slop-guideline-can-itself-be-a-template.md",
         "title": "「テンプレっぽくしないで」という指示やアンチテンプレのガイドラインがあっても、ダーク×ネオン発光×パネル系のUIに収束す",
