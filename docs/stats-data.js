@@ -1,12 +1,12 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-24T05:17:40Z",
+  "generated_at": "2026-08-24T05:22:23Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 11,
-    "chars": 12802
+    "count": 15,
+    "chars": 17790
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@ window.STATS_DATA = {
     "count": 0,
     "chars": 0
   },
-  "total_chars": 13841,
+  "total_chars": 18829,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -217,6 +217,14 @@ window.STATS_DATA = {
       "candidates_count": 11,
       "incidents_count": 1,
       "total_chars": 13841
+    },
+    {
+      "date": "2026-08-24T05:22:23Z",
+      "summary": "[候補] `.table td { color: ... }` のような要素+クラスのCSSセレクタが、`.positive`/` / [候補] `Intl.DateTimeFormat`だけで夏時間対応の「次の取引時間開始時刻」を、外部タイムゾーンライブラリ無しに ほか2件",
+      "rules_count": 1,
+      "candidates_count": 15,
+      "incidents_count": 1,
+      "total_chars": 18829
     }
   ],
   "items": {
@@ -241,6 +249,78 @@ window.STATS_DATA = {
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-24-dst-aware-market-hours-without-timezone-library.md",
+        "title": "`Intl.DateTimeFormat`だけで夏時間対応の「次の取引時間開始時刻」を、外部タイムゾーンライブラリ無しに",
+        "content": "# [候補] `Intl.DateTimeFormat`だけで夏時間対応の「次の取引時間開始時刻」を、外部タイムゾーンライブラリ無しに計算する\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [timezone, dst, javascript, intl-api]\ndate: 2026-08-24\n\n## 何が起きたか\n米国株式市場(NYSE, 9:30-16:00 America/New_York)の開場・閉場判定と「次に市場が開く時刻」の計算を、`date-fns-tz`や`luxon`のような依存を増やさずに実装する必要があった。夏時間(EDT, UTC-4)と冬時間(EST, UTC-5)を跨ぐため、単純な固定オフセット計算では誤差が出る。\n\n## わかったこと・今の対応\nNode標準の`Intl.DateTimeFormat(\"en-US\", { timeZone: \"America/New_York\", ... }).formatToParts(date)`は、任意のUTC時刻をそのタイムゾーンでの表示に変換できる(=そのタイムゾーンが現在夏時間か冬時間かをOS/ICUのタイムゾーンデータベースが自動判定してくれる)。これを利用し、「ET 9:30に相当するUTC時刻」を求める際は、まずEDT想定(UTC 13:30)で仮のDateを作り、それを`formatToParts`で再度ET表示に変換して「9:30になっているか」を確認する。なっていなければEST想定(UTC 14:30)を採用する、という”仮定→往復変換で検証”の手順で、夏時間/冬時間のどちらかをコード中に一切ハードコードせずに正しい方を選べる。祝日判定は別途必要(このアプリでは未実装のままTODOとして残した)。\n\n## 詳しい経緯\n市場が閉まっている理由(市場時間外/週末/祝日)をユーザーに正確に説明する必要があり、「次に市場が開くまであと何時間何分か」という具体的な数値をUIに表示する要件から実装した。標準テストとして「平日の開場前後」「金曜夜→月曜への週末スキップ」「冬時間(EST)のケース」を含む複数シナリオをNode単体スクリプトで検証してから本実装に組み込んだ。\n\n## まだ確認できていないこと\n- 他のタイムゾーン(日本の東証、欧州市場等)でも同じ「仮定→往復変換」パターンがそのまま使えるか(ロジック上は汎用的なはずだが、実際に他市場向けに適用した実績はまだない)\n- 祝日カレンダーとの組み合わせ方(NYSE休場日リストを外部データとして持つのがよいか、祝日計算ライブラリを別途入れるべきか)は未検討のまま\n",
+        "tags": [
+          "timezone",
+          "dst",
+          "javascript",
+          "intl-api"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "米国株式市場(NYSE, 9:30-16:00 America/New_York)の開場・閉場判定と「次に市場が開く時刻」の計算を、`date-fns-tz`や`luxon`のよう…",
+        "solution_summary": "Node標準の`Intl.DateTimeFormat(\"en-US\", { timeZone: \"America/New_York\", ... }).formatToParts(…"
+      },
+      {
+        "filename": "2026-08-24-yahoo-finance-chart-api-doubles-as-free-quote-source.md",
+        "title": "Yahoo FinanceのChart API(`query1.finance.yahoo.com/v8/finance",
+        "content": "# [候補] Yahoo FinanceのChart API(`query1.finance.yahoo.com/v8/finance/chart/{symbol}`)は、日次終値だけでなくAPIキー不要のほぼリアルタイム気配値も`meta`フィールドから取れる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [finance-api, yahoo-finance, free-tier, no-auth]\ndate: 2026-08-24\n\n## 何が起きたか\n既存のFinnhub無料枠は米国取引所限定で暗号資産(BTC-USD等)のリアルタイム気配値が取得できなかった。日次終値取得には既に非公式のYahoo Finance Chart APIを使っていたが、これがリアルタイム気配値にも使えるかを検証する必要があった。\n\n## わかったこと・今の対応\n`https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=1d&interval=1d` を叩くと、`chart.result[0].meta` オブジェクトに `regularMarketPrice`(現在値)・`chartPreviousClose`(前日終値)・`regularMarketDayHigh`/`regularMarketDayLow`・`regularMarketTime`(Unix秒)が含まれており、`indicators.quote[0].open[0]`から始値も取れる。APIキー不要・User-Agentヘッダーを付ければ200で返ってくる。株式・暗号資産(`XXX-USD`形式)どちらのシンボルでも同じレスポンス構造だった。これにより、日次終値とリアルタイム気配値を同一エンドポイント・同一実装パターンで取得でき、暗号資産用に新規の有料API契約が不要になった。\n\n## 詳しい経緯\n最初は「Finnhubの代わりに別の有料/無料APIを探す」方向で検討していたが、既存コードが日次終値取得に使っていたYahoo Chart APIのレスポンスを実際にcurlで確認したところ、`meta`部分に現在値相当のデータが既に含まれていることに気づいた。これは非公式(ドキュメント化されていない)エンドポイントのため、将来的に仕様変更や利用制限がかかるリスクは織り込み済みで採用した。\n\n## まだ確認できていないこと\n- レート制限の具体的な閾値(1分/1時間あたり何リクエストまで許容されるか)は未確認。今回は30〜60秒間隔のポーリングで問題は出ていないが、より高頻度・多銘柄での挙動は未検証\n- 日本株(`7203.T`のような`.T`サフィックス)など米国外の取引所シンボルでも同じ`meta`構造が返るかは未検証(米国株・暗号資産でのみ確認済み)\n",
+        "tags": [
+          "finance-api",
+          "yahoo-finance",
+          "free-tier",
+          "no-auth"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "既存のFinnhub無料枠は米国取引所限定で暗号資産(BTC-USD等)のリアルタイム気配値が取得できなかった。日次終値取得には既に非公式のYahoo Finance Chart…",
+        "solution_summary": "`https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=1d&interval=1d` を叩くと、`cha…"
+      },
+      {
+        "filename": "2026-08-24-css-element-class-selector-silently-beats-utility-class.md",
+        "title": "`.table td { color: ... }` のような要素+クラスのCSSセレクタが、`.positive`/`",
+        "content": "# [候補] `.table td { color: ... }` のような要素+クラスのCSSセレクタが、`.positive`/`.negative` 等の単一クラスの色指定を詳細度で静かに上書きする\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [css, specificity, css-modules, frontend]\ndate: 2026-08-24\n\n## 何が起きたか\n株価アプリで「上昇=緑、下降=赤」の色分けクラス(`.positive`/`.negative`/`.buyTag`/`.sellTag`)をテーブルのセルに適用していたが、実際のブラウザでは常に白色(`--color-text`のデフォルト値)で表示され、色分けが一切機能していなかった。見た目には正しいクラス名がDOMに付与されており、CSS自体の記述ミスも一見なさそうに見えた。\n\n## わかったこと・今の対応\n共通スタイル側の `.table td { color: var(--color-text); }`(要素セレクタ`td` + クラスセレクタ`.table`の組み合わせ、詳細度 0,1,1)が、`.positive`(詳細度 0,1,0)より詳細度で勝っていたため、後から読み込まれる/されないに関わらず常に`.positive`側の`color`指定を上書きしていた。`getComputedStyle()`で該当要素の実際の色を確認したことで発覚。修正は`.table td`側の`color`宣言を削除するだけ(`--color-text`は`:root`からの継承でどのみち同じ値になるため、削除しても見た目に副作用がない)。\n\n## 詳しい経緯\nユーザーから「全体的に白黒で見づらい」という漠然とした報告を受けたが、実際には配色設計自体は間違っておらず、この詳細度バグにより意図した色が一度も描画されていなかったことが根本原因だった。「色が薄い/地味」という主観的な報告を鵜呑みにして配色のトーン調整だけで対応していたら、根本原因を見逃していた可能性が高い。\n\n## まだ確認できていないこと\n- CSS Modules環境([xxx].module.css)以外(Tailwind等のユーティリティファースト環境)でも同種の「共通コンポーネントの要素セレクタが個別ユーティリティクラスを上書きする」問題が起きやすいかは未検証。ただしCSS詳細度のルール自体はどの環境でも同じなので、テーブルやリストのような「共通ラッパーコンポーネント内で個別に色をつけたいセル」がある設計では一般的に注意が必要と考えられる。\n",
+        "tags": [
+          "css",
+          "specificity",
+          "css-modules",
+          "frontend"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "株価アプリで「上昇=緑、下降=赤」の色分けクラス(`.positive`/`.negative`/`.buyTag`/`.sellTag`)をテーブルのセルに適用していたが、実際の…",
+        "solution_summary": "共通スタイル側の `.table td { color: var(--color-text); }`(要素セレクタ`td` + クラスセレクタ`.table`の組み合わせ、詳細度…"
+      },
+      {
+        "filename": "2026-08-24-npm-start-script-masks-clean-sigterm-shutdown.md",
+        "title": "`npm run start` でラップしたNode常駐プロセスは、アプリ側のSIGTERM正常終了とは別にnpm自身が",
+        "content": "# [候補] `npm run start` でラップしたNode常駐プロセスは、アプリ側のSIGTERM正常終了とは別にnpm自身がSIGTERMをエラーとしてログ出力し、PaaSの「クラッシュ」判定を誤爆させる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [node, deployment, railway, process-management]\ndate: 2026-08-24\n\n## 何が起きたか\nRailway上のExpressサーバーで、`process.on(\"SIGTERM\", ...)` によるgraceful shutdown(サーバーclose→DB close→`process.exit(0)`)を実装したにもかかわらず、再デプロイのたびにRailwayが「Deployment crashed」通知を出し続けた。\n\n## わかったこと・今の対応\n実際のDeploy Logsを確認すると、アプリ自身のシャットダウンログは正常に出ている一方で、`npm error signal SIGTERM` という行が別途出力されていた。原因は起動コマンドが `npm run start:server`(内部で `tsx server/index.ts` を呼ぶ)になっており、npm自身がSIGTERMを受け取った際に、子プロセス(tsx/Node)の終了とは無関係に「エラーとして」ログを出す仕様だったため。Railwayの起動コマンドを `npm run start:server` から `node_modules/.bin/tsx server/index.ts`(npmを介さず直接バイナリを起動)に変更したところ、`npm error signal SIGTERM` の行は完全に消え、アプリ側の正常終了ログのみが残るようになった。ただし、Railwayの「Deployment crashed」通知自体は、実際のexit codeやログ内容に関係なく「デプロイが置き換えられたこと」を示す汎用ラベルであることも別途確認しており、通知自体は消えない(無害と判断して無視する運用にした)。\n\n## 詳しい経緯\n最適化監査の一環でSIGTERMハンドラを追加した後、手動でRedeployをトリガーして新旧コマンドそれぞれのDeploy Logsを直接比較することで、npm起因のエラー出力だと特定した。Railwayのダッシュボード設定変更(Settings → Deploy → Custom Start Command)は「CI/CDパイプラインの変更」に該当するため、変更前にユーザーへ明示的に確認を取ってから実施した。\n\n## まだ確認できていないこと\n- Railway以外のPaaS(Render、Fly.io等)でも同様に「Deployment crashed」的な通知が誤爆するか未確認\n- `npm run start` ではなく `npm start`(package.jsonのstartスクリプト)でも同じ現象が起きるか未確認(おそらく同じnpm実装なので起きると推測されるが未検証)\n",
+        "tags": [
+          "node",
+          "deployment",
+          "railway",
+          "process-management"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "Railway上のExpressサーバーで、`process.on(\"SIGTERM\", ...)` によるgraceful shutdown(サーバーclose→DB close…",
+        "solution_summary": "実際のDeploy Logsを確認すると、アプリ自身のシャットダウンログは正常に出ている一方で、`npm error signal SIGTERM` という行が別途出力されていた。…"
+      },
       {
         "filename": "2026-08-24-gh-auth-login-needs-real-terminal.md",
         "title": "`gh auth login`はClaude Code経由ではなく独立したターミナルで実行する必要がある",
