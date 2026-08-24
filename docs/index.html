@@ -369,7 +369,7 @@
   <section class="pane pane-detail" id="pane-detail"></section>
 </div>
 
-<script src="stats-data.js?v=20260824091537"></script>
+<script src="stats-data.js?v=20260824093535"></script>
 <script>
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, ch => ({
@@ -898,7 +898,7 @@ function renderCategoryListBody(container, cat){
 
   const selected = route.detail && route.detail.kind === 'item' ? route.detail.filename : null;
   const rows = entries.map(item => makeRow({
-    title: (item.stale ? '⏳ ' : '') + item.title,
+    title: (item.stale ? '⏳ ' : '') + (item.source === 'external' ? '🔗 ' : '') + item.title,
     sub: itemSubtext(cat, item),
     date: item.date,
     daysOld: item.days_old,
@@ -1063,6 +1063,12 @@ function renderItemDetail(container, cat, filename){
     badges.innerHTML += `<span class="badge tone-warn"><span class="badge-dot"></span>${item.days_old}日間、動きなし</span>`;
   }
   if (cat === 'candidates'){
+    if (item.source === 'external'){
+      const srcLabel = item.source_url
+        ? `<a href="${escapeHtml(item.source_url)}" target="_blank" rel="noopener" style="color:inherit;">外部由来・未検証 ↗</a>`
+        : '外部由来・未検証';
+      badges.innerHTML += `<span class="badge tone-warn"><span class="badge-dot"></span>${srcLabel}</span>`;
+    }
     if (item.promotion_ready){
       badges.innerHTML += `<span class="badge tone-good"><span class="badge-dot"></span>昇格条件クリア</span>`;
     }

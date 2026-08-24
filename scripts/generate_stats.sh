@@ -119,6 +119,18 @@ def is_endorsed(content):
     return bool(re.search(r'^endorsed:\s*true\s*$', content, re.MULTILINE | re.IGNORECASE))
 
 
+def find_source(content):
+    """`source: external` 行から出所を取り出す(無ければ自作扱いでNone)"""
+    m = re.search(r'^source:\s*(\S+)', content, re.MULTILINE)
+    return m.group(1) if m else None
+
+
+def find_source_url(content):
+    """`source_url: <URL>` 行から取得元URLを取り出す"""
+    m = re.search(r'^source_url:\s*(\S+)', content, re.MULTILINE)
+    return m.group(1) if m else None
+
+
 def promotion_readiness(observed_in, observed_count, endorsed):
     """昇格提案の対象になりうるか(実際の昇格判断はSessionEndフックが行う。
     ここではダッシュボード表示用に同じ基準を簡易的に再現しているだけ)"""
@@ -228,6 +240,8 @@ for cat, paths in categories.items():
             'endorsed': endorsed,
             'reference_count': len(ref_records),
             'reference_recent': ref_records[:5],
+            'source': find_source(content),
+            'source_url': find_source_url(content),
         }
         if cat == 'candidates':
             entry['promotion_ready'] = promotion_readiness(projects, observed_count, endorsed)

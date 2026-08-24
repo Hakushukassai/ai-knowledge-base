@@ -1,12 +1,12 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-24T09:15:37Z",
+  "generated_at": "2026-08-24T09:35:35Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 17,
-    "chars": 19717
+    "count": 18,
+    "chars": 20957
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@ window.STATS_DATA = {
     "count": 0,
     "chars": 0
   },
-  "total_chars": 20756,
+  "total_chars": 21996,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -321,6 +321,30 @@ window.STATS_DATA = {
       "candidates_count": 17,
       "incidents_count": 1,
       "total_chars": 20756
+    },
+    {
+      "date": "2026-08-24T09:28:05Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 17,
+      "incidents_count": 1,
+      "total_chars": 20756
+    },
+    {
+      "date": "2026-08-24T09:34:17Z",
+      "summary": "[候補] 外部Skill `godot-code-gen` を試験導入",
+      "rules_count": 1,
+      "candidates_count": 18,
+      "incidents_count": 1,
+      "total_chars": 21996
+    },
+    {
+      "date": "2026-08-24T09:35:35Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 18,
+      "incidents_count": 1,
+      "total_chars": 21996
     }
   ],
   "items": {
@@ -344,12 +368,39 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "skill_name": "godot-optimization",
         "skill_installed": true,
         "skill_retired": false
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-24-godot-code-gen-external-skill.md",
+        "title": "外部Skill `godot-code-gen` を試験導入",
+        "content": "# [候補] 外部Skill `godot-code-gen` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/alexmeckes/godot-claude-skills\n\n## 何が起きたか\n外部Skillマーケットプレイス由来のGDScript生成支援Skill(`godot-claude-skills`リポジトリの`godot-code-gen`)を、`~/.claude/skills/godot-code-gen/`として試験導入した。\n\n## わかったこと・今の対応\n元のSKILL.mdにはこのシステムが要求するフロントマター(`name`/`description`)が無かったため、既存Skillの慣習(強めのトリガー表現)に合わせて追加した。機密情報スキャンには引っかからないことを確認済み(`godot-code-gen/SKILL.md`単体をスキャンし異常なし)。実際にRESODIVE等での作業で発動し役立つかはまだ未検証。\n\n## 詳しい経緯\n`外部Skill導入_引き継ぎ.md`の推奨に従い、まず1件のみを試験導入する方針とした。取得はユーザー自身が`git clone`で実行している(Claude Codeは外部リポジトリのダウンロードを自ら実行しない設計のため)。内容はGodot 4.xのGDScript構文(型ヒント・アノテーション・シグナル・ステートマシン・Resourceパターン・Tween等)のベストプラクティス集で、既存の`godot-optimization`(大量インスタンス最適化)とは話題が異なり衝突しない。ただし`CharacterBody2D/3D`移動のサンプルコード自体には「50体以上の量産時はMultiMeshInstance3Dを検討」という`godot-optimization`側の知見は含まれていないため、両方のSkillを踏まえた判断が必要な場面があることは留意点として残る。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。実際に使ってみて役立った場合は、他の気づきと同じ通常フロー(このファイルへの再観測記録、または`/kb-endorse`)で昇格を検討する。\n\n## まだ確認できていないこと\n- 実際の会話でdescriptionの内容に合致した場面で正しく自動発動するか(同一会話中に作成したSkillはその会話では認識されないため、次回セッションでの確認が必要)\n- RESODIVEでの実作業での有用性\n",
+        "tags": [
+          "godot",
+          "ゲーム開発",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "外部Skillマーケットプレイス由来のGDScript生成支援Skill(`godot-claude-skills`リポジトリの`godot-code-gen`)を、`~/.cla…",
+        "solution_summary": "元のSKILL.mdにはこのシステムが要求するフロントマター(`name`/`description`)が無かったため、既存Skillの慣習(強めのトリガー表現)に合わせて追加した…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/alexmeckes/godot-claude-skills",
+        "promotion_ready": false
+      },
       {
         "filename": "2026-08-24-browser-tool-coordinate-click-can-silently-miss.md",
         "title": "ブラウザ操作ツールでの座標クリックは、要素がずれてサイレントに外れることがある",
@@ -371,6 +422,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -394,6 +447,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -418,6 +473,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -442,6 +499,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -466,6 +525,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -490,6 +551,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -514,6 +577,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -537,6 +602,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -560,6 +627,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -583,6 +652,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -607,6 +678,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -629,6 +702,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -651,6 +726,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -673,6 +750,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -695,6 +774,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -718,6 +799,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -740,6 +823,8 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
+        "source": null,
+        "source_url": null,
         "promotion_ready": false
       }
     ],
@@ -758,7 +843,9 @@ window.STATS_DATA = {
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
-        "reference_recent": []
+        "reference_recent": [],
+        "source": null,
+        "source_url": null
       }
     ],
     "archived": []
@@ -766,6 +853,15 @@ window.STATS_DATA = {
   "promotion_suggestions": null,
   "merge_suggestions": null,
   "skills": [
+    {
+      "folder_name": "godot-code-gen",
+      "name": "godot-code-gen",
+      "description": "Godot 4.xでGDScriptコードを書く・生成する相談を受けたら必ず使うこと。型ヒント、@export/@onready等のアノテーション、シグナルの宣言・発行・接続、CharacterBody2D/3D移動、ステートマシン、Resourceパターン、Autoload/シングルトン、await/非同期処理、Tween、シーンのインスタンス化、入力処理など、GDScript 4.x特有の書き方・構文・ベストプラクティスに関する質問全般で参照する。「Godot 3から4に上げたら動かなくなった」「yieldがない」「connectの書き方が変わった」といった移行時のハマりどころの相談でも必ず参照する。",
+      "linked_to_rule": false,
+      "usage_count": 0,
+      "effectiveness_summary": {},
+      "effectiveness_recent": []
+    },
     {
       "folder_name": "godot-optimization",
       "name": "godot-optimization",
