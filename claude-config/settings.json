@@ -1,4 +1,6 @@
 {
+  "effortLevel": "xhigh",
+  "model": "sonnet",
   "permissions": {
     "allow": [
       "Bash(python3 ~/.claude/hooks/scan_and_push.py:*)",
