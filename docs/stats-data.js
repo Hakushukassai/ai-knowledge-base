@@ -1,5 +1,5 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-24T05:48:53Z",
+  "generated_at": "2026-08-24T06:03:12Z",
   "rules": {
     "count": 1,
     "chars": 540
@@ -245,6 +245,22 @@ window.STATS_DATA = {
     {
       "date": "2026-08-24T05:48:53Z",
       "summary": "[候補] ブラウザ操作ツールでの座標クリックは、要素がずれてサイレントに外れることがある / [候補] 同じ詳細度なら、`@media`内のルールでも後にある通常ルールに負ける",
+      "rules_count": 1,
+      "candidates_count": 17,
+      "incidents_count": 1,
+      "total_chars": 20756
+    },
+    {
+      "date": "2026-08-24T06:02:48Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 17,
+      "incidents_count": 1,
+      "total_chars": 20756
+    },
+    {
+      "date": "2026-08-24T06:03:12Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
       "rules_count": 1,
       "candidates_count": 17,
       "incidents_count": 1,

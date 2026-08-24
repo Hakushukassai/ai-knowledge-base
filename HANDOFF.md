@@ -22,6 +22,28 @@
 
 ## セッション概要
 - 日付: 2026-08-24
+- 対象プロジェクト: ai-knowledge-base(使い勝手改善5件の実装)
+- 今回やったこと(3行以内):
+  1. `scan_and_push.py`が`git pull --rebase`衝突時に無音で失敗していた問題を修正し、`SYNC-CONFLICT.md`で警告するようにした。
+  2. 新PCセットアップ用に`claude-config/install.sh`を新設し、`SETUP.md`をそれを使う手順に書き換え。gh auth login / settings.json書き込みがClaude Code経由では失敗する点を明記。
+  3. `README.md`に候補レビューの月次リマインドを追加、Windows表記(`%USERPROFILE%`)をmacOS表記に統一。
+
+## 到達点
+- 今、何が動く状態か: 上記すべてリポジトリに反映・push済み。ローカルの`~/.claude/hooks/scan_and_push.py`も更新済み。
+- 何がまだ未完成か: `~/.claude/settings.json`本体の更新はユーザーが手動でcpを実行する必要があり、実行待ち。
+
+## 次回、ここから始める
+- 次にやるべき最初の一手: `~/.claude/settings.json`の更新が反映されているか(`SYNC-CONFLICT.md`のチェックが入っているか)を次回セッション開始時に確認する。
+- 判断が必要な未決事項: グローバル`settings.json`の`model`/`effortLevel`のデフォルトを変えるかどうかはユーザー判断待ち(SETUP.mdに説明を追記済み)。
+
+## 知識ベースに送る候補があるか
+- [x] なし
+- [ ] あり → knowledge-base/candidates/ に書き出し済み
+
+---
+
+## セッション概要
+- 日付: 2026-08-24
 - 対象プロジェクト: ai-knowledge-base(docs/のダッシュボードUI刷新)
 - 今回やったこと(3行以内):
   1. `docs/index.html`をmacOS風の3ペイン(サイドバー・一覧・詳細)デザインに全面リニューアル。PCは3ペイン常時表示、スマホは1画面ずつの最小表示に出し分け。

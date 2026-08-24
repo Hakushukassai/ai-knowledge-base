@@ -28,13 +28,13 @@ knowledge-base/
   → 別プロジェクトでも同じ発見が確認される
   → PROMOTION-SUGGESTIONS.md に昇格提案が自動で出る(内容を理解した上での判断)
   → 手動で rules/ に昇格
-  → Skill化して %USERPROFILE%\.claude\skills\ に配置
+  → Skill化して ~/.claude/skills/ に配置
   → 次からは関連する作業の時だけ自動で使われる
 ```
 
 ## 自動化の仕組み(hooks)
 
-`%USERPROFILE%\.claude\settings.json` に設定されている。
+`~/.claude/settings.json` に設定されている。
 
 | タイミング | 役割 |
 |---|---|
@@ -58,4 +58,10 @@ knowledge-base/
 ## 定期メンテナンス
 
 - 月1回: `PRIVACY-CHECKLIST.md` に沿って機密情報が紛れていないか確認
+- 月1回(上記と同じタイミングでまとめて): `candidates/` を一通り眺めて、
+  昇格できそうなものがないか検討する。`PROMOTION-SUGGESTIONS.md` は
+  同じ発見が複数プロジェクトで見つかった時だけ自動で出るため、それ以外の
+  候補は自分で見に行かないと埋もれたままになる
 - 気づいた時: `PROMOTION-SUGGESTIONS.md` を見て、昇格を検討
+- `~/knowledge-base/SYNC-CONFLICT.md` が存在する場合: 複数PC間の自動pushが
+  競合して止まっているので、ファイル内の手順に従って手動で解決する

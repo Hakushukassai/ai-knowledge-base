@@ -14,7 +14,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "(cd ~/knowledge-base 2>/dev/null && git pull --quiet 2>/dev/null); mkdir -p ~/.claude/skills 2>/dev/null; cp -rn ~/knowledge-base/claude-config/skills/* ~/.claude/skills/ 2>/dev/null; if [ -f ~/knowledge-base/SECURITY-WARNING.md ]; then echo '## ⚠ 機密情報チェックで警告あり(pushが止まっています)' && cat ~/knowledge-base/SECURITY-WARNING.md; fi; echo '## 知識ベース(rules。Skill化済みのものは省略)' && python3 ~/.claude/hooks/print_unskilled_rules.py 2>/dev/null; echo '## 昇格の提案(あれば)' && cat ~/knowledge-base/PROMOTION-SUGGESTIONS.md 2>/dev/null"
+            "command": "(cd ~/knowledge-base 2>/dev/null && git pull --quiet 2>/dev/null); mkdir -p ~/.claude/skills 2>/dev/null; cp -rn ~/knowledge-base/claude-config/skills/* ~/.claude/skills/ 2>/dev/null; if [ -f ~/knowledge-base/SECURITY-WARNING.md ]; then echo '## ⚠ 機密情報チェックで警告あり(pushが止まっています)' && cat ~/knowledge-base/SECURITY-WARNING.md; fi; if [ -f ~/knowledge-base/SYNC-CONFLICT.md ]; then echo '## ⚠ 同期エラー(他PCとの取り込みが止まっています)' && cat ~/knowledge-base/SYNC-CONFLICT.md; fi; echo '## 知識ベース(rules。Skill化済みのものは省略)' && python3 ~/.claude/hooks/print_unskilled_rules.py 2>/dev/null; echo '## 昇格の提案(あれば)' && cat ~/knowledge-base/PROMOTION-SUGGESTIONS.md 2>/dev/null"
           }
         ]
       }

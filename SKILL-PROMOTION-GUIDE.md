@@ -11,7 +11,7 @@
 ## 置き場所を決める
 
 - **全プロジェクト共通**にすべきもの(今回のGodot最適化のように、複数プロジェクトで再現した一般的な知見)
-  → `%USERPROFILE%\.claude\skills\<スキル名>\`
+  → `~/.claude/skills/<スキル名>/`
 - **特定のプロジェクトでしか通用しない**もの
   → そのプロジェクト自身の `.claude\skills\<スキル名>\`
 
@@ -31,7 +31,7 @@
 ## 参考にした実例
 
 - ルール: `rules/godot-optimization.md`
-- Skill: `%USERPROFILE%\.claude\skills\godot-optimization\SKILL.md`
+- Skill: `~/.claude/skills/godot-optimization/SKILL.md`
 
 ## Skillを引退させたいとき
 
