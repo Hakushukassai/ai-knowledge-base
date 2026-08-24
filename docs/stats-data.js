@@ -1,12 +1,12 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-24T09:35:35Z",
+  "generated_at": "2026-08-24T09:40:35Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 18,
-    "chars": 20957
+    "count": 19,
+    "chars": 22110
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@ window.STATS_DATA = {
     "count": 0,
     "chars": 0
   },
-  "total_chars": 21996,
+  "total_chars": 23149,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -345,6 +345,14 @@ window.STATS_DATA = {
       "candidates_count": 18,
       "incidents_count": 1,
       "total_chars": 21996
+    },
+    {
+      "date": "2026-08-24T09:40:35Z",
+      "summary": "[候補] 同一会話中に作成したSkillも、その場で認識・発動することがある",
+      "rules_count": 1,
+      "candidates_count": 19,
+      "incidents_count": 1,
+      "total_chars": 23149
     }
   ],
   "items": {
@@ -377,9 +385,33 @@ window.STATS_DATA = {
     ],
     "candidates": [
       {
+        "filename": "2026-08-24-skill-recognized-same-session-as-created.md",
+        "title": "同一会話中に作成したSkillも、その場で認識・発動することがある",
+        "content": "# [候補] 同一会話中に作成したSkillも、その場で認識・発動することがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, skill]\ndate: 2026-08-24\n\n## 何が起きたか\n`SKILL-PROMOTION-GUIDE.md`には「新しいClaude Codeセッションを開始して動作確認する(今の会話中に作ったSkillは、今の会話では認識されない)」と書かれていたが、実際に`~/.claude/skills/godot-code-gen/`を作成した直後、同じ会話内でSkill一覧に表示され、関連する相談を投げたところ明示指定なしで正しく自動発動した。\n\n## わかったこと・今の対応\n少なくとも今回の環境では、Skillの認識は「次回セッションを待つ必要がある」という従来の想定より早いタイミングで反映されることがある。ただし1回の観測に過ぎないため、常にそうなるのか、特定の条件(ファイル作成のタイミング、既存のSkillの有無など)に依存するのかは不明。Skillを追加した際は「新しいセッションでないと確認できない」と決めつけず、まず同一会話内で発動確認を試すのが早い。\n\n## 詳しい経緯\n`candidates/2026-08-24-godot-code-gen-external-skill.md`として外部Skillを試験導入した際、`~/.claude/skills/godot-code-gen/SKILL.md`をWriteツールで作成した直後のsystem-reminderに「godot-code-gen」がSkill一覧として表示された。半信半疑で同一会話内で関連する相談(GDScriptのステートマシン実装)を投げたところ、Skillツール経由で正しく発動し、内容も適切だった。\n\n## まだ確認できていないこと\n- 再現性(別のSkill作成時、別のタイミングでも同様に即時認識されるか)\n- `SKILL-PROMOTION-GUIDE.md`の記載がいつの時点の挙動を元にしているか、環境差なのかタイミング差なのか\n",
+        "tags": [
+          "claude-code",
+          "skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "`SKILL-PROMOTION-GUIDE.md`には「新しいClaude Codeセッションを開始して動作確認する(今の会話中に作ったSkillは、今の会話では認識されない)」…",
+        "solution_summary": "少なくとも今回の環境では、Skillの認識は「次回セッションを待つ必要がある」という従来の想定より早いタイミングで反映されることがある。ただし1回の観測に過ぎないため、常にそうなる…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
         "filename": "2026-08-24-godot-code-gen-external-skill.md",
         "title": "外部Skill `godot-code-gen` を試験導入",
-        "content": "# [候補] 外部Skill `godot-code-gen` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/alexmeckes/godot-claude-skills\n\n## 何が起きたか\n外部Skillマーケットプレイス由来のGDScript生成支援Skill(`godot-claude-skills`リポジトリの`godot-code-gen`)を、`~/.claude/skills/godot-code-gen/`として試験導入した。\n\n## わかったこと・今の対応\n元のSKILL.mdにはこのシステムが要求するフロントマター(`name`/`description`)が無かったため、既存Skillの慣習(強めのトリガー表現)に合わせて追加した。機密情報スキャンには引っかからないことを確認済み(`godot-code-gen/SKILL.md`単体をスキャンし異常なし)。実際にRESODIVE等での作業で発動し役立つかはまだ未検証。\n\n## 詳しい経緯\n`外部Skill導入_引き継ぎ.md`の推奨に従い、まず1件のみを試験導入する方針とした。取得はユーザー自身が`git clone`で実行している(Claude Codeは外部リポジトリのダウンロードを自ら実行しない設計のため)。内容はGodot 4.xのGDScript構文(型ヒント・アノテーション・シグナル・ステートマシン・Resourceパターン・Tween等)のベストプラクティス集で、既存の`godot-optimization`(大量インスタンス最適化)とは話題が異なり衝突しない。ただし`CharacterBody2D/3D`移動のサンプルコード自体には「50体以上の量産時はMultiMeshInstance3Dを検討」という`godot-optimization`側の知見は含まれていないため、両方のSkillを踏まえた判断が必要な場面があることは留意点として残る。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。実際に使ってみて役立った場合は、他の気づきと同じ通常フロー(このファイルへの再観測記録、または`/kb-endorse`)で昇格を検討する。\n\n## まだ確認できていないこと\n- 実際の会話でdescriptionの内容に合致した場面で正しく自動発動するか(同一会話中に作成したSkillはその会話では認識されないため、次回セッションでの確認が必要)\n- RESODIVEでの実作業での有用性\n",
+        "content": "# [候補] 外部Skill `godot-code-gen` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/alexmeckes/godot-claude-skills\n\n## 何が起きたか\n外部Skillマーケットプレイス由来のGDScript生成支援Skill(`godot-claude-skills`リポジトリの`godot-code-gen`)を、`~/.claude/skills/godot-code-gen/`として試験導入した。\n\n## わかったこと・今の対応\n元のSKILL.mdにはこのシステムが要求するフロントマター(`name`/`description`)が無かったため、既存Skillの慣習(強めのトリガー表現)に合わせて追加した。機密情報スキャンには引っかからないことを確認済み(`godot-code-gen/SKILL.md`単体をスキャンし異常なし)。設置直後の同一会話内で「プレイヤーキャラクターの待機・歩行・ジャンプのステートマシン」という自然な相談を投げたところ、明示指定なしで正しく自動発動し、実用的な実装例を生成できた(2026-08-24)。RESODIVEでの実作業での有用性はまだ未検証。\n\n## 詳しい経緯\n`外部Skill導入_引き継ぎ.md`の推奨に従い、まず1件のみを試験導入する方針とした。取得はユーザー自身が`git clone`で実行している(Claude Codeは外部リポジトリのダウンロードを自ら実行しない設計のため)。内容はGodot 4.xのGDScript構文(型ヒント・アノテーション・シグナル・ステートマシン・Resourceパターン・Tween等)のベストプラクティス集で、既存の`godot-optimization`(大量インスタンス最適化)とは話題が異なり衝突しない。ただし`CharacterBody2D/3D`移動のサンプルコード自体には「50体以上の量産時はMultiMeshInstance3Dを検討」という`godot-optimization`側の知見は含まれていないため、両方のSkillを踏まえた判断が必要な場面があることは留意点として残る。\n\n設置直後の発動テストでは、`SKILL-PROMOTION-GUIDE.md`に記載の「同一会話中に作ったSkillはその会話では認識されない」という制約は再現しなかった(むしろ設置直後から利用可能だった)。環境やタイミングによって挙動が変わる可能性があるため、今後Skillを追加する際は都度確認すること。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。実際に使ってみて役立った場合は、他の気づきと同じ通常フロー(このファイルへの再観測記録、または`/kb-endorse`)で昇格を検討する。\n\n## まだ確認できていないこと\n- RESODIVEでの実作業での有用性(発動確認自体はknowledge-baseのセッション内で完了)\n",
         "tags": [
           "godot",
           "ゲーム開発",
@@ -858,9 +890,17 @@ window.STATS_DATA = {
       "name": "godot-code-gen",
       "description": "Godot 4.xでGDScriptコードを書く・生成する相談を受けたら必ず使うこと。型ヒント、@export/@onready等のアノテーション、シグナルの宣言・発行・接続、CharacterBody2D/3D移動、ステートマシン、Resourceパターン、Autoload/シングルトン、await/非同期処理、Tween、シーンのインスタンス化、入力処理など、GDScript 4.x特有の書き方・構文・ベストプラクティスに関する質問全般で参照する。「Godot 3から4に上げたら動かなくなった」「yieldがない」「connectの書き方が変わった」といった移行時のハマりどころの相談でも必ず参照する。",
       "linked_to_rule": false,
-      "usage_count": 0,
-      "effectiveness_summary": {},
-      "effectiveness_recent": []
+      "usage_count": 1,
+      "effectiveness_summary": {
+        "有効": 1
+      },
+      "effectiveness_recent": [
+        {
+          "date": "2026-08-24T09:39:43Z",
+          "verdict": "有効",
+          "reason": "発動テスト成功、実装例も妥当"
+        }
+      ]
     },
     {
       "folder_name": "godot-optimization",
