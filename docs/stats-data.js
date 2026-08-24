@@ -1,12 +1,12 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-24T09:44:05Z",
+  "generated_at": "2026-08-24T09:46:39Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 21,
-    "chars": 24336
+    "count": 22,
+    "chars": 25368
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@ window.STATS_DATA = {
     "count": 0,
     "chars": 0
   },
-  "total_chars": 25375,
+  "total_chars": 26407,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -369,6 +369,14 @@ window.STATS_DATA = {
       "candidates_count": 21,
       "incidents_count": 1,
       "total_chars": 25375
+    },
+    {
+      "date": "2026-08-24T09:46:39Z",
+      "summary": "[候補] 外部Skill `godot-animation` を試験導入",
+      "rules_count": 1,
+      "candidates_count": 22,
+      "incidents_count": 1,
+      "total_chars": 26407
     }
   ],
   "items": {
@@ -400,6 +408,31 @@ window.STATS_DATA = {
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-24-godot-animation-external-skill.md",
+        "title": "外部Skill `godot-animation` を試験導入",
+        "content": "# [候補] 外部Skill `godot-animation` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`の次点候補、`awesome-gamedev-agent-skills`リポジトリの`godot-animation`(AnimationPlayer/AnimationTree/Tweenの使い分け)を`~/.claude/skills/godot-animation/`として試験導入した。`game-feel`・`godot-ui-control`と同じリポジトリから取得済みだったため、追加のcloneは不要だった。\n\n## わかったこと・今の対応\n`game-feel`・`godot-ui-control`と同様、フロントマター完備・機密情報スキャンともクリーン。`references/animation-tree-and-tween.md`をあわせて配置。既存の`godot-optimization`・`godot-code-gen`・`game-feel`・`godot-ui-control`のいずれとも話題が重複しない(アニメーション実装そのものに特化)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行済みの`awesome-gamedev-agent-skills`から。SKILL.md内で`godot-2d-movement`・`godot-3d-essentials`・`game-ai`など、同リポジトリの未導入の他Skillへの言及がある(`game-feel`・`godot-ui-control`と同様の留意点)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のアニメーション実装作業(RESODIVE等)での有用性\n",
+        "tags": [
+          "godot",
+          "ゲーム開発",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "`外部Skill導入_引き継ぎ.md`の次点候補、`awesome-gamedev-agent-skills`リポジトリの`godot-animation`(AnimationPl…",
+        "solution_summary": "`game-feel`・`godot-ui-control`と同様、フロントマター完備・機密情報スキャンともクリーン。`references/animation-tree-and-…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills",
+        "promotion_ready": false
+      },
       {
         "filename": "2026-08-24-godot-ui-control-external-skill.md",
         "title": "外部Skill `godot-ui-control` を試験導入",
@@ -955,6 +988,15 @@ window.STATS_DATA = {
     {
       "folder_name": "game-feel",
       "name": "game-feel",
+      "description": ">",
+      "linked_to_rule": false,
+      "usage_count": 0,
+      "effectiveness_summary": {},
+      "effectiveness_recent": []
+    },
+    {
+      "folder_name": "godot-animation",
+      "name": "godot-animation",
       "description": ">",
       "linked_to_rule": false,
       "usage_count": 0,
