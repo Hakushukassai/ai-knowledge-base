@@ -1,12 +1,12 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-24T11:42:53Z",
+  "generated_at": "2026-08-24T11:44:28Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 31,
-    "chars": 35043
+    "count": 32,
+    "chars": 36091
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@ window.STATS_DATA = {
     "count": 0,
     "chars": 0
   },
-  "total_chars": 36082,
+  "total_chars": 37130,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -481,6 +481,14 @@ window.STATS_DATA = {
       "candidates_count": 31,
       "incidents_count": 1,
       "total_chars": 36082
+    },
+    {
+      "date": "2026-08-24T11:44:28Z",
+      "summary": "[候補] 外部Skill `game-ai`を試験導入",
+      "rules_count": 1,
+      "candidates_count": 32,
+      "incidents_count": 1,
+      "total_chars": 37130
     }
   ],
   "items": {
@@ -512,6 +520,31 @@ window.STATS_DATA = {
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-24-game-ai-external-skill.md",
+        "title": "外部Skill `game-ai`を試験導入",
+        "content": "# [候補] 外部Skill `game-ai`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [ゲーム開発, AI設計, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\nRESODIVE・DEPTH//とも「敵」が中心的な要素であることから、`awesome-gamedev-agent-skills`リポジトリの`game-ai`(discipline系、エンジン非依存)Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。有限状態機械・ビヘイビアツリー・操舵行動(steering)・A*経路探索の使い分けをまとめたもの。\n\n## わかったこと・今の対応\nこれまでの4件(godot-audio/physics/signals-groups/3d-essentials)は`skills/godot/`配下だったが、今回は`skills/disciplines/`配下のエンジン非依存Skill。フロントマター完備・参照ファイル2件(`behavior-trees.md`・`pathfinding.md`、SKILL.md本文が指す2件とも一致)。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンス。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザーが既に`git clone`済みの同リポジトリから取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱2つの参照ファイルも目視確認(コードスニペットのみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/game-ai/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n",
+        "tags": [
+          "ゲーム開発",
+          "AI設計",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "RESODIVE・DEPTH//とも「敵」が中心的な要素であることから、`awesome-gamedev-agent-skills`リポジトリの`game-ai`(discipli…",
+        "solution_summary": "これまでの4件(godot-audio/physics/signals-groups/3d-essentials)は`skills/godot/`配下だったが、今回は`skills…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills",
+        "promotion_ready": false
+      },
       {
         "filename": "2026-08-24-godot-3d-essentials-external-skill.md",
         "title": "外部Skill `godot-3d-essentials`を試験導入",
@@ -1321,6 +1354,15 @@ window.STATS_DATA = {
       "folder_name": "frontend-design",
       "name": "frontend-design",
       "description": "Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.",
+      "linked_to_rule": false,
+      "usage_count": 1,
+      "effectiveness_summary": {},
+      "effectiveness_recent": []
+    },
+    {
+      "folder_name": "game-ai",
+      "name": "game-ai",
+      "description": ">",
       "linked_to_rule": false,
       "usage_count": 1,
       "effectiveness_summary": {},
