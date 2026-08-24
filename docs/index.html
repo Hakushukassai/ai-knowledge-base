@@ -369,7 +369,7 @@
   <section class="pane pane-detail" id="pane-detail"></section>
 </div>
 
-<script src="stats-data.js?v=20260824100614"></script>
+<script src="stats-data.js?v=20260824112008"></script>
 <script>
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, ch => ({
@@ -795,6 +795,7 @@ function renderHelp(container){
       <li><code>/clear</code> — 会話をリセットして終了する(pushまでの流れは<code>/exit</code>と同じ)</li>
     </ul>
     <p style="margin-top:10px">新しいパソコンでのセットアップは <code>bash ~/knowledge-base/claude-config/install.sh</code> を実行 → <code>gh auth login</code> の2ステップです。詳細は <a class="gh-link" href="${GITHUB_REPO_URL}/blob/master/claude-config/SETUP.md" target="_blank" rel="noopener">SETUP.md ↗</a></p>
+    <p style="margin-top:6px">外部Skillを追加する時の安全な手順は <a class="gh-link" href="${GITHUB_REPO_URL}/blob/master/EXTERNAL-SKILL-GUIDE.md" target="_blank" rel="noopener">EXTERNAL-SKILL-GUIDE.md ↗</a></p>
   `;
   container.appendChild(block3);
 

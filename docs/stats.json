@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-24T10:06:14Z",
+  "generated_at": "2026-08-24T11:20:08Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 26,
-    "chars": 30105
+    "count": 27,
+    "chars": 30913
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@
     "count": 0,
     "chars": 0
   },
-  "total_chars": 31144,
+  "total_chars": 31952,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -417,6 +417,30 @@
       "candidates_count": 26,
       "incidents_count": 1,
       "total_chars": 31144
+    },
+    {
+      "date": "2026-08-24T11:19:07Z",
+      "summary": "[候補] 誤検知の「説明文」を書く行為自体が同じ誤検知を再発させる",
+      "rules_count": 1,
+      "candidates_count": 27,
+      "incidents_count": 1,
+      "total_chars": 31984
+    },
+    {
+      "date": "2026-08-24T11:19:33Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 27,
+      "incidents_count": 1,
+      "total_chars": 31984
+    },
+    {
+      "date": "2026-08-24T11:20:08Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 27,
+      "incidents_count": 1,
+      "total_chars": 31952
     }
   ],
   "items": {
@@ -448,6 +472,31 @@
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-24-writing-about-secret-scan-false-positives-retriggers-them.md",
+        "title": "誤検知の「説明文」を書く行為自体が同じ誤検知を再発させる",
+        "content": "# [候補] 誤検知の「説明文」を書く行為自体が同じ誤検知を再発させる\n\nstatus: candidate\nobserved_count: 3\nobserved_in: [knowledge-base]\ntags: [claude-code, セキュリティ, ドキュメント]\ndate: 2026-08-24\nendorsed: false\n\n## 何が起きたか\n機密情報スキャンの誤検知(プレースホルダーメールアドレス等)について「こう直した」と説明する文章の中に、直す前の実例(`@`付きのメールアドレス)をそのまま引用すると、その説明文自体が新たに誤検知される。同じ日に2回(候補ファイル本文、および外部Skill導入ガイド本文)で発生した。\n\n## わかったこと・今の対応\n機密情報の誤検知について書く時は、問題のパターンを説明する際も実際に検知されるフォーマットそのものを書かない(「メールアドレス形式の文字列」のように抽象化するか、区切り記号を意図的に別の表記に置き換えて言及する)。\n\n## 詳しい経緯\n1回目: `ux-designer`導入時、候補ファイルの本文に「置換前後のメールアドレスの実例」をそのまま書いたところ、`docs/stats.json`等への埋め込みも含めてスキャナーが再検知した。2回目: 本件を教訓化した`EXTERNAL-SKILL-GUIDE.md`の中で、「実例をそのまま書かない」という注意書き自体に同じ実例を書いてしまい、再度検知された。3回目: この候補ファイルの初稿でも同様の実例を書いてしまい、三度検知された。いずれも実害はなく(pre-commitで正しく止まった)、都度抽象化した表現に書き換えて解消した。\n\n## まだ確認できていないこと\n- この手のメタ的な言及(誤検知の実例を説明する文章)を最初から誤検知させない、もっと良い書き方の型があるか\n",
+        "tags": [
+          "claude-code",
+          "セキュリティ",
+          "ドキュメント"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "機密情報スキャンの誤検知(プレースホルダーメールアドレス等)について「こう直した」と説明する文章の中に、直す前の実例(`@`付きのメールアドレス)をそのまま引用すると、その説明文自…",
+        "solution_summary": "機密情報の誤検知について書く時は、問題のパターンを説明する際も実際に検知されるフォーマットそのものを書かない(「メールアドレス形式の文字列」のように抽象化するか、区切り記号を意図的…",
+        "observed_count": 3,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": true
+      },
       {
         "filename": "2026-08-24-ux-designer-external-skill.md",
         "title": "外部Skill `ux-designer` を試験導入(Godot以外の一般UI/UX設計向け)",
@@ -1204,12 +1253,12 @@
       "name": "ux-designer",
       "description": "UX/UI design principles for building and critiquing interfaces. Use for accessibility audits (WCAG, EAA), microcopy, forms, navigation, onboarding, internationalization and RTL, voice and AI interfaces, and design systems.",
       "linked_to_rule": false,
-      "usage_count": 0,
+      "usage_count": 1,
       "effectiveness_summary": {},
       "effectiveness_recent": []
     }
   ],
   "retired_skills": [],
   "stale_count": 0,
-  "promotion_ready_count": 0
+  "promotion_ready_count": 1
 }

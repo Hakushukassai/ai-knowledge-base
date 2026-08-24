@@ -16,6 +16,7 @@ knowledge-base/
   claude-config/    別のパソコンにセットアップするための設定コピー(自動更新される)
   PRIVACY-CHECKLIST.md     機密情報の定期確認手順
   SKILL-PROMOTION-GUIDE.md ルール→Skill化の手順
+  EXTERNAL-SKILL-GUIDE.md  外部Skillを安全に導入する手順
   HANDOFF-TEMPLATE.md      セッション引き継ぎメモの雛形
 ```
 
