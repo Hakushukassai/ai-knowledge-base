@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-24T09:40:35Z",
+  "generated_at": "2026-08-24T09:44:05Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 19,
-    "chars": 22110
+    "count": 21,
+    "chars": 24336
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@
     "count": 0,
     "chars": 0
   },
-  "total_chars": 23149,
+  "total_chars": 25375,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -353,6 +353,22 @@
       "candidates_count": 19,
       "incidents_count": 1,
       "total_chars": 23149
+    },
+    {
+      "date": "2026-08-24T09:42:45Z",
+      "summary": "[候補] 外部Skill `game-feel` を試験導入 / [候補] 外部Skill `godot-ui-control` を試験導入",
+      "rules_count": 1,
+      "candidates_count": 21,
+      "incidents_count": 1,
+      "total_chars": 25375
+    },
+    {
+      "date": "2026-08-24T09:44:05Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 21,
+      "incidents_count": 1,
+      "total_chars": 25375
     }
   ],
   "items": {
@@ -384,6 +400,57 @@
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-24-godot-ui-control-external-skill.md",
+        "title": "外部Skill `godot-ui-control` を試験導入",
+        "content": "# [候補] 外部Skill `godot-ui-control` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, UI, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`のUI・デザイン向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`godot-ui-control`(Control/Containerでのレスポンシブレイアウト、Themeでのスタイリング、フォーカスナビゲーション)を`~/.claude/skills/godot-ui-control/`として試験導入した。\n\n## わかったこと・今の対応\n`game-feel`と同様、元のSKILL.mdは最初からフロントマターが揃っており修正不要だった。`references/layout-and-theming.md`もあわせて配置。機密情報スキャンはクリーン。「WEBベースならまだまとも、ゲームに組み込むと酷い」という元の課題感に対し、このSkillは`game-feel`と組み合わせて使う想定(引き継ぎメモの指摘通り)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。Godot 4.7のControl/Containerノードの設計知識に特化しており、`godot-optimization`・`godot-code-gen`・`game-feel`のいずれとも話題が重複しない。SKILL.md内で`game-ui-ux`・`godot-animation`・`godot-signals-groups`・`input-systems`など、同じ元リポジトリの未導入の他Skillへの言及がある(`game-feel`と同様の留意点)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のUI実装作業(RESODIVE等)での有用性、特にゲーム内UIの見た目改善に実際に効くか\n",
+        "tags": [
+          "godot",
+          "ゲーム開発",
+          "UI",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "`外部Skill導入_引き継ぎ.md`のUI・デザイン向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`godot-ui-control`(…",
+        "solution_summary": "`game-feel`と同様、元のSKILL.mdは最初からフロントマターが揃っており修正不要だった。`references/layout-and-theming.md`もあわせて…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills",
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-24-game-feel-external-skill.md",
+        "title": "外部Skill `game-feel` を試験導入",
+        "content": "# [候補] 外部Skill `game-feel` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`のUI・game feel向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`game-feel`(画面シェイク・ヒットストップ・イージング・スクワッシュ&ストレッチ等、動きの気持ちよさに関する知見)を`~/.claude/skills/game-feel/`として試験導入した。\n\n## わかったこと・今の対応\n元のSKILL.mdは`godot-code-gen`と異なり、最初から`name`/`description`のフロントマターが揃っており、そのまま配置できた(修正不要)。`references/feedback-recipes.md`という参照ファイルも本体が明示的に読み込む前提のため、あわせて配置した。機密情報スキャンは本体・参照ファイルともクリーン。設置直後にSkill一覧へ即座に反映されることを確認(godot-code-genの時と同様の挙動)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。エンジン非依存の設計で、Godot 4.7とUnity 6.3 LTS両方のコード例が併記されている。既存の`godot-optimization`・`godot-code-gen`とは話題が異なり衝突しない。SKILL.md内で`camera-systems`・`audio-design`・`physics-tuning`・`godot-animation`など、同じ元リポジトリの**未導入の他Skill**への言及が複数あるが、それらは今回導入していないため、参照されても実体が無い状態になる(動作は壊れないが、案内通りには追従できない場面がありうる)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のゲーム開発作業(RESODIVE等)での有用性\n- 言及されている未導入の関連Skill(`camera-systems`等)を追加導入すべきか\n",
+        "tags": [
+          "godot",
+          "ゲーム開発",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "`外部Skill導入_引き継ぎ.md`のUI・game feel向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`game-feel`(画面…",
+        "solution_summary": "元のSKILL.mdは`godot-code-gen`と異なり、最初から`name`/`description`のフロントマターが揃っており、そのまま配置できた(修正不要)。`re…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills",
+        "promotion_ready": false
+      },
       {
         "filename": "2026-08-24-skill-recognized-same-session-as-created.md",
         "title": "同一会話中に作成したSkillも、その場で認識・発動することがある",
@@ -886,6 +953,15 @@
   "merge_suggestions": null,
   "skills": [
     {
+      "folder_name": "game-feel",
+      "name": "game-feel",
+      "description": ">",
+      "linked_to_rule": false,
+      "usage_count": 0,
+      "effectiveness_summary": {},
+      "effectiveness_recent": []
+    },
+    {
       "folder_name": "godot-code-gen",
       "name": "godot-code-gen",
       "description": "Godot 4.xでGDScriptコードを書く・生成する相談を受けたら必ず使うこと。型ヒント、@export/@onready等のアノテーション、シグナルの宣言・発行・接続、CharacterBody2D/3D移動、ステートマシン、Resourceパターン、Autoload/シングルトン、await/非同期処理、Tween、シーンのインスタンス化、入力処理など、GDScript 4.x特有の書き方・構文・ベストプラクティスに関する質問全般で参照する。「Godot 3から4に上げたら動かなくなった」「yieldがない」「connectの書き方が変わった」といった移行時のハマりどころの相談でも必ず参照する。",
@@ -907,6 +983,15 @@
       "name": "godot-optimization",
       "description": "Godot 4でのゲーム開発中、敵・弾丸・アイテムなど見た目が同じオブジェクトを大量に生成する設計や実装を相談されたら必ず使うこと。個別のNode(CharacterBody3D等)で大量インスタンスを扱おうとしている相談、パフォーマンス低下(フレームレート低下・カクつき)の相談、大量スポーン・弾幕システムの実装、MultiMeshInstance3Dに関する質問では特に必ず参照する。「敵が大量に出る」「弾がたくさん飛ぶ」「同じメッシュを何百個も並べる」といった話が出たら発動すること。",
       "linked_to_rule": true,
+      "usage_count": 0,
+      "effectiveness_summary": {},
+      "effectiveness_recent": []
+    },
+    {
+      "folder_name": "godot-ui-control",
+      "name": "godot-ui-control",
+      "description": ">",
+      "linked_to_rule": false,
       "usage_count": 0,
       "effectiveness_summary": {},
       "effectiveness_recent": []

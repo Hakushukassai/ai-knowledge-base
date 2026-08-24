@@ -147,3 +147,25 @@
 ## 知識ベースに送る候補があるか
 - [x] なし
 - [ ] あり → knowledge-base/candidates/ に書き出し済み
+
+---
+
+## セッション概要
+- 日付: 2026-08-24
+- 対象プロジェクト: ai-knowledge-base(外部Skill試験導入、続き)
+- 今回やったこと(3行以内):
+  1. `godot-code-gen`の発動テストを同一会話内で実施し成功(明示指定なしで自動発動、実装例も妥当)。`.skill_effectiveness.log`に記録し、`SKILL-PROMOTION-GUIDE.md`の「同一会話では認識されない」という記載が今回は再現しなかったことを別候補として記録。
+  2. 引き継ぎメモの優先度上位2件、`game-feel`と`godot-ui-control`(いずれも`gamedev-skills/awesome-gamedev-agent-skills`由来)を同じパイプラインで試験導入。両方とも元からフロントマター完備で修正不要、参照ファイルもあわせて配置。
+  3. 4件とも機密情報スキャン・ダッシュボード反映(ローカルサーバー経由)を確認しGitHubへpush。
+
+## 到達点
+- 今、何が動く状態か: `godot-code-gen`(発動確認済み)、`game-feel`・`godot-ui-control`(設置・反映確認のみ、発動未確認)が`~/.claude/skills/`に導入済み。
+- 何がまだ未完成か: `game-feel`・`godot-ui-control`の実発動確認、3件ともRESODIVE等の実プロジェクトでの有用性検証。引き継ぎメモの残り2〜3件(Vision/OCR系、godot-animation等)は未着手。
+
+## 次回、ここから始める
+- 次にやるべき最初の一手: RESODIVEでの実作業で3件のSkillを実際に使い、役立ったかを記録する(通常の候補→ルール昇格フローに合流させる)。
+- 判断が必要な未決事項: 残りのVision/OCR系・godot-animation等への横展開を続けるかどうか。
+
+## 知識ベースに送る候補があるか
+- [ ] なし
+- [x] あり → knowledge-base/candidates/ に書き出し済み
