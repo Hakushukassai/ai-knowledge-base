@@ -108,6 +108,29 @@ def find_date(content):
     return m.group(1) if m else None
 
 
+def find_observed_count(content):
+    """本文中の `observed_count: N` 行から観測回数を取り出す(無ければ1)"""
+    m = re.search(r'^observed_count:\s*(\d+)', content, re.MULTILINE)
+    return int(m.group(1)) if m else 1
+
+
+def is_endorsed(content):
+    """`endorsed: true` が付いているか(/kb-endorse で人が確認済みにした候補)"""
+    return bool(re.search(r'^endorsed:\s*true\s*$', content, re.MULTILINE | re.IGNORECASE))
+
+
+def promotion_readiness(observed_in, observed_count, endorsed):
+    """昇格提案の対象になりうるか(実際の昇格判断はSessionEndフックが行う。
+    ここではダッシュボード表示用に同じ基準を簡易的に再現しているだけ)"""
+    if len(set(observed_in)) >= 2:
+        return True
+    if observed_count >= 3:
+        return True
+    if endorsed:
+        return True
+    return False
+
+
 def days_since(date_str, now_dt):
     if not date_str:
         return None
@@ -153,6 +176,21 @@ def extract_section(content, heading, max_len=90):
 PROBLEM_HEADINGS = {'candidates': '何が起きたか', 'incidents': '何が起きたか'}
 SOLUTION_HEADINGS = {'candidates': 'わかったこと・今の対応', 'incidents': '解決', 'rules': 'ルール'}
 
+# rules/candidates が実際のセッションで参照・活用された記録
+# (SessionEndのプロンプト型フックが会話内容から判断して記録する。Skillとして
+# 自動発動した場合は別途 skill_usage.log で数えているのでここには含まれない)
+reference_log_path = os.path.join(kb_dir, '.reference_usage.log')
+reference_records = {}
+if os.path.isfile(reference_log_path):
+    with open(reference_log_path, encoding='utf-8') as f:
+        for line in f:
+            parts = line.rstrip('\n').split('\t')
+            if len(parts) >= 5:
+                ts, _cat, filename, verdict, reason = parts[0], parts[1], parts[2], parts[3], parts[4]
+                reference_records.setdefault(filename, []).append({
+                    'date': ts, 'verdict': verdict, 'reason': reason,
+                })
+
 
 categories = {cat: files_in(cat) for cat in CATEGORY_LABEL}
 category_of = {p: cat for cat, paths in categories.items() for p in paths}
@@ -170,18 +208,29 @@ for cat, paths in categories.items():
         content = read_content(p)
         file_date = find_date(content) or git_added_date(p, kb_dir)
         age_days = days_since(file_date, now_dt)
+        filename = os.path.basename(p)
+        projects = find_projects(content)
+        observed_count = find_observed_count(content)
+        endorsed = is_endorsed(content)
+        ref_records = sorted(reference_records.get(filename, []), key=lambda r: r['date'], reverse=True)
         entry = {
-            'filename': os.path.basename(p),
+            'filename': filename,
             'title': first_title(p),
             'content': content,
             'tags': find_tags(content),
-            'projects': find_projects(content),
+            'projects': projects,
             'date': file_date,
             'days_old': age_days,
             'stale': (cat == 'candidates' and age_days is not None and age_days >= STALE_DAYS),
             'problem_summary': extract_section(content, PROBLEM_HEADINGS[cat]) if cat in PROBLEM_HEADINGS else None,
             'solution_summary': extract_section(content, SOLUTION_HEADINGS[cat]) if cat in SOLUTION_HEADINGS else None,
+            'observed_count': observed_count,
+            'endorsed': endorsed,
+            'reference_count': len(ref_records),
+            'reference_recent': ref_records[:5],
         }
+        if cat == 'candidates':
+            entry['promotion_ready'] = promotion_readiness(projects, observed_count, endorsed)
         if cat == 'rules':
             skill_name = find_skill_name(content)
             entry['skill_name'] = skill_name
@@ -216,7 +265,11 @@ items['archived'] = archived_entries
 promotion_suggestions_path = os.path.join(kb_dir, 'PROMOTION-SUGGESTIONS.md')
 promotion_suggestions = read_content(promotion_suggestions_path).strip() or None
 
+merge_suggestions_path = os.path.join(kb_dir, 'MERGE-SUGGESTIONS.md')
+merge_suggestions = read_content(merge_suggestions_path).strip() or None
+
 stale_count = sum(1 for e in items.get('candidates', []) if e['stale'])
+promotion_ready_count = sum(1 for e in items.get('candidates', []) if e.get('promotion_ready'))
 
 # Skillが実際に使われた回数(PostToolUse/Skill hookが ~/knowledge-base/.skill_usage.log に記録)
 usage_log_path = os.path.join(kb_dir, '.skill_usage.log')
@@ -355,9 +408,11 @@ data = {
     'history': history,
     'items': items,
     'promotion_suggestions': promotion_suggestions,
+    'merge_suggestions': merge_suggestions,
     'skills': all_skills,
     'retired_skills': retired_skills,
     'stale_count': stale_count,
+    'promotion_ready_count': promotion_ready_count,
 }
 
 with open(out_path, 'w', encoding='utf-8') as f:

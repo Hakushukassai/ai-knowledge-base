@@ -4,6 +4,10 @@ Thumbs.db
 .skill_usage.log
 .skill_effectiveness.log
 
+# 注意: .reference_usage.log はここに含めない(意図的)。候補・ルールの
+# 「実際に参照された実績」はPC間で積み上がってこそ意味があるため、
+# 上記のSkillログとは違ってGitHubに同期する。
+
 # docs/stats.json と docs/stats-data.js は GitHub Pages で配信するために
 # あえてコミット対象にする(除外しない)。.manifest.json だけは
 # 「前回実行時との差分」を覚えておくための内部メモなので除外する。
@@ -11,3 +15,7 @@ docs/.manifest.json
 
 # 機密情報チェックで見つかった警告(ローカルだけのメモ、pushしない)
 SECURITY-WARNING.md
+
+# 同期コンフリクトの警告(そのPC固有のローカルな状態のメモ、pushしない。
+# 意図: 復旧直後に git add -A で誤って一瞬コミット・pushされるのを防ぐ)
+SYNC-CONFLICT.md

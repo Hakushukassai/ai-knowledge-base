@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-24T06:21:48Z",
+  "generated_at": "2026-08-24T09:15:37Z",
   "rules": {
     "count": 1,
     "chars": 540
@@ -297,6 +297,30 @@
       "candidates_count": 17,
       "incidents_count": 1,
       "total_chars": 20756
+    },
+    {
+      "date": "2026-08-24T09:10:25Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 17,
+      "incidents_count": 1,
+      "total_chars": 20756
+    },
+    {
+      "date": "2026-08-24T09:11:55Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 17,
+      "incidents_count": 1,
+      "total_chars": 20756
+    },
+    {
+      "date": "2026-08-24T09:15:37Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 17,
+      "incidents_count": 1,
+      "total_chars": 20756
     }
   ],
   "items": {
@@ -316,6 +340,10 @@
         "stale": false,
         "problem_summary": null,
         "solution_summary": "敵や弾丸など同一メッシュの大量インスタンスは、個別の Node ではなく MultiMeshInstance3D を使う。個別 Node は 200 体を超えたあたりから _pro…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
         "skill_name": "godot-optimization",
         "skill_installed": true,
         "skill_retired": false
@@ -338,7 +366,12 @@
         "days_old": 0,
         "stale": false,
         "problem_summary": "UI動作確認のため、スクリーンショットを見て座標を指定してクリックしたところ、意図した要素とは別の行がクリックされ続けた。エラーは出ず、スクリーンショットも一見更新されているように…",
-        "solution_summary": "`read_page`で要素の参照ID(ref)を取得し、座標ではなく`ref`を指定してクリックする方式に切り替えたところ確実になった。座標クリックは、レイアウトのわずかな差やス…"
+        "solution_summary": "`read_page`で要素の参照ID(ref)を取得し、座標ではなく`ref`を指定してクリックする方式に切り替えたところ確実になった。座標クリックは、レイアウトのわずかな差やス…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-24-media-query-override-order-loses-to-later-base-rule.md",
@@ -356,7 +389,12 @@
         "days_old": 0,
         "stale": false,
         "problem_summary": "モバイル用に`@media (max-width: 860px){ .foo{ margin-top: 28px } }`を書いたのに、実際のブラウザでは適用されず、無関係に見える…",
-        "solution_summary": "原因はCSSの記述順。同じ詳細度(セレクタの強さ)のルールは、`@media`の中かどうかに関係なく「あとに書かれた方」が勝つ。今回は`.foo{ margin-top: 28px…"
+        "solution_summary": "原因はCSSの記述順。同じ詳細度(セレクタの強さ)のルールは、`@media`の中かどうかに関係なく「あとに書かれた方」が勝つ。今回は`.foo{ margin-top: 28px…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-24-dst-aware-market-hours-without-timezone-library.md",
@@ -375,7 +413,12 @@
         "days_old": 0,
         "stale": false,
         "problem_summary": "米国株式市場(NYSE, 9:30-16:00 America/New_York)の開場・閉場判定と「次に市場が開く時刻」の計算を、`date-fns-tz`や`luxon`のよう…",
-        "solution_summary": "Node標準の`Intl.DateTimeFormat(\"en-US\", { timeZone: \"America/New_York\", ... }).formatToParts(…"
+        "solution_summary": "Node標準の`Intl.DateTimeFormat(\"en-US\", { timeZone: \"America/New_York\", ... }).formatToParts(…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-24-yahoo-finance-chart-api-doubles-as-free-quote-source.md",
@@ -394,7 +437,12 @@
         "days_old": 0,
         "stale": false,
         "problem_summary": "既存のFinnhub無料枠は米国取引所限定で暗号資産(BTC-USD等)のリアルタイム気配値が取得できなかった。日次終値取得には既に非公式のYahoo Finance Chart…",
-        "solution_summary": "`https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=1d&interval=1d` を叩くと、`cha…"
+        "solution_summary": "`https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=1d&interval=1d` を叩くと、`cha…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-24-css-element-class-selector-silently-beats-utility-class.md",
@@ -413,7 +461,12 @@
         "days_old": 0,
         "stale": false,
         "problem_summary": "株価アプリで「上昇=緑、下降=赤」の色分けクラス(`.positive`/`.negative`/`.buyTag`/`.sellTag`)をテーブルのセルに適用していたが、実際の…",
-        "solution_summary": "共通スタイル側の `.table td { color: var(--color-text); }`(要素セレクタ`td` + クラスセレクタ`.table`の組み合わせ、詳細度…"
+        "solution_summary": "共通スタイル側の `.table td { color: var(--color-text); }`(要素セレクタ`td` + クラスセレクタ`.table`の組み合わせ、詳細度…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-24-npm-start-script-masks-clean-sigterm-shutdown.md",
@@ -432,7 +485,12 @@
         "days_old": 0,
         "stale": false,
         "problem_summary": "Railway上のExpressサーバーで、`process.on(\"SIGTERM\", ...)` によるgraceful shutdown(サーバーclose→DB close…",
-        "solution_summary": "実際のDeploy Logsを確認すると、アプリ自身のシャットダウンログは正常に出ている一方で、`npm error signal SIGTERM` という行が別途出力されていた。…"
+        "solution_summary": "実際のDeploy Logsを確認すると、アプリ自身のシャットダウンログは正常に出ている一方で、`npm error signal SIGTERM` という行が別途出力されていた。…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-24-gh-auth-login-needs-real-terminal.md",
@@ -451,7 +509,12 @@
         "days_old": 0,
         "stale": false,
         "problem_summary": "`gh auth login`をClaude Codeのチャット上(コードブロックのRunボタン経由)で実行してもらったところ、ユーザーは完了したつもりでも`gh auth sta…",
-        "solution_summary": "Macの通常のターミナル(Terminal.appなど)で直接`gh auth login`を実行し直してもらったところ、ブラウザでの認可まできちんと完了し、`gh auth st…"
+        "solution_summary": "Macの通常のターミナル(Terminal.appなど)で直接`gh auth login`を実行し直してもらったところ、ブラウザでの認可まできちんと完了し、`gh auth st…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-24-claude-code-cannot-self-edit-settings-json.md",
@@ -469,7 +532,12 @@
         "days_old": 0,
         "stale": false,
         "problem_summary": "Claude Codeに`~/.claude/settings.json`(hooksの設定ファイル)を新規作成・編集させようとすると、BashツールでもWriteツールでも、au…",
-        "solution_summary": "ツールを変えても同じ理由で拒否されるため、回避策ではなく仕様と考えられる。内容をファイルに書き出し、ユーザー本人に自分のターミナルで`cp`させることで設置できた。他の`~/.cl…"
+        "solution_summary": "ツールを変えても同じ理由で拒否されるため、回避策ではなく仕様と考えられる。内容をファイルに書き出し、ユーザー本人に自分のターミナルで`cp`させることで設置できた。他の`~/.cl…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-example-candidate.md",
@@ -487,7 +555,12 @@
         "days_old": 4,
         "stale": false,
         "problem_summary": "シーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。",
-        "solution_summary": "シーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。"
+        "solution_summary": "シーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-23-windows-python3-stub-broken.md",
@@ -505,7 +578,12 @@
         "days_old": 1,
         "stale": false,
         "problem_summary": "Windows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。",
-        "solution_summary": "本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。"
+        "solution_summary": "本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-23-torch-dll-winerror1114-background-thread.md",
@@ -524,7 +602,12 @@
         "days_old": 1,
         "stale": false,
         "problem_summary": "Windows上でtorch(easyocrが内部で使用)を初めてimportする処理を、メインスレッドではなく新しく作ったバックグラウンドスレッド(監視ループ用のスレッド)の中で…",
-        "solution_summary": "原因は完全には確定できなかった(意図的な再現実験ではエラー自体を再現できなかった)。ただし「torchのようなネイティブDLLを持つライブラリの初回importを、メインスレッド以…"
+        "solution_summary": "原因は完全には確定できなかった(意図的な再現実験ではエラー自体を再現できなかった)。ただし「torchのようなネイティブDLLを持つライブラリの初回importを、メインスレッド以…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-23-small-crop-color-sampling-alignment-sensitivity.md",
@@ -541,7 +624,12 @@
         "days_old": 1,
         "stale": false,
         "problem_summary": "小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。",
-        "solution_summary": "切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。"
+        "solution_summary": "切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-23-sessionend-timeout-budget.md",
@@ -558,7 +646,12 @@
         "days_old": 1,
         "stale": false,
         "problem_summary": "SessionEndフックに複数のhook(会話内容をAIに判断させて文章を書く「prompt」タイプを含む)を並べていたが、どのhookにも`timeout`を指定していなかった…",
-        "solution_summary": "SessionEndフックだけは特別に、`timeout`を指定しない場合「複数のhook全部合わせてわずか1.5秒」しか実行時間が無い(他のイベントでは`command`が600…"
+        "solution_summary": "SessionEndフックだけは特別に、`timeout`を指定しない場合「複数のhook全部合わせてわずか1.5秒」しか実行時間が無い(他のイベントでは`command`が600…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-23-sessionend-matcher-clear-only.md",
@@ -575,7 +668,12 @@
         "days_old": 1,
         "stale": false,
         "problem_summary": "Claude CodeのSessionEndフックに`matcher: \"clear\"`とだけ書いていたら、ユーザーが`/clear`と入力した時にしか動かなかった。ターミナルを閉…",
-        "solution_summary": "`matcher`に`\"clear|prompt_input_exit\"`のようにパイプ区切りで複数の終了理由を書けば、両方のタイミングで発動するようになる。`matcher`は配…"
+        "solution_summary": "`matcher`に`\"clear|prompt_input_exit\"`のようにパイプ区切りで複数の終了理由を書けば、両方のタイミングで発動するようになる。`matcher`は配…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-23-easyocr-small-kana-confusion-not-fixable-by-preprocessing.md",
@@ -592,7 +690,12 @@
         "days_old": 1,
         "stale": false,
         "problem_summary": "EasyOCRで、小さい「ゃ」「や」のような拗音の仮名を、大きい仮名と読み間違える。",
-        "solution_summary": "画質を上げても二値化(白黒に変換する処理)を変えても直らなかった。前処理では直せない、モデル自体の限界の可能性が高い。他のOCRエンジンを試すか、辞書で後から補正する方法はまだ試せ…"
+        "solution_summary": "画質を上げても二値化(白黒に変換する処理)を変えても直らなかった。前処理では直せない、モデル自体の限界の可能性が高い。他のOCRエンジンを試すか、辞書で後から補正する方法はまだ試せ…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-23-cv2-tm-ccorr-normed-bright-template-bias.md",
@@ -610,7 +713,12 @@
         "days_old": 1,
         "stale": false,
         "problem_summary": "OpenCVの`TM_CCORR_NORMED`という比較方法を使うと、明るい画像は内容と無関係な場所にも高い一致スコアを出してしまう。",
-        "solution_summary": "別の比較方法(`TM_CCOEFF_NORMED`)に切り替えると、既存の検証済みケースの精度が落ちてしまったため、今回は不採用。切り替えを検討する際は、既知の正解データで必ず事前…"
+        "solution_summary": "別の比較方法(`TM_CCOEFF_NORMED`)に切り替えると、既存の検証済みケースの精度が落ちてしまったため、今回は不採用。切り替えを検討する際は、既知の正解データで必ず事前…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       },
       {
         "filename": "2026-08-23-claude-code-exit-not-always-available.md",
@@ -627,7 +735,12 @@
         "days_old": 1,
         "stale": false,
         "problem_summary": "「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available…",
-        "solution_summary": "`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案…"
+        "solution_summary": "`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "promotion_ready": false
       }
     ],
     "incidents": [
@@ -641,12 +754,17 @@
         "days_old": 70,
         "stale": false,
         "problem_summary": "雑魚敵を30体以上同時に倒すと、弾丸ノードが同時に150個近く発生し、 フレームレートが60→22まで落ちた。",
-        "solution_summary": "MultiMeshInstance3D + 独自の当たり判定計算に置き換え、 150個発生時でも58fps以上を維持できるようになった。"
+        "solution_summary": "MultiMeshInstance3D + 独自の当たり判定計算に置き換え、 150個発生時でも58fps以上を維持できるようになった。",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": []
       }
     ],
     "archived": []
   },
   "promotion_suggestions": null,
+  "merge_suggestions": null,
   "skills": [
     {
       "folder_name": "godot-optimization",
@@ -659,5 +777,6 @@
     }
   ],
   "retired_skills": [],
-  "stale_count": 0
+  "stale_count": 0,
+  "promotion_ready_count": 0
 }

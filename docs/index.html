@@ -369,7 +369,7 @@
   <section class="pane pane-detail" id="pane-detail"></section>
 </div>
 
-<script src="stats-data.js?v=20260824062148"></script>
+<script src="stats-data.js?v=20260824091537"></script>
 <script>
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, ch => ({
@@ -648,7 +648,7 @@ function renderSidebar(){
     {key: 'overview', label: '概要', num: 1},
     {key: 'rules', label: CAT_LABEL.rules, count: statsData.rules.count, dot: CAT_COLOR.rules, num: 2},
     {key: 'candidates', label: CAT_LABEL.candidates, count: statsData.candidates.count, dot: CAT_COLOR.candidates,
-      flag: statsData.stale_count > 0 || !!statsData.promotion_suggestions, num: 3},
+      flag: statsData.stale_count > 0 || !!statsData.promotion_suggestions || !!statsData.merge_suggestions, num: 3},
     {key: 'incidents', label: CAT_LABEL.incidents, count: statsData.incidents.count, dot: CAT_COLOR.incidents, num: 4},
     {key: 'skills', label: 'Skill一覧', count: (statsData.skills || []).length, num: 5},
     {key: 'history', label: '更新履歴', num: 6},
@@ -698,6 +698,13 @@ function renderOverview(container){
     const banner = document.createElement('div');
     banner.className = 'banner tone-info clickable';
     banner.innerHTML = `<div class="banner-title">昇格の提案があります</div><div class="banner-body">${renderMarkdownLite(statsData.promotion_suggestions)}</div>`;
+    banner.onclick = () => goSection('candidates');
+    container.appendChild(banner);
+  }
+  if (statsData.merge_suggestions){
+    const banner = document.createElement('div');
+    banner.className = 'banner tone-info clickable';
+    banner.innerHTML = `<div class="banner-title">統合の提案があります</div><div class="banner-body">${renderMarkdownLite(statsData.merge_suggestions)}</div>`;
     banner.onclick = () => goSection('candidates');
     container.appendChild(banner);
   }
@@ -753,7 +760,13 @@ function renderHelp(container){
       <span class="flow-step">手動でルールに昇格</span><span class="flow-arrow">→</span>
       <span class="flow-step">Skill化</span>
     </div>
-    <p>候補→ルールへの昇格は意図的に自動化していません。最低2つの異なるプロジェクトで同じパターンが観測され、かつ「本当にあった話か」を人が確認したうえで手動昇格します。</p>
+    <p>候補→ルールへの昇格は意図的に自動化していません。以下のいずれかの証拠が揃った候補が昇格提案の対象になり、最終判断は必ず人が行います。</p>
+    <ul>
+      <li>異なる2つ以上のプロジェクトで同じ発見が観測された(<code>observed_in</code>)</li>
+      <li>同じプロジェクト内で3回以上繰り返し観測された(<code>observed_count</code>)</li>
+      <li><code>/kb-endorse</code> で人が既に内容を確認済み(<code>endorsed</code>)</li>
+    </ul>
+    <p style="margin-top:8px">「別プロジェクトでの偶然の一致」だけに頼らないことで、Claude Code自体についての気づきのように、そもそも他分野のプロジェクトでは再現しにくい発見も育てられるようにしています。</p>
   `;
   container.appendChild(block1);
 
@@ -777,6 +790,7 @@ function renderHelp(container){
     <h3>コマンド一覧</h3>
     <ul>
       <li><code>/kb-sync</code> — 会話を終わらせずに、今すぐ知識ベースへの記録とGitHubへのpushを実行する</li>
+      <li><code>/kb-endorse</code> — 話題にしている候補を、内容を確認した上で「人が確認済み」にする(昇格条件の一つ)</li>
       <li><code>/exit</code> — セッションを終了する(自動でHANDOFF生成・記録・pushまで行われる)</li>
       <li><code>/clear</code> — 会話をリセットして終了する(pushまでの流れは<code>/exit</code>と同じ)</li>
     </ul>
@@ -806,11 +820,26 @@ function renderHelp(container){
     <h3>定期メンテナンス</h3>
     <ul>
       <li>月1回: <code>PRIVACY-CHECKLIST.md</code> に沿って機密情報が紛れていないか確認</li>
-      <li>月1回(同じタイミングで): 候補を一通り眺めて昇格できそうなものがないか検討</li>
+      <li>月1回(同じタイミングで): 候補を一通り眺めて昇格できそうなものがないか検討。「昇格条件クリア」バッジが付いているものは特に優先</li>
       <li><code>SYNC-CONFLICT.md</code> が出たら: 複数PC間の自動pushが競合しているので手動で解決</li>
+      <li>統合の提案が出たら: 同じ発見を指す候補が複数ファイルに分かれているので、内容を1つにまとめて片方を削除する</li>
     </ul>
   `;
   container.appendChild(block5);
+
+  const block6 = document.createElement('div');
+  block6.className = 'help-block';
+  block6.innerHTML = `
+    <h3>アーカイブされにくい候補</h3>
+    <p>候補は90日動きがないと自動でアーカイブされますが、以下のいずれかに当てはまるものは対象外になります(使われている・確認済みのものを優先的に残す仕組み)。</p>
+    <ul>
+      <li>人が確認済み(<code>/kb-endorse</code>)</li>
+      <li>2回以上観測されている</li>
+      <li>2プロジェクト以上で観測されている</li>
+      <li>直近90日以内に、後のセッションで参照・活用された実績がある</li>
+    </ul>
+  `;
+  container.appendChild(block6);
 }
 
 /* ================= リストペイン ================= */
@@ -1033,6 +1062,20 @@ function renderItemDetail(container, cat, filename){
   if (item.stale){
     badges.innerHTML += `<span class="badge tone-warn"><span class="badge-dot"></span>${item.days_old}日間、動きなし</span>`;
   }
+  if (cat === 'candidates'){
+    if (item.promotion_ready){
+      badges.innerHTML += `<span class="badge tone-good"><span class="badge-dot"></span>昇格条件クリア</span>`;
+    }
+    if (item.endorsed){
+      badges.innerHTML += `<span class="badge tone-good"><span class="badge-dot"></span>人が確認済み</span>`;
+    }
+    if (item.observed_count > 1){
+      badges.innerHTML += `<span class="badge">観測 ${item.observed_count}回</span>`;
+    }
+  }
+  if (item.reference_count > 0){
+    badges.innerHTML += `<span class="badge">参照実績 ${item.reference_count}回</span>`;
+  }
   (item.projects || []).forEach(p => badges.innerHTML += `<span class="pill">${escapeHtml(p)}</span>`);
   (item.tags || []).forEach(t => badges.innerHTML += `<span class="pill">${escapeHtml(t)}</span>`);
   if (badges.innerHTML) container.appendChild(badges);
@@ -1047,6 +1090,12 @@ function renderItemDetail(container, cat, filename){
     const block = document.createElement('div');
     block.className = 'field-block';
     block.innerHTML = `<div class="field-label">${cat === 'rules' ? 'ルール' : '対応'}</div><div class="field-text">${renderMarkdownLite(item.solution_summary)}</div>`;
+    container.appendChild(block);
+  }
+  if ((item.reference_recent || []).length > 0){
+    const block = document.createElement('div');
+    block.className = 'field-block';
+    block.innerHTML = `<div class="field-label">参照実績(直近${item.reference_recent.length}件)</div><div class="field-text">${item.reference_recent.map(r => `${escapeHtml((r.date||'').slice(0,10))}: ${escapeHtml(r.verdict)}${r.reason ? ' — ' + escapeHtml(r.reason) : ''}`).join('<br>')}</div>`;
     container.appendChild(block);
   }
 
