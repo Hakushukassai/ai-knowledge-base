@@ -1,5 +1,5 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-24T06:03:12Z",
+  "generated_at": "2026-08-24T06:19:03Z",
   "rules": {
     "count": 1,
     "chars": 540
@@ -260,6 +260,30 @@ window.STATS_DATA = {
     },
     {
       "date": "2026-08-24T06:03:12Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 17,
+      "incidents_count": 1,
+      "total_chars": 20756
+    },
+    {
+      "date": "2026-08-24T06:14:34Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 17,
+      "incidents_count": 1,
+      "total_chars": 20756
+    },
+    {
+      "date": "2026-08-24T06:18:43Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 17,
+      "incidents_count": 1,
+      "total_chars": 20756
+    },
+    {
+      "date": "2026-08-24T06:19:03Z",
       "summary": "新しい記録なし(数値のみ再集計)",
       "rules_count": 1,
       "candidates_count": 17,

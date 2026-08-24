@@ -120,6 +120,7 @@
     .app-shell[data-mobile-screen="detail"] .pane-detail{ display:block; min-height:100vh; min-height:100dvh; }
     .pane-list.is-wide{ border-right:none; }
     .mobile-only{ display:revert !important; }
+    .mobile-only-hide{ display:none !important; }
   }
   .mobile-only{ display:none; }
 
@@ -142,6 +143,18 @@
     font-size: 13px; color: var(--text-1);
   }
   .search-field input::placeholder{ color: var(--text-3); }
+  .search-field kbd{ flex-shrink:0; }
+  @media (max-width: 860px){
+    .search-field kbd{ display:none; }
+  }
+
+  kbd{
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+    font-size: 10.5px; color: var(--text-3);
+    background: var(--chip-bg);
+    border-radius: 4px; padding: 1.5px 5px;
+    line-height: 1.5;
+  }
 
   .nav-group{ margin-bottom: 4px; }
   .nav-row{
@@ -250,6 +263,7 @@
   }
   .row-item:hover{ background: var(--row-hover); }
   .row-item.selected{ background: var(--row-selected); }
+  .row-item.kbd-focus{ outline: 2px solid var(--text-3); outline-offset: -2px; }
   .row-item .row-dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
   .row-item .row-main{ flex:1; min-width:0; }
   .row-item .row-title{
@@ -286,6 +300,32 @@
   }
   .detail-meta-row .dot-sep{ color: var(--text-3); }
   .filename-tag{ font-size: 11px; color: var(--text-3); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .gh-link{ color: var(--text-2); text-decoration:none; display:inline-flex; align-items:center; gap:3px; }
+  .gh-link:hover{ color: var(--text-1); text-decoration:underline; }
+
+  /* ---------- 使い方(ヘルプ) ---------- */
+  .help-block{ margin-bottom: 26px; }
+  .help-block h3{ font-size: 14px; font-weight:600; margin-bottom: 8px; }
+  .help-block p{ font-size: 13px; line-height: 1.75; color: var(--text-2); margin-bottom: 8px; }
+  .help-block ul, .help-block ol{ padding-left: 1.2em; font-size: 13px; line-height: 1.85; color: var(--text-2); }
+  .help-block li{ margin-bottom: 2px; }
+  .help-flow{
+    display:flex; flex-wrap:wrap; align-items:center; gap: 6px;
+    font-size: 12.5px; color: var(--text-1); margin-bottom: 8px;
+  }
+  .help-flow .flow-step{
+    background: var(--chip-bg); border-radius: var(--radius-sm); padding: 5px 10px;
+  }
+  .help-flow .flow-arrow{ color: var(--text-3); }
+  .shortcut-table{ width:100%; border-collapse: collapse; font-size: 13px; }
+  .shortcut-table tr{ border-bottom: 1px solid var(--line-soft); }
+  .shortcut-table td{ padding: 7px 4px; color: var(--text-2); }
+  .shortcut-table td:first-child{ width: 130px; white-space:nowrap; }
+  .dir-tree{
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px;
+    line-height: 1.85; color: var(--text-2); white-space:pre; overflow-x:auto;
+    background: var(--chip-bg); border-radius: var(--radius-md); padding: 12px 14px;
+  }
 
   .badge{
     display:inline-flex; align-items:center; gap:5px;
@@ -329,7 +369,7 @@
   <section class="pane pane-detail" id="pane-detail"></section>
 </div>
 
-<script src="stats-data.js?v=20260824060312"></script>
+<script src="stats-data.js?v=20260824061903"></script>
 <script>
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, ch => ({
@@ -341,7 +381,10 @@ const CAT_LABEL = {rules: 'ルール(確定)', candidates: '候補', incidents: 
 const CAT_LABEL_SHORT = {rules: 'ルール', candidates: '候補', incidents: '事例', archived: 'アーカイブ'};
 const CAT_COLOR = {rules: 'var(--cat-rule)', candidates: 'var(--cat-candidate)', incidents: 'var(--cat-incident)', archived: 'var(--cat-archive)'};
 const NAV_SECTIONS = ['overview', 'rules', 'candidates', 'incidents', 'skills', 'history'];
+const NUMBER_KEY_SECTIONS = ['overview', 'rules', 'candidates', 'incidents', 'skills', 'history'];
+const WIDE_SECTIONS = ['overview', 'help'];
 const PAGE_SIZE = 8;
+const GITHUB_REPO_URL = 'https://github.com/Hakushukassai/ai-knowledge-base';
 
 let statsData = null;
 let route = {section: 'overview', detail: null};
@@ -349,8 +392,19 @@ let searchQuery = '';
 let activeTag = null;
 let activeProject = null;
 let filtersOpen = null;
+let currentListRows = [];
+let focusedRowIndex = -1;
 
 function isMobile(){ return window.matchMedia('(max-width: 860px)').matches; }
+
+function githubItemUrl(cat, filename){
+  const dir = cat === 'archived' ? 'candidates/archive' : cat;
+  return `${GITHUB_REPO_URL}/blob/master/${dir}/${filename}`;
+}
+function githubSkillUrl(folderName, retired){
+  const dir = retired ? 'claude-config/skills-archive' : 'claude-config/skills';
+  return `${GITHUB_REPO_URL}/blob/master/${dir}/${folderName}/SKILL.md`;
+}
 
 function goSection(section){
   route = {section, detail: null};
@@ -362,6 +416,70 @@ function selectSkill(name, retired){ route.detail = {kind:'skill', name, retired
 function selectHistory(index){ route.detail = {kind:'history', index}; renderApp(); }
 function backToList(){ route.detail = null; renderApp(); }
 function backToHome(){ route = {section:'overview', detail:null}; searchQuery=''; renderApp(); }
+
+/* ---------- キーボード操作 ---------- */
+function focusSearch(){
+  const input = document.querySelector('.search-field input');
+  if (input) input.focus();
+}
+function updateFocusVisual(){
+  currentListRows.forEach((row, i) => row.classList.toggle('kbd-focus', i === focusedRowIndex));
+  if (focusedRowIndex >= 0 && currentListRows[focusedRowIndex]){
+    currentListRows[focusedRowIndex].scrollIntoView({block: 'nearest'});
+  }
+}
+function moveListFocus(delta){
+  if (currentListRows.length === 0) return;
+  if (focusedRowIndex === -1) focusedRowIndex = delta > 0 ? 0 : currentListRows.length - 1;
+  else focusedRowIndex = Math.max(0, Math.min(currentListRows.length - 1, focusedRowIndex + delta));
+  updateFocusVisual();
+}
+function activateFocusedRow(){
+  if (focusedRowIndex >= 0 && currentListRows[focusedRowIndex]) currentListRows[focusedRowIndex].click();
+}
+
+document.addEventListener('keydown', (e) => {
+  const active = document.activeElement;
+  const tag = active ? active.tagName : '';
+  const inTextInput = tag === 'INPUT' || tag === 'TEXTAREA';
+
+  if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k'){
+    e.preventDefault();
+    focusSearch();
+    return;
+  }
+  if (e.key === 'Escape'){
+    if (inTextInput){ active.blur(); return; }
+    if (route.detail){ backToList(); return; }
+    if (searchQuery.trim()){ searchQuery = ''; renderApp(); return; }
+    if (route.section !== 'overview'){ backToHome(); }
+    return;
+  }
+  if (inTextInput) return;
+
+  if (e.key === '/'){
+    e.preventDefault();
+    focusSearch();
+    return;
+  }
+  if (e.key === '?'){
+    e.preventDefault();
+    goSection('help');
+    return;
+  }
+  if (/^[1-6]$/.test(e.key) && !e.metaKey && !e.ctrlKey && !e.altKey){
+    goSection(NUMBER_KEY_SECTIONS[Number(e.key) - 1]);
+    return;
+  }
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp'){
+    e.preventDefault();
+    moveListFocus(e.key === 'ArrowDown' ? 1 : -1);
+    return;
+  }
+  if (e.key === 'Enter'){
+    activateFocusedRow();
+  }
+});
 
 /* ---------- 日付フォーマット ---------- */
 function parseDate(dateStr){
@@ -447,12 +565,16 @@ function makeRowList(rows, emptyText){
   wrap.className = 'row-list';
   if (rows.length === 0){
     wrap.innerHTML = `<div class="empty-inline">${escapeHtml(emptyText || 'まだありません')}</div>`;
+    currentListRows = [];
     return wrap;
   }
   const state = {shown: PAGE_SIZE};
   function paint(){
     wrap.innerHTML = '';
-    rows.slice(0, state.shown).forEach(r => wrap.appendChild(r));
+    const visible = rows.slice(0, state.shown);
+    visible.forEach(r => wrap.appendChild(r));
+    currentListRows = visible;
+    updateFocusVisual();
     if (rows.length > state.shown){
       const btn = document.createElement('button');
       btn.type = 'button';
@@ -519,16 +641,17 @@ function renderSidebar(){
   searchInput.value = searchQuery;
   searchInput.oninput = (e) => { searchQuery = e.target.value; renderApp(); };
   searchWrap.appendChild(searchInput);
+  searchWrap.insertAdjacentHTML('beforeend', '<kbd>⌘K</kbd>');
   el.appendChild(searchWrap);
 
   const navDefs = [
-    {key: 'overview', label: '概要'},
-    {key: 'rules', label: CAT_LABEL.rules, count: statsData.rules.count, dot: CAT_COLOR.rules},
+    {key: 'overview', label: '概要', num: 1},
+    {key: 'rules', label: CAT_LABEL.rules, count: statsData.rules.count, dot: CAT_COLOR.rules, num: 2},
     {key: 'candidates', label: CAT_LABEL.candidates, count: statsData.candidates.count, dot: CAT_COLOR.candidates,
-      flag: statsData.stale_count > 0 || !!statsData.promotion_suggestions},
-    {key: 'incidents', label: CAT_LABEL.incidents, count: statsData.incidents.count, dot: CAT_COLOR.incidents},
-    {key: 'skills', label: 'Skill一覧', count: (statsData.skills || []).length},
-    {key: 'history', label: '更新履歴'},
+      flag: statsData.stale_count > 0 || !!statsData.promotion_suggestions, num: 3},
+    {key: 'incidents', label: CAT_LABEL.incidents, count: statsData.incidents.count, dot: CAT_COLOR.incidents, num: 4},
+    {key: 'skills', label: 'Skill一覧', count: (statsData.skills || []).length, num: 5},
+    {key: 'history', label: '更新履歴', num: 6},
   ];
   if ((statsData.archived || {}).count > 0){
     navDefs.push({key: 'archived', label: 'アーカイブ', count: statsData.archived.count, dot: CAT_COLOR.archived});
@@ -544,12 +667,24 @@ function renderSidebar(){
       ${def.dot ? `<span class="nav-dot" style="background:${def.dot}"></span>` : '<span class="nav-dot" style="background:none"></span>'}
       <span class="nav-label">${escapeHtml(def.label)}</span>
       ${def.flag ? '<span class="nav-flag"></span>' : ''}
+      ${def.num ? `<kbd class="mobile-only-hide">${def.num}</kbd>` : ''}
       ${def.count !== undefined ? `<span class="nav-count">${def.count}</span>` : ''}
     `;
     row.onclick = () => goSection(def.key);
     navGroup.appendChild(row);
   });
   el.appendChild(navGroup);
+
+  const helpRow = document.createElement('button');
+  helpRow.type = 'button';
+  helpRow.className = 'nav-row' + (route.section === 'help' && !searchQuery.trim() ? ' active' : '');
+  helpRow.innerHTML = `
+    <span class="nav-dot" style="background:none"></span>
+    <span class="nav-label">使い方</span>
+    <kbd class="mobile-only-hide">?</kbd>
+  `;
+  helpRow.onclick = () => goSection('help');
+  el.appendChild(helpRow);
 
   const footer = document.createElement('div');
   footer.className = 'sidebar-footer';
@@ -602,6 +737,80 @@ function renderOverview(container){
     onClick: () => { route = {section:'history', detail:{kind:'history', index: [...(statsData.history||[])].reverse().indexOf(h)}}; renderApp(); }
   }));
   container.appendChild(makeRowList(rows, '更新履歴はまだありません'));
+}
+
+/* ================= 使い方(ヘルプ) ================= */
+function renderHelp(container){
+  const block1 = document.createElement('div');
+  block1.className = 'help-block';
+  block1.innerHTML = `
+    <h3>全体の流れ</h3>
+    <div class="help-flow">
+      <span class="flow-step">作業する</span><span class="flow-arrow">→</span>
+      <span class="flow-step">候補に自動記録</span><span class="flow-arrow">→</span>
+      <span class="flow-step">別プロジェクトでも確認</span><span class="flow-arrow">→</span>
+      <span class="flow-step">昇格提案</span><span class="flow-arrow">→</span>
+      <span class="flow-step">手動でルールに昇格</span><span class="flow-arrow">→</span>
+      <span class="flow-step">Skill化</span>
+    </div>
+    <p>候補→ルールへの昇格は意図的に自動化していません。最低2つの異なるプロジェクトで同じパターンが観測され、かつ「本当にあった話か」を人が確認したうえで手動昇格します。</p>
+  `;
+  container.appendChild(block1);
+
+  const block2 = document.createElement('div');
+  block2.className = 'help-block';
+  block2.innerHTML = `
+    <h3>ディレクトリ構成</h3>
+    <div class="dir-tree">knowledge-base/
+  rules/            確定ルール(2つ以上のプロジェクトで確認済み)
+  candidates/       候補(1回だけ観測された仮説)
+  incidents/        事例ログ(具体的なトラブルの記録)
+  docs/             このダッシュボード(GitHub Pagesでも公開)
+  scripts/          docsの数字を更新するスクリプト
+  claude-config/    別PCにセットアップするための設定コピー</div>
+  `;
+  container.appendChild(block2);
+
+  const block3 = document.createElement('div');
+  block3.className = 'help-block';
+  block3.innerHTML = `
+    <h3>コマンド一覧</h3>
+    <ul>
+      <li><code>/kb-sync</code> — 会話を終わらせずに、今すぐ知識ベースへの記録とGitHubへのpushを実行する</li>
+      <li><code>/exit</code> — セッションを終了する(自動でHANDOFF生成・記録・pushまで行われる)</li>
+      <li><code>/clear</code> — 会話をリセットして終了する(pushまでの流れは<code>/exit</code>と同じ)</li>
+    </ul>
+    <p style="margin-top:10px">新しいパソコンでのセットアップは <code>bash ~/knowledge-base/claude-config/install.sh</code> を実行 → <code>gh auth login</code> の2ステップです。詳細は <a class="gh-link" href="${GITHUB_REPO_URL}/blob/master/claude-config/SETUP.md" target="_blank" rel="noopener">SETUP.md ↗</a></p>
+  `;
+  container.appendChild(block3);
+
+  const block4 = document.createElement('div');
+  block4.className = 'help-block';
+  block4.innerHTML = `
+    <h3>キーボードショートカット</h3>
+    <table class="shortcut-table">
+      <tr><td><kbd>⌘K</kbd> / <kbd>Ctrl K</kbd></td><td>検索にフォーカス</td></tr>
+      <tr><td><kbd>/</kbd></td><td>検索にフォーカス(入力中でない時)</td></tr>
+      <tr><td><kbd>1</kbd>〜<kbd>6</kbd></td><td>概要・ルール・候補・事例ログ・Skill一覧・更新履歴へ移動</td></tr>
+      <tr><td><kbd>↑</kbd> <kbd>↓</kbd></td><td>一覧内の項目を移動</td></tr>
+      <tr><td><kbd>Enter</kbd></td><td>選択中の項目を開く</td></tr>
+      <tr><td><kbd>Esc</kbd></td><td>検索欄を閉じる/詳細を閉じる/前の画面に戻る</td></tr>
+      <tr><td><kbd>?</kbd></td><td>この使い方画面を開く</td></tr>
+    </table>
+  `;
+  container.appendChild(block4);
+
+  const block5 = document.createElement('div');
+  block5.className = 'help-block';
+  block5.innerHTML = `
+    <h3>定期メンテナンス</h3>
+    <ul>
+      <li>月1回: <code>PRIVACY-CHECKLIST.md</code> に沿って機密情報が紛れていないか確認</li>
+      <li>月1回(同じタイミングで): 候補を一通り眺めて昇格できそうなものがないか検討</li>
+      <li><code>SYNC-CONFLICT.md</code> が出たら: 複数PC間の自動pushが競合しているので手動で解決</li>
+    </ul>
+  `;
+  container.appendChild(block5);
 }
 
 /* ================= リストペイン ================= */
@@ -758,15 +967,16 @@ function sectionCountSub(section){
 function renderListPane(){
   const el = document.getElementById('pane-list');
   el.innerHTML = '';
+  focusedRowIndex = -1;
   const searching = searchQuery.trim().length > 0;
-  const isOverview = route.section === 'overview' && !searching && !route.detail;
-  el.classList.toggle('is-wide', isOverview);
+  const isWide = WIDE_SECTIONS.includes(route.section) && !searching && !route.detail;
+  el.classList.toggle('is-wide', isWide);
 
   const bar = searching
     ? toolbar({title: '検索結果', sub: `「${searchQuery.trim()}」`, showBack: true, onBack: backToHome})
     : toolbar({
-        title: isOverview ? '概要' : CAT_LABEL[route.section] || (route.section === 'skills' ? 'Skill一覧' : route.section === 'history' ? '更新履歴' : ''),
-        sub: isOverview ? '' : sectionCountSub(route.section),
+        title: isWide ? (route.section === 'help' ? '使い方' : '概要') : CAT_LABEL[route.section] || (route.section === 'skills' ? 'Skill一覧' : route.section === 'history' ? '更新履歴' : ''),
+        sub: isWide ? '' : sectionCountSub(route.section),
         showBack: true, onBack: backToHome
       });
   el.appendChild(bar);
@@ -779,6 +989,7 @@ function renderListPane(){
 
   switch(route.section){
     case 'overview': renderOverview(body); break;
+    case 'help': renderHelp(body); break;
     case 'rules': case 'candidates': case 'incidents': case 'archived':
       renderCategoryListBody(body, route.section); break;
     case 'skills': renderSkillsListBody(body); break;
@@ -800,6 +1011,8 @@ function renderItemDetail(container, cat, filename){
       ${longDate ? `<span>${escapeHtml(longDate)} 登録</span>` : ''}
       ${longDate ? '<span class="dot-sep">·</span>' : ''}
       <span class="filename-tag">${escapeHtml(item.filename)}</span>
+      <span class="dot-sep">·</span>
+      <a class="gh-link" href="${githubItemUrl(cat, item.filename)}" target="_blank" rel="noopener">GitHubで見る ↗</a>
     </div>
   `;
   container.appendChild(header);
@@ -841,6 +1054,36 @@ function renderItemDetail(container, cat, filename){
   full.className = 'fulltext-block';
   full.innerHTML = renderMarkdownLite(cleanBody(item.content));
   container.appendChild(full);
+
+  const related = findRelatedItems(cat, item);
+  if (related.length > 0){
+    const heading = document.createElement('div');
+    heading.className = 'section-heading';
+    heading.style.marginTop = '26px';
+    heading.textContent = '関連する' + CAT_LABEL_SHORT[cat];
+    container.appendChild(heading);
+    const rows = related.map(r => makeRow({
+      title: r.title,
+      sub: itemSubtext(cat, r),
+      date: r.date,
+      daysOld: r.days_old,
+      dotColor: CAT_COLOR[cat],
+      onClick: () => selectItem(cat, r.filename)
+    }));
+    container.appendChild(makeRowList(rows));
+  }
+}
+
+function findRelatedItems(cat, item){
+  const tags = new Set(item.tags || []);
+  if (tags.size === 0) return [];
+  return (statsData.items[cat] || [])
+    .filter(e => e.filename !== item.filename)
+    .map(e => ({ e, overlap: (e.tags || []).filter(t => tags.has(t)).length }))
+    .filter(x => x.overlap > 0)
+    .sort((a, b) => b.overlap - a.overlap)
+    .slice(0, 4)
+    .map(x => x.e);
 }
 
 function renderSkillDetail(container, name, retired){
@@ -851,7 +1094,14 @@ function renderSkillDetail(container, name, retired){
 
   const header = document.createElement('div');
   header.className = 'detail-header';
-  header.innerHTML = `<h2>${escapeHtml(skill.name)}</h2><div class="detail-meta-row"><span class="filename-tag">${escapeHtml(skill.folder_name)}/SKILL.md</span></div>`;
+  header.innerHTML = `
+    <h2>${escapeHtml(skill.name)}</h2>
+    <div class="detail-meta-row">
+      <span class="filename-tag">${escapeHtml(skill.folder_name)}/SKILL.md</span>
+      <span class="dot-sep">·</span>
+      <a class="gh-link" href="${githubSkillUrl(skill.folder_name, retired)}" target="_blank" rel="noopener">GitHubで見る ↗</a>
+    </div>
+  `;
   container.appendChild(header);
 
   const badges = document.createElement('div');
@@ -909,9 +1159,9 @@ function renderHistoryDetail(container, index){
 function renderDetailPane(){
   const el = document.getElementById('pane-detail');
   el.innerHTML = '';
-  const isOverview = route.section === 'overview' && !searchQuery.trim() && !route.detail;
-  el.classList.toggle('is-hidden', isOverview);
-  if (isOverview) return;
+  const isWide = WIDE_SECTIONS.includes(route.section) && !searchQuery.trim() && !route.detail;
+  el.classList.toggle('is-hidden', isWide);
+  if (isWide) return;
 
   if (!route.detail){
     const bar = toolbar({title: '', showBack: false});
