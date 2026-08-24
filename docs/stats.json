@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-24T09:49:47Z",
+  "generated_at": "2026-08-24T10:03:50Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 23,
-    "chars": 26599
+    "count": 26,
+    "chars": 30105
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@
     "count": 0,
     "chars": 0
   },
-  "total_chars": 27638,
+  "total_chars": 31144,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -385,6 +385,30 @@
       "candidates_count": 23,
       "incidents_count": 1,
       "total_chars": 27638
+    },
+    {
+      "date": "2026-08-24T10:02:26Z",
+      "summary": "[候補] セッション再開後、`~/Downloads`への読み取りアクセスが拒否されることがある / [候補] 外部Skill `frontend-design`(Anthropic公式)を試験導入 ほか1件",
+      "rules_count": 1,
+      "candidates_count": 26,
+      "incidents_count": 1,
+      "total_chars": 31173
+    },
+    {
+      "date": "2026-08-24T10:03:00Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 26,
+      "incidents_count": 1,
+      "total_chars": 31144
+    },
+    {
+      "date": "2026-08-24T10:03:50Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 26,
+      "incidents_count": 1,
+      "total_chars": 31144
     }
   ],
   "items": {
@@ -416,6 +440,82 @@
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-24-ux-designer-external-skill.md",
+        "title": "外部Skill `ux-designer` を試験導入(Godot以外の一般UI/UX設計向け)",
+        "content": "# [候補] 外部Skill `ux-designer` を試験導入(Godot以外の一般UI/UX設計向け)\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [UI, UX, デザイン, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/szilu/ux-designer-skill\n\n## 何が起きたか\n「`godot-ui-control`・`game-feel`はゲーム専用で、一般的なUI/デザイン作業には使えないのでは」という指摘を受け、ゲームに限らない一般的なUX/UI設計のSkillを探し、`szilu/ux-designer-skill`(アクセシビリティ・フォーム・多言語対応・AI UI・データ可視化等を網羅する24本の参照ファイル付きSkill)を`~/.claude/skills/ux-designer/`として試験導入した。\n\n## わかったこと・今の対応\nMITライセンス、フロントマター完備で修正不要だった。機密情報スキャンで`references/`内のプレースホルダーメールアドレス(「user［アットマーク］example.com」等、フォーム入力例)が6ファイル・14箇所で誤検知された。引き継ぎメモが事前に警告していた事象そのもの。`@`記号を`(at)`に置換する表記に直して解消した(意味は保持)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。ただし今回は`~/Downloads`への読み取りアクセスがこのセッションから拒否される事象が発生し(macOSのプライバシー保護によるものと推測、詳細は別候補`2026-08-24-downloads-folder-access-denied-mid-session.md`参照)、`~/Documents/original-game/`配下に再取得してもらって回避した。既存の`godot-ui-control`・`game-feel`とは「ゲーム特化」対「汎用UI/UX」という住み分けになり、内容として矛盾しない。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のUI設計・レビュー作業での有用性\n- `godot-ui-control`と両方に該当する場面(Godot上のUI)でどちらが優先的に発動するか、あるいは両方発動して補い合うか\n",
+        "tags": [
+          "UI",
+          "UX",
+          "デザイン",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "「`godot-ui-control`・`game-feel`はゲーム専用で、一般的なUI/デザイン作業には使えないのでは」という指摘を受け、ゲームに限らない一般的なUX/UI設計…",
+        "solution_summary": "MITライセンス、フロントマター完備で修正不要だった。機密情報スキャンで`references/`内のプレースホルダーメールアドレス(「user［アットマーク］example.co…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/szilu/ux-designer-skill",
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-24-downloads-folder-access-denied-mid-session.md",
+        "title": "セッション再開後、`~/Downloads`への読み取りアクセスが拒否されることがある",
+        "content": "# [候補] セッション再開後、`~/Downloads`への読み取りアクセスが拒否されることがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, macOS, 環境構築]\ndate: 2026-08-24\n\n## 何が起きたか\n同じ会話内で以前は`~/Downloads`配下のファイルを問題なく読み書きできていたのに、セッション再開(resume)後に`ls ~/Downloads`が`Operation not permitted`で失敗するようになった。`stat`ではディレクトリの存在自体は見えるが、中身の読み取り(`ls`、ファイルオープン)だけ拒否される状態だった。\n\n## わかったこと・今の対応\nmacOSのプライバシー保護機能(TCC、Downloadsフォルダへのアクセスはアプリ単位で許可が必要)が、セッション再開で生成された新しいプロセスにはまだ許可されていないためと推測される。System Settingsでの許可し直しを試す前に、`~/Documents`配下(既にアクセスできていた場所)に対象ファイルを再取得してもらうことで回避できた。\n\n## 詳しい経緯\n`ux-designer-skill`リポジトリのcloneを`~/Downloads`に置いてもらった直後、`ls`が失敗した。`echo test > /tmp/...`や`stat ~/Downloads`は正常に動いたため、プロセス自体は生きているが特定のディレクトリだけアクセス拒否されている状況と判断した。`~/Documents/original-game/`配下への再cloneを依頼したところ、即座に正常に読み書きできた。\n\n## まだ確認できていないこと\n- System Settings → Privacy & Security → Files and Folders で該当アプリに許可を与えれば`~/Downloads`も復旧するのか(未検証、回避策で済ませたため)\n- 毎回のセッション再開で必ず起きるのか、特定条件下でのみ起きるのか\n",
+        "tags": [
+          "claude-code",
+          "macOS",
+          "環境構築"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "同じ会話内で以前は`~/Downloads`配下のファイルを問題なく読み書きできていたのに、セッション再開(resume)後に`ls ~/Downloads`が`Operation…",
+        "solution_summary": "macOSのプライバシー保護機能(TCC、Downloadsフォルダへのアクセスはアプリ単位で許可が必要)が、セッション再開で生成された新しいプロセスにはまだ許可されていないためと…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-24-frontend-design-external-skill.md",
+        "title": "外部Skill `frontend-design`(Anthropic公式)を試験導入",
+        "content": "# [候補] 外部Skill `frontend-design`(Anthropic公式)を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [UI, デザイン, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design\n\n## 何が起きたか\n`ux-designer`と同じ動機(Godot以外の一般UI/デザイン向け知見)で、Anthropic公式のclaude-codeリポジトリに同梱されている`frontend-design`プラグインのSkill本体を`~/.claude/skills/frontend-design/`として試験導入した。「テンプレっぽく見えない、意図のあるデザイン」のための考え方(配色・タイポグラフィ・レイアウトを毎回同じパターンに逃げず選ぶ、モーションは狙って使う、コピーライティングも設計要素として扱う)をまとめたもの。\n\n## わかったこと・今の対応\nこれまでの5件と異なり、**ライセンスがMITなどのオープンソースではなく「All rights reserved」**(claude-codeリポジトリ全体がAnthropic Commercial Terms of Service準拠)。本来は`/plugin marketplace add anthropics/claude-code` → `/plugin install frontend-design@claude-code`という公式のプラグイン機構でインストールする想定だったが、**この環境では`/plugin`コマンド自体が使えなかった**(`/plugin isn't available in this environment.`)。そのため、これまでと同じ「ファイルを直接配置」する方法に切り替えた。個人利用目的でのナレッジベースへの配置と判断したが、他のMITライセンスのSkillとは扱いが異なる点に注意(SKILL.md内に`license_note`フィールドとして明記済み)。\n\n## 詳しい経緯\n内容はGitHub上のSKILL.mdを直接確認して取得(著者: AnthropicのPrithvi Rajasekaran氏・Alexander Bricken氏)。ゲーム要素は無く、Web/アプリのUI全般が対象。`ux-designer`(UX原則・アクセシビリティ寄り)とは補完関係で、`frontend-design`は美的方向性・独自性、`ux-designer`は使いやすさ・アクセシビリティ・パターンという住み分け。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のUI/フロントエンド実装作業での有用性\n- この環境で`/plugin`が使えない理由(Claude Code SDKベースの環境固有の制約なのか、他の条件があるのか)\n",
+        "tags": [
+          "UI",
+          "デザイン",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "`ux-designer`と同じ動機(Godot以外の一般UI/デザイン向け知見)で、Anthropic公式のclaude-codeリポジトリに同梱されている`frontend-d…",
+        "solution_summary": "これまでの5件と異なり、**ライセンスがMITなどのオープンソースではなく「All rights reserved」**(claude-codeリポジトリ全体がAnthropic…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design",
+        "promotion_ready": false
+      },
       {
         "filename": "2026-08-24-godot-testing-deploy-external-skill.md",
         "title": "外部Skill `godot-testing-deploy`(元名`godot`)を試験導入",
@@ -1021,6 +1121,15 @@
   "merge_suggestions": null,
   "skills": [
     {
+      "folder_name": "frontend-design",
+      "name": "frontend-design",
+      "description": "Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.",
+      "linked_to_rule": false,
+      "usage_count": 0,
+      "effectiveness_summary": {},
+      "effectiveness_recent": []
+    },
+    {
       "folder_name": "game-feel",
       "name": "game-feel",
       "description": ">",
@@ -1077,6 +1186,15 @@
       "folder_name": "godot-ui-control",
       "name": "godot-ui-control",
       "description": ">",
+      "linked_to_rule": false,
+      "usage_count": 0,
+      "effectiveness_summary": {},
+      "effectiveness_recent": []
+    },
+    {
+      "folder_name": "ux-designer",
+      "name": "ux-designer",
+      "description": "UX/UI design principles for building and critiquing interfaces. Use for accessibility audits (WCAG, EAA), microcopy, forms, navigation, onboarding, internationalization and RTL, voice and AI interfaces, and design systems.",
       "linked_to_rule": false,
       "usage_count": 0,
       "effectiveness_summary": {},

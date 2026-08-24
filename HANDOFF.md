@@ -169,3 +169,25 @@
 ## 知識ベースに送る候補があるか
 - [ ] なし
 - [x] あり → knowledge-base/candidates/ に書き出し済み
+
+---
+
+## セッション概要
+- 日付: 2026-08-24
+- 対象プロジェクト: ai-knowledge-base(外部Skill導入、完結編)
+- 今回やったこと(3行以内):
+  1. `godot-testing-deploy`(元名`godot`、GdUnit4/PlayGodot/CI/CD、同梱Pythonスクリプト4本を精査)を追加導入。
+  2. 「Godot専用では」という指摘を受け、汎用UI/UX向けに`ux-designer`(MIT、24参照ファイル)と`frontend-design`(Anthropic公式、All rights reserved)を追加。`frontend-design`は`/plugin`機構がこの環境で使えなかったため直接配置に切り替えた。
+  3. `claude-vision`・`godot-ai-builder`・`gamedev-claude-plugins`はプラグイン形式(pip install・Webカメラ権限・MCPサーバー等)で、この知識ベースの同期の仕組みが対象にしていないため見送り、候補記録もしていない。
+
+## 到達点
+- 今、何が動く状態か: `~/.claude/skills/`に8件(自作1+外部7)。全件ダッシュボード反映・機密情報スキャン・GitHub push確認済み。
+- 何がまだ未完成か: 全外部Skillとも実プロジェクトでの実用検証は`godot-code-gen`の発動テスト1件のみ。`frontend-design`のライセンス起因で`/plugin`が使えない理由は未確認。
+
+## 次回、ここから始める
+- 次にやるべき最初の一手: RESODIVEやWeb UI作業で実際にSkillを使い、`.reference_usage.log`/`.skill_effectiveness.log`に実績を積み上げる。
+- 判断が必要な未決事項: `claude-vision`等のプラグイン形式Skillを導入するなら、`/plugin`が使える別環境で試すか、この知識ベースの同期対象を拡張するかの判断が必要。
+
+## 知識ベースに送る候補があるか
+- [ ] なし
+- [x] あり → knowledge-base/candidates/ に書き出し済み
