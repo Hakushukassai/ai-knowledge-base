@@ -1,12 +1,12 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-24T11:35:49Z",
+  "generated_at": "2026-08-24T11:39:50Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 28,
-    "chars": 31979
+    "count": 29,
+    "chars": 32995
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@ window.STATS_DATA = {
     "count": 0,
     "chars": 0
   },
-  "total_chars": 33018,
+  "total_chars": 34034,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -457,6 +457,14 @@ window.STATS_DATA = {
       "candidates_count": 28,
       "incidents_count": 1,
       "total_chars": 33018
+    },
+    {
+      "date": "2026-08-24T11:39:50Z",
+      "summary": "[候補] 外部Skill `godot-physics`を試験導入",
+      "rules_count": 1,
+      "candidates_count": 29,
+      "incidents_count": 1,
+      "total_chars": 34034
     }
   ],
   "items": {
@@ -488,6 +496,31 @@ window.STATS_DATA = {
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-24-godot-physics-external-skill.md",
+        "title": "外部Skill `godot-physics`を試験導入",
+        "content": "# [候補] 外部Skill `godot-physics`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, 物理演算, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\nRESODIVE・DEPTH//とも敵や弾丸の大量発生・衝突が絡む設計で、既存の`godot-optimization`(MultiMeshInstance3D)と相性が良い分野として、`awesome-gamedev-agent-skills`リポジトリの`godot-physics`Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。RigidBody/StaticBody/Area/CharacterBodyの使い分け・衝突レイヤーとマスク・オーバーラップ検出・レイキャストをまとめたもの。\n\n## わかったこと・今の対応\n`godot-audio`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンス。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザーが既に`git clone`済みの同リポジトリから取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱`references/bodies-and-queries.md`も目視確認(コードスニペットと表のみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/godot-physics/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n",
+        "tags": [
+          "godot",
+          "物理演算",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "RESODIVE・DEPTH//とも敵や弾丸の大量発生・衝突が絡む設計で、既存の`godot-optimization`(MultiMeshInstance3D)と相性が良い分野と…",
+        "solution_summary": "`godot-audio`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセ…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills",
+        "promotion_ready": false
+      },
       {
         "filename": "2026-08-24-godot-audio-external-skill.md",
         "title": "外部Skill `godot-audio`を試験導入",
@@ -1268,6 +1301,15 @@ window.STATS_DATA = {
       "name": "godot-optimization",
       "description": "Godot 4でのゲーム開発中、敵・弾丸・アイテムなど見た目が同じオブジェクトを大量に生成する設計や実装を相談されたら必ず使うこと。個別のNode(CharacterBody3D等)で大量インスタンスを扱おうとしている相談、パフォーマンス低下(フレームレート低下・カクつき)の相談、大量スポーン・弾幕システムの実装、MultiMeshInstance3Dに関する質問では特に必ず参照する。「敵が大量に出る」「弾がたくさん飛ぶ」「同じメッシュを何百個も並べる」といった話が出たら発動すること。",
       "linked_to_rule": true,
+      "usage_count": 1,
+      "effectiveness_summary": {},
+      "effectiveness_recent": []
+    },
+    {
+      "folder_name": "godot-physics",
+      "name": "godot-physics",
+      "description": ">",
+      "linked_to_rule": false,
       "usage_count": 1,
       "effectiveness_summary": {},
       "effectiveness_recent": []
