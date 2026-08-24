@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-24T11:44:28Z",
+  "generated_at": "2026-08-24T16:12:16Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 32,
-    "chars": 36091
+    "count": 37,
+    "chars": 42442
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@
     "count": 0,
     "chars": 0
   },
-  "total_chars": 37130,
+  "total_chars": 43481,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -489,6 +489,14 @@
       "candidates_count": 32,
       "incidents_count": 1,
       "total_chars": 37130
+    },
+    {
+      "date": "2026-08-24T16:12:16Z",
+      "summary": "[候補] Claude Codeのブラウザツールのネットワーク/コンソールログは、タブの生存期間全体で累積される(ページ遷移でリセ / [候補] Finnhub無料枠は`/quote`(現在値)は使えるが`/stock/candle`(過去足)は使えない ほか3件",
+      "rules_count": 1,
+      "candidates_count": 37,
+      "incidents_count": 1,
+      "total_chars": 43481
     }
   ],
   "items": {
@@ -520,6 +528,161 @@
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-25-browser-tool-logs-accumulate-across-tab-lifetime.md",
+        "title": "Claude Codeのブラウザツールのネットワーク/コンソールログは、タブの生存期間全体で累積される(ページ遷移でリセ",
+        "content": "# [候補] Claude Codeのブラウザツールのネットワーク/コンソールログは、タブの生存期間全体で累積される(ページ遷移でリセットされない)\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [claude-code, ブラウザ自動化, デバッグ]\ndate: 2026-08-25\n\n## 何が起きたか\nアプリの動作確認中、同じブラウザタブを使い回しながら複数回の`preview_start`/`preview_stop`やコード修正・再起動を行っていた。ある時点で「AIに1回だけ判断させるボタンを押したのに、なぜか関係ない複数の銘柄が連続して選択され、想定外の取引が実行されたように見える」というネットワークログが観測され、実装にバグがあるのではと一時的に誤診断しかけた。\n\n## わかったこと・今の対応\n`read_network_requests`や`read_console_messages`は、そのタブが開かれてから(あるいはツール自体が使われ始めてから)の全リクエスト/全ログを累積して返す。ページの再読み込みや`navigate`をしても、この累積ログはクリアされない。そのため、セッション中に何度もページ操作をしていると、「直近数十秒の出来事」のつもりで読んだログに、実は数分〜十数分前の別の操作(過去のテストで押した別のボタン、過去のAPI呼び出し等)の記録が混ざって見えてしまう。対応として、挙動を正確に検証したい時は、プレビューサーバーを一度完全に停止・再起動してタブも作り直し、直前のログが無い「クリーンな状態」から1回だけ操作して確認する、という手順に切り替えたところ、問題なく正しい挙動(1回の操作→1回のAPI呼び出し)であることを確認できた。\n\n## 詳しい経緯\n最初はコードにバグがあると疑い、サーバー再起動やコード見直しをしたが、実際にはコードは正しく動いていた。ログの各エントリのタイムスタンプ(`[25160.138]`のような接頭辞)をよく見ると古いものと新しいものが混在しており、そこから「ログが累積されている」という仮説に至った。クリーンな状態(サーバー完全停止→再起動→新規タブ→1回だけ操作)でネットワークログを取り直したところ、期待通り1件のリクエストだけが記録され、仮説が裏付けられた。\n\n## まだ確認できていないこと\n- ログが累積される正確な範囲(タブが閉じられるまでか、ツール側に何らかのバッファ上限があるか)は未確認\n- `read_console_messages`/`read_network_requests`にログをクリアする専用オプションがあるかは未調査(今回はタブを作り直すことで実質的にクリアした)\n",
+        "tags": [
+          "claude-code",
+          "ブラウザ自動化",
+          "デバッグ"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "date": "2026-08-25",
+        "days_old": -1,
+        "stale": false,
+        "problem_summary": "アプリの動作確認中、同じブラウザタブを使い回しながら複数回の`preview_start`/`preview_stop`やコード修正・再起動を行っていた。ある時点で「AIに1回だけ…",
+        "solution_summary": "`read_network_requests`や`read_console_messages`は、そのタブが開かれてから(あるいはツール自体が使われ始めてから)の全リクエスト/全ロ…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-25-recharts-candlestick-via-bar-range-plus-custom-shape.md",
+        "title": "Rechartsにローソク足チャート専用コンポーネントは無いが、`Bar`の`dataKey`に`[low, high]",
+        "content": "# [候補] Rechartsにローソク足チャート専用コンポーネントは無いが、`Bar`の`dataKey`に`[low, high]`配列+カスタム`shape`で自作できる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [recharts, react, data-viz, candlestick]\ndate: 2026-08-25\n\n## 何が起きたか\n株価チャートを折れ線グラフからローソク足(陽線/陰線、ヒゲ+実体)に変更したいという要望があった。Rechartsには`CandlestickChart`のような専用コンポーネントが存在しない。\n\n## わかったこと・今の対応\n`Bar`コンポーネントの`dataKey`に、各データ点の`[low, high]`という2要素配列を返すフィールド(例: `range: [c.low, c.high]`)を指定すると、Rechartsはその範囲を1本のバーとしてy軸方向にレイアウトしてくれる(いわゆる「レンジバー」のテクニック)。そのバーの`shape`プロップにカスタム描画コンポーネントを渡すと、`props`として渡ってくる`x, y, width, height`(=low〜highの範囲がマッピングされたピクセル座標)と`payload`(元のデータオブジェクト、`open`/`close`を含む)を使って、自前でヒゲ(中心の縦線)と実体(open〜closeの範囲を塗りつぶした矩形、`close >= open`で色分け)をSVGで描画できる。ピクセル変換は `y + height * (high - price) / (high - low)` という線形補間で、low/highの範囲内のどの価格でもyピクセル位置を計算できる。ツールチップも標準の`formatter`ではデータ配列(`[low, high]`)しか見えないため、`content`プロップにカスタムコンポーネントを渡し、`payload[0].payload`から元のOHLCオブジェクトを取り出して独自にO/H/L/Cを整形表示する必要がある。\n\n## 詳しい経緯\n公式ドキュメントに直接的な「candlestick」の例が無かったため、「範囲を表すBar」(`dataKey`が配列を返すケース)がどう扱われるかを起点に設計した。`high === low`(全く値動きがない日)のケースでゼロ除算が起きるため、その場合はヒゲだけの横線を描く分岐を別途入れている。ローカルでSVG内の`<rect>`要素の`fill`属性と`height`をJS経由で直接検証し、陽線/陰線で正しく色分けされた高さの異なる矩形が描画されていることを確認してから本番に反映した。\n\n## まだ確認できていないこと\n- 大量のローソク足(数百本以上)を表示した際のパフォーマンスは未検証(今回は90日分・約63本程度)\n- 出来高(volume)を別軸のバーとして下に重ねる一般的なローソク足チャートのレイアウトは未実装・未検証\n",
+        "tags": [
+          "recharts",
+          "react",
+          "data-viz",
+          "candlestick"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "date": "2026-08-25",
+        "days_old": -1,
+        "stale": false,
+        "problem_summary": "株価チャートを折れ線グラフからローソク足(陽線/陰線、ヒゲ+実体)に変更したいという要望があった。Rechartsには`CandlestickChart`のような専用コンポーネント…",
+        "solution_summary": "`Bar`コンポーネントの`dataKey`に、各データ点の`[low, high]`という2要素配列を返すフィールド(例: `range: [c.low, c.high]`)を指…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-25-unconditional-startup-fetch-plus-frequent-redeploys-multiplies-scheduled-api-calls.md",
+        "title": "「起動時に1回だけ即時実行」するスケジューラーは、頻繁な再デプロイと組み合わさると意図した間隔より高頻度にAPIを呼んで",
+        "content": "# [候補] 「起動時に1回だけ即時実行」するスケジューラーは、頻繁な再デプロイと組み合わさると意図した間隔より高頻度にAPIを呼んでしまう\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [scheduler, cost-control, deployment, node]\ndate: 2026-08-25\n\n## 何が起きたか\n「起動直後は判断材料が無いので、1回だけ即時取得してからN分おきのループに入る」という設計のスケジューラー(Web検索を伴うAIによるニュース要約、既定24時間に1回)を実装していた。ユーザーから「呼び出し回数が体感で多い」という指摘を受けて調査したところ、意図通りに24時間に1回しか呼ばれていないはずが、実際にはもっと頻繁にAI呼び出しが発生していた。\n\n## わかったこと・今の対応\n原因は、開発中に何度も`git push`→Railway再デプロイ(SIGTERM再起動)を行っており、そのたびに「起動直後の即時取得」が無条件で発火していたため。スケジューラーの間隔設定自体(24時間)は正しかったが、「起動時に1回」という無条件の即時実行ロジックが、通常運用では滅多に発生しない「再起動」というイベントと結びついていることを見落としていた。対応として、起動時にDB上の既存キャッシュの生成時刻を確認し、設定した間隔内(24時間以内)ならその即時取得をスキップし、代わりに`最終取得時刻`の状態をDBの値で復元するようにした。ローカルで実際にサーバーを2回連続起動し、2回目でAPI呼び出しがスキップされること(ステータスAPIの`lastAttemptAt`が再起動時刻ではなく元の取得時刻のまま変わらないこと)を確認し、本番デプロイ後も同様に再取得が起きていないことを確認した。\n\n## 詳しい経緯\n本番の`/api/scheduler-status`相当のエンドポイントで実際の`lastAttemptAt`を見比べ、想定より新しい値になっていることから「起動のたびに再取得している」という仮説を立てて実装を確認した。この日は機能追加のため複数回デプロイしており、通常の運用頻度(1日1回程度のデプロイ)であれば気づきにくいレベルの余分な呼び出しだったが、開発が活発な時期には無視できない差になっていた。\n\n## まだ確認できていないこと\n- 同様の「起動時に1回だけ即時実行」パターンが他の間隔(価格ポーリング5分おき等、コストの低い処理)にも残っているが、そちらはコストが無視できるレベルのため対応不要と判断した。より高コストな処理を追加する際は同じ落とし穴に注意する必要がある\n- キャッシュの生成時刻をDBではなくメモリ上だけで持っている構成(再起動でメモリが必ず消える構成)の場合は、この「DBの既存キャッシュを見てスキップする」対策自体が使えないため、別の対策(例: 起動時刻を外部に永続化する)が必要になる\n",
+        "tags": [
+          "scheduler",
+          "cost-control",
+          "deployment",
+          "node"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "date": "2026-08-25",
+        "days_old": -1,
+        "stale": false,
+        "problem_summary": "「起動直後は判断材料が無いので、1回だけ即時取得してからN分おきのループに入る」という設計のスケジューラー(Web検索を伴うAIによるニュース要約、既定24時間に1回)を実装してい…",
+        "solution_summary": "原因は、開発中に何度も`git push`→Railway再デプロイ(SIGTERM再起動)を行っており、そのたびに「起動直後の即時取得」が無条件で発火していたため。スケジューラー…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-25-sse-connections-block-graceful-sigterm-shutdown.md",
+        "title": "Node/ExpressでSSE(Server-Sent Events)を使うと、繋ぎっぱなしの接続が`server.c",
+        "content": "# [候補] Node/ExpressでSSE(Server-Sent Events)を使うと、繋ぎっぱなしの接続が`server.close()`の完了を妨げる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [node, express, sse, graceful-shutdown, railway]\ndate: 2026-08-25\n\n## 何が起きたか\n価格更新をポーリングからSSEのプッシュ配信に変更した。既存のSIGTERMハンドラは`server.close(callback)`でコールバックが呼ばれるのを待ってから`process.exit(0)`する作りだったが、SSEクライアントが接続したままの状態で再デプロイ(SIGTERM)すると、正常終了が完了しなくなる懸念があった。\n\n## わかったこと・今の対応\n`server.close()`は「新規接続の受付を止め、既存のアクティブな接続がすべて自然に終了してから」コールバックを呼ぶ。SSEは意図的に接続を張りっぱなしにする仕組みのため、クライアントが自分から切断しない限り`server.close()`は永久に完了しない。これを放置すると、SIGTERM後10秒のタイムアウトで強制`exit(1)`になり、正常終了ではなく異常終了として扱われてしまう。対応として、SSEルート側で接続中の`Response`オブジェクトを`Set`で保持しておき、SIGTERMハンドラの先頭で`server.close()`を呼ぶ前に、保持している全レスポンスに対して明示的に`res.end()`を呼んで接続を閉じるようにした。これにより`server.close()`のコールバックがすぐ呼ばれるようになった。\n\n## 詳しい経緯\nSSE機能を実装する時点でこの問題を予見し、実装と同時に対策(`activeConnections`セットの追跡+`closeAllStreams()`のエクスポート+SIGTERMハンドラからの呼び出し)を組み込んだ。あわせて、切断競合(`req.on(\"close\")`と`res.on(\"error\")`の両方でクリーンアップを走らせる、`res.writableEnded`をチェックしてから`write`する)も入れて、瞬断時にプロセスがクラッシュしないようにした。ローカルで実際に取引を発火させてSSEでプッシュが届くこと、Railway本番でも同様に動くことを確認済み。\n\n## まだ確認できていないこと\n- WebSocketなど他の「繋ぎっぱなし」系プロトコルでも同じ対策(明示的な接続追跡+シャットダウン時のclose)が必要になるはずだが、実際にWebSocketで検証はしていない\n- 大量の同時SSE接続(数百〜数千)がある場合に、シャットダウン時の一斉`res.end()`がボトルネックにならないかは未検証(今回は個人利用規模のため実害なし)\n",
+        "tags": [
+          "node",
+          "express",
+          "sse",
+          "graceful-shutdown",
+          "railway"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "date": "2026-08-25",
+        "days_old": -1,
+        "stale": false,
+        "problem_summary": "価格更新をポーリングからSSEのプッシュ配信に変更した。既存のSIGTERMハンドラは`server.close(callback)`でコールバックが呼ばれるのを待ってから`pro…",
+        "solution_summary": "`server.close()`は「新規接続の受付を止め、既存のアクティブな接続がすべて自然に終了してから」コールバックを呼ぶ。SSEは意図的に接続を張りっぱなしにする仕組みのため…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-25-finnhub-free-tier-excludes-stock-candle.md",
+        "title": "Finnhub無料枠は`/quote`(現在値)は使えるが`/stock/candle`(過去足)は使えない",
+        "content": "# [候補] Finnhub無料枠は`/quote`(現在値)は使えるが`/stock/candle`(過去足)は使えない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [finance-api, finnhub, free-tier]\ndate: 2026-08-25\n\n## 何が起きたか\n株価シミュレーターでFinnhubを使い、現在値(`/quote`)と過去90日の日足(`/stock/candle`)の両方を取得する実装をしたところ、現在値は正常に取れるのにチャート用の過去足だけが常に502エラーになった。\n\n## わかったこと・今の対応\nバックエンドのエラーを直接curlで再現したところ、Finnhubから`{\"error\":\"You don't have access to this resource.\"}`が返っていた。`/quote`エンドポイントは無料枠で問題なく使えるのに対し、`/stock/candle`(過去の日足データ)は有料プラン専用になっている。無料枠だからといって「基本的な機能は一通り使える」と思い込まず、エンドポイントごとに個別に無料枠の対象かを確認する必要がある。今回はYahoo Finance Chart API(`query1.finance.yahoo.com/v8/finance/chart/{symbol}`、[別候補]参照)に過去足取得だけ切り替えて解決し、現在値取得は引き続きFinnhubのまま併用した。\n\n## 詳しい経緯\n最初はFinnhub単体で「現在値+過去足」を賄う設計だったが、フロントエンドのチャートが「価格データを取得中、または未取得です」のまま進まないことに気づき、バックエンドのエラーログとcurlでの直接検証で原因を切り分けた。Finnhubの料金体系は変更されることがあるため、この制限が今後も続くとは限らない。\n\n## まだ確認できていないこと\n- Finnhubの有料プランでは実際に`/stock/candle`が使えるようになるか(公式ドキュメント上はそう読めるが実際に契約して確認はしていない)\n- `/quote`以外の他のエンドポイント(例: 企業情報、決算カレンダー等)がそれぞれ無料枠の対象かどうかは未調査\n",
+        "tags": [
+          "finance-api",
+          "finnhub",
+          "free-tier"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "date": "2026-08-25",
+        "days_old": -1,
+        "stale": false,
+        "problem_summary": "株価シミュレーターでFinnhubを使い、現在値(`/quote`)と過去90日の日足(`/stock/candle`)の両方を取得する実装をしたところ、現在値は正常に取れるのにチ…",
+        "solution_summary": "バックエンドのエラーを直接curlで再現したところ、Finnhubから`{\"error\":\"You don't have access to this resource.\"}`が返…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-24-yahoo-finance-chart-api-doubles-as-free-quote-source.md",
+        "title": "Yahoo FinanceのChart API(`query1.finance.yahoo.com/v8/finance",
+        "content": "# [候補] Yahoo FinanceのChart API(`query1.finance.yahoo.com/v8/finance/chart/{symbol}`)は、日次終値だけでなくAPIキー不要のほぼリアルタイム気配値も`meta`フィールドから取れる\n\nstatus: candidate\nobserved_count: 2\nobserved_in: [kabu-simurator-app]\ntags: [finance-api, yahoo-finance, free-tier, no-auth]\ndate: 2026-08-24\n\n## 何が起きたか\n既存のFinnhub無料枠は米国取引所限定で暗号資産(BTC-USD等)のリアルタイム気配値が取得できなかった。日次終値取得には既に非公式のYahoo Finance Chart APIを使っていたが、これがリアルタイム気配値にも使えるかを検証する必要があった。\n\n## わかったこと・今の対応\n`https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=1d&interval=1d` を叩くと、`chart.result[0].meta` オブジェクトに `regularMarketPrice`(現在値)・`chartPreviousClose`(前日終値)・`regularMarketDayHigh`/`regularMarketDayLow`・`regularMarketTime`(Unix秒)が含まれており、`indicators.quote[0].open[0]`から始値も取れる。APIキー不要・User-Agentヘッダーを付ければ200で返ってくる。株式・暗号資産(`XXX-USD`形式)どちらのシンボルでも同じレスポンス構造だった。これにより、日次終値とリアルタイム気配値を同一エンドポイント・同一実装パターンで取得でき、暗号資産用に新規の有料API契約が不要になった。\n\n## 詳しい経緯\n最初は「Finnhubの代わりに別の有料/無料APIを探す」方向で検討していたが、既存コードが日次終値取得に使っていたYahoo Chart APIのレスポンスを実際にcurlで確認したところ、`meta`部分に現在値相当のデータが既に含まれていることに気づいた。これは非公式(ドキュメント化されていない)エンドポイントのため、将来的に仕様変更や利用制限がかかるリスクは織り込み済みで採用した。(2026-08-25、kabu-simurator-appで再確認: 同じ`indicators.quote[0]`配列から`open`/`high`/`low`も取得できることを確認し、ローソク足チャート描画用のOHLCデータ取得にもこのエンドポイントをそのまま流用した。`close`だけでなく`open`/`high`/`low`配列も同じインデックスで揃っているため、日足のOHLC全体をこのAPI1本で完結できる)\n\n## まだ確認できていないこと\n- レート制限の具体的な閾値(1分/1時間あたり何リクエストまで許容されるか)は未確認。今回は30〜60秒間隔のポーリングで問題は出ていないが、より高頻度・多銘柄での挙動は未検証\n- 日本株(`7203.T`のような`.T`サフィックス)など米国外の取引所シンボルでも同じ`meta`構造が返るかは未検証(米国株・暗号資産でのみ確認済み)\n",
+        "tags": [
+          "finance-api",
+          "yahoo-finance",
+          "free-tier",
+          "no-auth"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "既存のFinnhub無料枠は米国取引所限定で暗号資産(BTC-USD等)のリアルタイム気配値が取得できなかった。日次終値取得には既に非公式のYahoo Finance Chart…",
+        "solution_summary": "`https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=1d&interval=1d` を叩くと、`cha…",
+        "observed_count": 2,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
       {
         "filename": "2026-08-24-game-ai-external-skill.md",
         "title": "外部Skill `game-ai`を試験導入",
@@ -896,32 +1059,6 @@
         "reference_recent": [],
         "source": "external",
         "source_url": "https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design",
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-yahoo-finance-chart-api-doubles-as-free-quote-source.md",
-        "title": "Yahoo FinanceのChart API(`query1.finance.yahoo.com/v8/finance",
-        "content": "# [候補] Yahoo FinanceのChart API(`query1.finance.yahoo.com/v8/finance/chart/{symbol}`)は、日次終値だけでなくAPIキー不要のほぼリアルタイム気配値も`meta`フィールドから取れる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [finance-api, yahoo-finance, free-tier, no-auth]\ndate: 2026-08-24\n\n## 何が起きたか\n既存のFinnhub無料枠は米国取引所限定で暗号資産(BTC-USD等)のリアルタイム気配値が取得できなかった。日次終値取得には既に非公式のYahoo Finance Chart APIを使っていたが、これがリアルタイム気配値にも使えるかを検証する必要があった。\n\n## わかったこと・今の対応\n`https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=1d&interval=1d` を叩くと、`chart.result[0].meta` オブジェクトに `regularMarketPrice`(現在値)・`chartPreviousClose`(前日終値)・`regularMarketDayHigh`/`regularMarketDayLow`・`regularMarketTime`(Unix秒)が含まれており、`indicators.quote[0].open[0]`から始値も取れる。APIキー不要・User-Agentヘッダーを付ければ200で返ってくる。株式・暗号資産(`XXX-USD`形式)どちらのシンボルでも同じレスポンス構造だった。これにより、日次終値とリアルタイム気配値を同一エンドポイント・同一実装パターンで取得でき、暗号資産用に新規の有料API契約が不要になった。\n\n## 詳しい経緯\n最初は「Finnhubの代わりに別の有料/無料APIを探す」方向で検討していたが、既存コードが日次終値取得に使っていたYahoo Chart APIのレスポンスを実際にcurlで確認したところ、`meta`部分に現在値相当のデータが既に含まれていることに気づいた。これは非公式(ドキュメント化されていない)エンドポイントのため、将来的に仕様変更や利用制限がかかるリスクは織り込み済みで採用した。\n\n## まだ確認できていないこと\n- レート制限の具体的な閾値(1分/1時間あたり何リクエストまで許容されるか)は未確認。今回は30〜60秒間隔のポーリングで問題は出ていないが、より高頻度・多銘柄での挙動は未検証\n- 日本株(`7203.T`のような`.T`サフィックス)など米国外の取引所シンボルでも同じ`meta`構造が返るかは未検証(米国株・暗号資産でのみ確認済み)\n",
-        "tags": [
-          "finance-api",
-          "yahoo-finance",
-          "free-tier",
-          "no-auth"
-        ],
-        "projects": [
-          "kabu-simurator-app"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "既存のFinnhub無料枠は米国取引所限定で暗号資産(BTC-USD等)のリアルタイム気配値が取得できなかった。日次終値取得には既に非公式のYahoo Finance Chart…",
-        "solution_summary": "`https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=1d&interval=1d` を叩くと、`cha…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
         "promotion_ready": false
       },
       {
@@ -1347,7 +1484,7 @@
     ],
     "archived": []
   },
-  "promotion_suggestions": null,
+  "promotion_suggestions": "# 昇格提案\n\n`/kb-sync`が`knowledge-base/candidates/`を走査し、昇格条件(別プロジェクトにまたがる同一発見／observed_count 3以上／endorsed: true)に該当した候補をここに追記していく。rules/への昇格はユーザー判断。\n\n---\n\n## 候補: 2026-08-24-writing-about-secret-scan-false-positives-retriggers-them.md\n\n**該当理由**: `observed_count: 3`(3件目のヒットとなるため昇格条件に該当。ただし`endorsed: false`と明記されており、内容の一般性そのものにはまだ迷いが残っている状態)\n\n**内容の要約**: 機密情報スキャンの誤検知(プレースホルダーのメールアドレス等)について「こう直した」と説明する文章の中で、直す前の実例をそのまま引用すると、その説明文自体が新たに誤検知される。同じ日に3回(候補ファイル本文、外部Skill導入ガイド、この候補ファイルの初稿)発生している。\n\n**昇格前チェックリスト**\n- [ ] 3件目が出ても驚かないほど一般的か: 3回とも`knowledge-base`プロジェクト内での発生であり、他プロジェクトでの再現は未確認。「メタ的に誤検知を説明する文章を書く」というシチュエーション自体がやや特殊(ドキュメント/知識ベース系の作業に偏っている可能性)\n- [ ] プロジェクトごとの前提条件の違いが大きすぎないか: 機密情報スキャナー(pre-commit hook等)の検知パターン次第で挙動が変わるため、スキャナーの実装が異なる別プロジェクトでも同じ現象になるかは要検証\n- [ ] 「いつ・何をすべきか」を一言で言えるか: 言える(「誤検知の実例を説明文に書く時は、実際に検知されるフォーマットのまま書かず抽象化する」)。この点はrules化しやすい\n\n`endorsed: false`が明示されている点を踏まえ、rules/への昇格はユーザーが内容を再確認してから判断することを推奨する。",
   "merge_suggestions": null,
   "skills": [
     {
@@ -1355,9 +1492,17 @@
       "name": "frontend-design",
       "description": "Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.",
       "linked_to_rule": false,
-      "usage_count": 1,
-      "effectiveness_summary": {},
-      "effectiveness_recent": []
+      "usage_count": 2,
+      "effectiveness_summary": {
+        "有効": 1
+      },
+      "effectiveness_recent": [
+        {
+          "date": "2026-08-24T14:47:19Z",
+          "verdict": "有効",
+          "reason": "TradingView風という指定済みの方向性に対し、配色・タイポグラフィ・レイアウトのトークン設計を体系的に行う指針として機能し、実装後にユーザーから見た目自体への否定的指摘は出なかった(指摘は別のバグ・機能要望のみ)"
+        }
+      ]
     },
     {
       "folder_name": "game-ai",
