@@ -1,5 +1,5 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-24T10:03:50Z",
+  "generated_at": "2026-08-24T10:06:14Z",
   "rules": {
     "count": 1,
     "chars": 540
@@ -404,6 +404,14 @@ window.STATS_DATA = {
     },
     {
       "date": "2026-08-24T10:03:50Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 26,
+      "incidents_count": 1,
+      "total_chars": 31144
+    },
+    {
+      "date": "2026-08-24T10:06:14Z",
       "summary": "新しい記録なし(数値のみ再集計)",
       "rules_count": 1,
       "candidates_count": 26,
