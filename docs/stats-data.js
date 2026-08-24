@@ -1,12 +1,12 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-24T09:46:39Z",
+  "generated_at": "2026-08-24T09:49:47Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 22,
-    "chars": 25368
+    "count": 23,
+    "chars": 26599
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@ window.STATS_DATA = {
     "count": 0,
     "chars": 0
   },
-  "total_chars": 26407,
+  "total_chars": 27638,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -377,6 +377,14 @@ window.STATS_DATA = {
       "candidates_count": 22,
       "incidents_count": 1,
       "total_chars": 26407
+    },
+    {
+      "date": "2026-08-24T09:49:47Z",
+      "summary": "[候補] 外部Skill `godot-testing-deploy`(元名`godot`)を試験導入",
+      "rules_count": 1,
+      "candidates_count": 23,
+      "incidents_count": 1,
+      "total_chars": 27638
     }
   ],
   "items": {
@@ -408,6 +416,33 @@ window.STATS_DATA = {
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-24-godot-testing-deploy-external-skill.md",
+        "title": "外部Skill `godot-testing-deploy`(元名`godot`)を試験導入",
+        "content": "# [候補] 外部Skill `godot-testing-deploy`(元名`godot`)を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, テスト, CI/CD, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/Randroids-Dojo/Godot-Claude-Skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`の次点候補、`Randroids-Dojo/Godot-Claude-Skills`(GdUnit4テスト・PlayGodotによるE2E自動化・エクスポート・CI/CD・Vercel等へのデプロイ)を`~/.claude/skills/godot-testing-deploy/`として試験導入した。\n\n## わかったこと・今の対応\nこれまでの3件と異なり、4本のPythonスクリプト(`run_tests.py`/`parse_results.py`/`validate_project.py`/`export_build.py`)が同梱されていたため、実行可能コードとして通常より丁寧にレビューした。内容はいずれも`subprocess`でGodot CLIを呼び出すだけの素直な実装で、ネットワーク通信・`eval`/`exec`・難読化・認証情報の収集など不審な処理は見当たらなかった。機密情報スキャンもフォルダ全体でクリーン。\n\n元のfrontmatterは`name: godot`という汎用的すぎる名前だったため、`godot-testing-deploy`にリネームして配置した(内容は変更なし)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。PlayGodot部分は`Randroids-Dojo/godot`のカスタムフォーク(automationブランチ)をソースからビルドする必要があり、GdUnit4テスト単体より導入コストが高い(このリポジトリが引き継ぎメモで「次点」扱いだった理由と合致)。既存の4件のSkillとは話題が重複しない(実装ではなくテスト・ビルド・デプロイが対象)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際にGdUnit4やPlayGodotをRESODIVE等に導入して使う場面での有用性(現時点では設置のみ)\n- PlayGodot用カスタムGodotフォークのビルドは未実施(重量級の追加セットアップが必要なため、GdUnit4部分から先に試すのが現実的)\n",
+        "tags": [
+          "godot",
+          "ゲーム開発",
+          "テスト",
+          "CI/CD",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "`外部Skill導入_引き継ぎ.md`の次点候補、`Randroids-Dojo/Godot-Claude-Skills`(GdUnit4テスト・PlayGodotによるE2E自動…",
+        "solution_summary": "これまでの3件と異なり、4本のPythonスクリプト(`run_tests.py`/`parse_results.py`/`validate_project.py`/`export…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/Randroids-Dojo/Godot-Claude-Skills",
+        "promotion_ready": false
+      },
       {
         "filename": "2026-08-24-godot-animation-external-skill.md",
         "title": "外部Skill `godot-animation` を試験導入",
@@ -1025,6 +1060,15 @@ window.STATS_DATA = {
       "name": "godot-optimization",
       "description": "Godot 4でのゲーム開発中、敵・弾丸・アイテムなど見た目が同じオブジェクトを大量に生成する設計や実装を相談されたら必ず使うこと。個別のNode(CharacterBody3D等)で大量インスタンスを扱おうとしている相談、パフォーマンス低下(フレームレート低下・カクつき)の相談、大量スポーン・弾幕システムの実装、MultiMeshInstance3Dに関する質問では特に必ず参照する。「敵が大量に出る」「弾がたくさん飛ぶ」「同じメッシュを何百個も並べる」といった話が出たら発動すること。",
       "linked_to_rule": true,
+      "usage_count": 0,
+      "effectiveness_summary": {},
+      "effectiveness_recent": []
+    },
+    {
+      "folder_name": "godot-testing-deploy",
+      "name": "godot-testing-deploy",
+      "description": "Develop, test, build, and deploy Godot 4.x games. Includes GdUnit4 for GDScript unit tests and PlayGodot for game automation and E2E testing. Supports web/desktop exports, CI/CD pipelines, and deployment to Vercel/GitHub Pages/itch.io.",
+      "linked_to_rule": false,
       "usage_count": 0,
       "effectiveness_summary": {},
       "effectiveness_recent": []
