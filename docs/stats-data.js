@@ -1,12 +1,12 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-24T05:22:23Z",
+  "generated_at": "2026-08-24T05:48:53Z",
   "rules": {
     "count": 1,
     "chars": 540
   },
   "candidates": {
-    "count": 15,
-    "chars": 17790
+    "count": 17,
+    "chars": 19717
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,7 @@ window.STATS_DATA = {
     "count": 0,
     "chars": 0
   },
-  "total_chars": 18829,
+  "total_chars": 20756,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -225,6 +225,30 @@ window.STATS_DATA = {
       "candidates_count": 15,
       "incidents_count": 1,
       "total_chars": 18829
+    },
+    {
+      "date": "2026-08-24T05:36:07Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 15,
+      "incidents_count": 1,
+      "total_chars": 18829
+    },
+    {
+      "date": "2026-08-24T05:44:37Z",
+      "summary": "新しい記録なし(数値のみ再集計)",
+      "rules_count": 1,
+      "candidates_count": 15,
+      "incidents_count": 1,
+      "total_chars": 18829
+    },
+    {
+      "date": "2026-08-24T05:48:53Z",
+      "summary": "[候補] ブラウザ操作ツールでの座標クリックは、要素がずれてサイレントに外れることがある / [候補] 同じ詳細度なら、`@media`内のルールでも後にある通常ルールに負ける",
+      "rules_count": 1,
+      "candidates_count": 17,
+      "incidents_count": 1,
+      "total_chars": 20756
     }
   ],
   "items": {
@@ -239,7 +263,8 @@ window.STATS_DATA = {
           "パフォーマンス最適化"
         ],
         "projects": [],
-        "days_old": null,
+        "date": "2026-08-23",
+        "days_old": 1,
         "stale": false,
         "problem_summary": null,
         "solution_summary": "敵や弾丸など同一メッシュの大量インスタンスは、個別の Node ではなく MultiMeshInstance3D を使う。個別 Node は 200 体を超えたあたりから _pro…",
@@ -249,6 +274,42 @@ window.STATS_DATA = {
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-24-browser-tool-coordinate-click-can-silently-miss.md",
+        "title": "ブラウザ操作ツールでの座標クリックは、要素がずれてサイレントに外れることがある",
+        "content": "# [候補] ブラウザ操作ツールでの座標クリックは、要素がずれてサイレントに外れることがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, テスト, ブラウザ自動化]\ndate: 2026-08-24\n\n## 何が起きたか\nUI動作確認のため、スクリーンショットを見て座標を指定してクリックしたところ、意図した要素とは別の行がクリックされ続けた。エラーは出ず、スクリーンショットも一見更新されているように見えたため、しばらく気づかなかった。\n\n## わかったこと・今の対応\n`read_page`で要素の参照ID(ref)を取得し、座標ではなく`ref`を指定してクリックする方式に切り替えたところ確実になった。座標クリックは、レイアウトのわずかな差やスクリーンショットの縮小表示・タイミングのズレで簡単に外れるため、UIの自動確認では基本的に`ref`ベースのクリックを使い、座標クリックは最終手段にする方がよい。挙動を確定させたい場合は、クリック後にアプリ側のJS状態(今回は`route`という変数)を直接読んで検証すると誤クリックにすぐ気づける。\n\n## 詳しい経緯\ndocs/index.htmlのUI刷新確認で、サイドバーの「概要」行をスクリーンショット上の座標(65, 108)でクリックしたが、何度やっても「Skill一覧」など別の行がアクティブになった。スクリーンショットのピクセルサイズ(800px幅)と実ビューポート(1400px幅)のスケール差や、直前の画面状態によって行の実際のy座標が変わっていたことが原因と推測される。`read_page`が返す`ref_N`を使ったクリックに切り替えたところ、一度も外れなくなった。\n\n## まだ確認できていないこと\n- 座標クリックが具体的にどの計算(スケール変換・タイミング)で外れていたのかは未特定。\n- モバイルエミュレーション(タッチ座標)でも同じ問題が起きるかは未確認。\n",
+        "tags": [
+          "claude-code",
+          "テスト",
+          "ブラウザ自動化"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "UI動作確認のため、スクリーンショットを見て座標を指定してクリックしたところ、意図した要素とは別の行がクリックされ続けた。エラーは出ず、スクリーンショットも一見更新されているように…",
+        "solution_summary": "`read_page`で要素の参照ID(ref)を取得し、座標ではなく`ref`を指定してクリックする方式に切り替えたところ確実になった。座標クリックは、レイアウトのわずかな差やス…"
+      },
+      {
+        "filename": "2026-08-24-media-query-override-order-loses-to-later-base-rule.md",
+        "title": "同じ詳細度なら、`@media`内のルールでも後にある通常ルールに負ける",
+        "content": "# [候補] 同じ詳細度なら、`@media`内のルールでも後にある通常ルールに負ける\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [css, frontend, デザイン]\ndate: 2026-08-24\n\n## 何が起きたか\nモバイル用に`@media (max-width: 860px){ .foo{ margin-top: 28px } }`を書いたのに、実際のブラウザでは適用されず、無関係に見えるはずの`margin-top: auto`のままだった。\n\n## わかったこと・今の対応\n原因はCSSの記述順。同じ詳細度(セレクタの強さ)のルールは、`@media`の中かどうかに関係なく「あとに書かれた方」が勝つ。今回は`.foo{ margin-top: 28px }`をメディアクエリ付きでファイル前半に書き、`.foo{ margin-top: auto }`という基本スタイルをファイル後半(コンポーネントごとのスタイル定義の中)に書いていたため、条件が一致していても後発の基本スタイルに上書きされていた。対応は、メディアクエリでの上書きを、対象の基本スタイル定義の直後に移動すること。\n\n## 詳しい経緯\nmacOSダッシュボードのレスポンシブ対応で、`docs/index.html`のサイドバーフッターに `margin-top: auto`(常時、フッターを下端に固定)を指定しつつ、モバイル幅ではフッターを内容のすぐ下に置きたく`margin-top: 28px`を別のメディアクエリブロックに書いた。ブラウザの`getComputedStyle`で確認したところ`margin-top`が`auto`のままで、原因調査のため実際の計算値を出力させて初めて「後勝ち」の挙動に気づいた。ファイル全体を、レイアウト全般のメディアクエリ(ファイル冒頭)→コンポーネントごとのスタイル(ファイル後半)という構成にしていたことが根本原因。\n\n## まだ確認できていないこと\n- CSSファイルを「コンポーネントごとにまとめて書く」設計にしていれば最初から起きなかった問題なので、大規模なCSSでも同じ落とし穴に繰り返しハマりやすいかは未確認。\n- CSS内蔵のカスケードレイヤー(`@layer`)を使えば構造的に回避できるが、今回は使っていない。\n",
+        "tags": [
+          "css",
+          "frontend",
+          "デザイン"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "モバイル用に`@media (max-width: 860px){ .foo{ margin-top: 28px } }`を書いたのに、実際のブラウザでは適用されず、無関係に見える…",
+        "solution_summary": "原因はCSSの記述順。同じ詳細度(セレクタの強さ)のルールは、`@media`の中かどうかに関係なく「あとに書かれた方」が勝つ。今回は`.foo{ margin-top: 28px…"
+      },
       {
         "filename": "2026-08-24-dst-aware-market-hours-without-timezone-library.md",
         "title": "`Intl.DateTimeFormat`だけで夏時間対応の「次の取引時間開始時刻」を、外部タイムゾーンライブラリ無しに",
@@ -262,6 +323,7 @@ window.STATS_DATA = {
         "projects": [
           "kabu-simurator-app"
         ],
+        "date": "2026-08-24",
         "days_old": 0,
         "stale": false,
         "problem_summary": "米国株式市場(NYSE, 9:30-16:00 America/New_York)の開場・閉場判定と「次に市場が開く時刻」の計算を、`date-fns-tz`や`luxon`のよう…",
@@ -280,6 +342,7 @@ window.STATS_DATA = {
         "projects": [
           "kabu-simurator-app"
         ],
+        "date": "2026-08-24",
         "days_old": 0,
         "stale": false,
         "problem_summary": "既存のFinnhub無料枠は米国取引所限定で暗号資産(BTC-USD等)のリアルタイム気配値が取得できなかった。日次終値取得には既に非公式のYahoo Finance Chart…",
@@ -298,6 +361,7 @@ window.STATS_DATA = {
         "projects": [
           "kabu-simurator-app"
         ],
+        "date": "2026-08-24",
         "days_old": 0,
         "stale": false,
         "problem_summary": "株価アプリで「上昇=緑、下降=赤」の色分けクラス(`.positive`/`.negative`/`.buyTag`/`.sellTag`)をテーブルのセルに適用していたが、実際の…",
@@ -316,6 +380,7 @@ window.STATS_DATA = {
         "projects": [
           "kabu-simurator-app"
         ],
+        "date": "2026-08-24",
         "days_old": 0,
         "stale": false,
         "problem_summary": "Railway上のExpressサーバーで、`process.on(\"SIGTERM\", ...)` によるgraceful shutdown(サーバーclose→DB close…",
@@ -334,6 +399,7 @@ window.STATS_DATA = {
         "projects": [
           "knowledge-base"
         ],
+        "date": "2026-08-24",
         "days_old": 0,
         "stale": false,
         "problem_summary": "`gh auth login`をClaude Codeのチャット上(コードブロックのRunボタン経由)で実行してもらったところ、ユーザーは完了したつもりでも`gh auth sta…",
@@ -351,6 +417,7 @@ window.STATS_DATA = {
         "projects": [
           "knowledge-base"
         ],
+        "date": "2026-08-24",
         "days_old": 0,
         "stale": false,
         "problem_summary": "Claude Codeに`~/.claude/settings.json`(hooksの設定ファイル)を新規作成・編集させようとすると、BashツールでもWriteツールでも、au…",
@@ -368,6 +435,7 @@ window.STATS_DATA = {
         "projects": [
           "DEPTH//"
         ],
+        "date": "2026-08-20",
         "days_old": 4,
         "stale": false,
         "problem_summary": "シーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。",
@@ -385,6 +453,7 @@ window.STATS_DATA = {
         "projects": [
           "ai-dev-knowledge-system"
         ],
+        "date": "2026-08-23",
         "days_old": 1,
         "stale": false,
         "problem_summary": "Windows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。",
@@ -403,6 +472,7 @@ window.STATS_DATA = {
         "projects": [
           "pokemon-champions-BattleAI"
         ],
+        "date": "2026-08-23",
         "days_old": 1,
         "stale": false,
         "problem_summary": "Windows上でtorch(easyocrが内部で使用)を初めてimportする処理を、メインスレッドではなく新しく作ったバックグラウンドスレッド(監視ループ用のスレッド)の中で…",
@@ -419,6 +489,7 @@ window.STATS_DATA = {
         "projects": [
           "pokemon-champions-BattleAI"
         ],
+        "date": "2026-08-23",
         "days_old": 1,
         "stale": false,
         "problem_summary": "小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。",
@@ -435,6 +506,7 @@ window.STATS_DATA = {
         "projects": [
           "knowledge-base"
         ],
+        "date": "2026-08-23",
         "days_old": 1,
         "stale": false,
         "problem_summary": "SessionEndフックに複数のhook(会話内容をAIに判断させて文章を書く「prompt」タイプを含む)を並べていたが、どのhookにも`timeout`を指定していなかった…",
@@ -451,6 +523,7 @@ window.STATS_DATA = {
         "projects": [
           "knowledge-base"
         ],
+        "date": "2026-08-23",
         "days_old": 1,
         "stale": false,
         "problem_summary": "Claude CodeのSessionEndフックに`matcher: \"clear\"`とだけ書いていたら、ユーザーが`/clear`と入力した時にしか動かなかった。ターミナルを閉…",
@@ -467,6 +540,7 @@ window.STATS_DATA = {
         "projects": [
           "pokemon-champions-BattleAI"
         ],
+        "date": "2026-08-23",
         "days_old": 1,
         "stale": false,
         "problem_summary": "EasyOCRで、小さい「ゃ」「や」のような拗音の仮名を、大きい仮名と読み間違える。",
@@ -484,6 +558,7 @@ window.STATS_DATA = {
         "projects": [
           "pokemon-champions-BattleAI"
         ],
+        "date": "2026-08-23",
         "days_old": 1,
         "stale": false,
         "problem_summary": "OpenCVの`TM_CCORR_NORMED`という比較方法を使うと、明るい画像は内容と無関係な場所にも高い一致スコアを出してしまう。",
@@ -500,6 +575,7 @@ window.STATS_DATA = {
         "projects": [
           "knowledge-base"
         ],
+        "date": "2026-08-23",
         "days_old": 1,
         "stale": false,
         "problem_summary": "「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available…",
@@ -513,6 +589,7 @@ window.STATS_DATA = {
         "content": "# [事例] DEPTH// 弾丸大量発生時のフレーム低下\n\ndate: 2026-06-15\nproject: DEPTH//\nrelated_rule: rules/godot-optimization.md\n\n## 何が起きたか\n雑魚敵を30体以上同時に倒すと、弾丸ノードが同時に150個近く発生し、\nフレームレートが60→22まで落ちた。\n\n## 原因\n弾丸を個別の RigidBody3D ノードとして生成していたため、\n_physics_process のオーバーヘッドが線形に増加していた。\n\n## 解決\nMultiMeshInstance3D + 独自の当たり判定計算に置き換え、\n150個発生時でも58fps以上を維持できるようになった。\n\n## 汎用化できそうな知見\n「同一見た目のインスタンスが50体を超えうる設計」は\n最初からMultiMeshInstance3Dを前提にすべき、という判断基準が立った。\n→ RESODIVEの敵AI実装(同様の課題)でも同じ判断が有効だった。\n→ 2案件で確認されたため rules/godot-optimization.md に昇格。\n",
         "tags": [],
         "projects": [],
+        "date": "2026-06-15",
         "days_old": 70,
         "stale": false,
         "problem_summary": "雑魚敵を30体以上同時に倒すと、弾丸ノードが同時に150個近く発生し、 フレームレートが60→22まで落ちた。",

@@ -118,6 +118,24 @@ def days_since(date_str, now_dt):
     return (now_dt - d).days
 
 
+def git_added_date(path, kb_dir):
+    """本文に `date:` が無いファイル(ruleなど)向けのフォールバック。
+    そのファイルが最初にコミットされた日をgitログから拾う。"""
+    rel = os.path.relpath(path, kb_dir)
+    try:
+        import subprocess
+        result = subprocess.run(
+            ['git', 'log', '--diff-filter=A', '--follow', '--format=%ad', '--date=short', '--', rel],
+            cwd=kb_dir, capture_output=True, text=True, timeout=5,
+        )
+        lines = [l for l in result.stdout.strip().split('\n') if l]
+        if lines:
+            return lines[-1]
+    except Exception:
+        pass
+    return None
+
+
 def extract_section(content, heading, max_len=90):
     """`## <heading>` 見出しの本文を取り出し、短く要約して返す(無ければ None)"""
     m = re.search(rf'^##\s*{re.escape(heading)}\s*\n(.*?)(?=\n##|\Z)', content, re.MULTILINE | re.DOTALL)
@@ -150,7 +168,7 @@ for cat, paths in categories.items():
     entries = []
     for p in sorted(paths, key=os.path.getmtime, reverse=True):
         content = read_content(p)
-        file_date = find_date(content)
+        file_date = find_date(content) or git_added_date(p, kb_dir)
         age_days = days_since(file_date, now_dt)
         entry = {
             'filename': os.path.basename(p),
@@ -158,6 +176,7 @@ for cat, paths in categories.items():
             'content': content,
             'tags': find_tags(content),
             'projects': find_projects(content),
+            'date': file_date,
             'days_old': age_days,
             'stale': (cat == 'candidates' and age_days is not None and age_days >= STALE_DAYS),
             'problem_summary': extract_section(content, PROBLEM_HEADINGS[cat]) if cat in PROBLEM_HEADINGS else None,
@@ -178,7 +197,7 @@ archive_paths = sorted(glob.glob(os.path.join(kb_dir, 'candidates', 'archive', '
 archived_entries = []
 for p in archive_paths:
     content = read_content(p)
-    file_date = find_date(content)
+    file_date = find_date(content) or git_added_date(p, kb_dir)
     age_days = days_since(file_date, now_dt)
     archived_entries.append({
         'filename': os.path.basename(p),
@@ -186,6 +205,7 @@ for p in archive_paths:
         'content': content,
         'tags': find_tags(content),
         'projects': find_projects(content),
+        'date': file_date,
         'days_old': age_days,
         'stale': True,
         'problem_summary': extract_section(content, PROBLEM_HEADINGS['candidates']),
