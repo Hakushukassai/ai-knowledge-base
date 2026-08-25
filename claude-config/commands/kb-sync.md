@@ -16,9 +16,11 @@ description: 会話を終了せずに、今すぐ知識ベースへの書き出�
 6. この会話中に knowledge-base/rules/ や knowledge-base/candidates/ の内容を(Skillとしての自動発動以外で)実際に参照・活用した場面があったか振り返る。あれば ~/knowledge-base/.reference_usage.log に1行(日時・カテゴリ・ファイル名・判定(役立った/参考程度/不明)・理由の5項目をタブ区切りで)追記する。無ければ何もしない。
 
 7. Bashツールで以下を順番に実行する:
-   - python3 ~/.claude/hooks/archive_stale_candidates.py
+   - sh ~/knowledge-base/scripts/pyrun.sh ~/knowledge-base/scripts/validate_kb.py
+     (問題が報告されたら、pushの前に自分で直せるものは直す。判断が要るものはユーザーに報告する)
+   - sh ~/knowledge-base/scripts/pyrun.sh ~/.claude/hooks/archive_stale_candidates.py
    - bash ~/knowledge-base/scripts/generate_stats.sh
    - mkdir -p ~/knowledge-base/claude-config/skills ~/knowledge-base/claude-config/hooks && cp ~/.claude/settings.json ~/knowledge-base/claude-config/settings.json && rm -rf ~/knowledge-base/claude-config/skills/* && cp -r ~/.claude/skills/* ~/knowledge-base/claude-config/skills/ && cp -r ~/.claude/hooks/* ~/knowledge-base/claude-config/hooks/
-   - python3 ~/.claude/hooks/scan_and_push.py
+   - sh ~/knowledge-base/scripts/pyrun.sh ~/.claude/hooks/scan_and_push.py
 
 すべて終わったら「知識ベースに反映してpushしました」と一言だけ報告する。

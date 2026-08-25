@@ -14,7 +14,7 @@ export OUT="docs/stats.json"
 export MANIFEST="docs/.manifest.json"
 export NOW="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
-python3 << 'PYEOF'
+sh scripts/pyrun.sh << 'PYEOF'
 import json
 import os
 import re
@@ -27,12 +27,16 @@ manifest_path = os.environ['MANIFEST']
 now = os.environ['NOW']
 now_dt = datetime.strptime(now, '%Y-%m-%dT%H:%M:%SZ')
 
-CATEGORY_LABEL = {'rules': 'ルール', 'candidates': '候補', 'incidents': '事例'}
+CATEGORY_LABEL = {'rules': 'ルール', 'candidates': '候補', 'incidents': '事例', 'external_skill_imports': '外部Skill導入記録'}
 STALE_DAYS = 30  # 候補がこの日数以上動きなしなら「放置」とみなす
+
+# カテゴリ名(辞書のキー)とディレクトリ名が一致しないものだけここに書く
+CATEGORY_DIR = {'external_skill_imports': 'external-skill-imports'}
 
 
 def files_in(category):
-    return sorted(glob.glob(os.path.join(kb_dir, category, '*.md')))
+    dirname = CATEGORY_DIR.get(category, category)
+    return sorted(glob.glob(os.path.join(kb_dir, dirname, '*.md')))
 
 
 def count_chars(paths):
@@ -185,8 +189,8 @@ def extract_section(content, heading, max_len=90):
 
 
 # カテゴリごとに「問題」「対応」に対応する見出し名(存在すれば要約に使う)
-PROBLEM_HEADINGS = {'candidates': '何が起きたか', 'incidents': '何が起きたか'}
-SOLUTION_HEADINGS = {'candidates': 'わかったこと・今の対応', 'incidents': '解決', 'rules': 'ルール'}
+PROBLEM_HEADINGS = {'candidates': '何が起きたか', 'incidents': '何が起きたか', 'external_skill_imports': '何が起きたか'}
+SOLUTION_HEADINGS = {'candidates': 'わかったこと・今の対応', 'incidents': '解決', 'rules': 'ルール', 'external_skill_imports': 'わかったこと・今の対応'}
 
 # rules/candidates が実際のセッションで参照・活用された記録
 # (SessionEndのプロンプト型フックが会話内容から判断して記録する。Skillとして
@@ -418,6 +422,7 @@ data = {
     'candidates': {'count': counts['candidates'], 'chars': chars['candidates']},
     'incidents': {'count': counts['incidents'], 'chars': chars['incidents']},
     'archived': {'count': len(archived_entries), 'chars': count_chars(archive_paths)},
+    'external_skill_imports': {'count': counts['external_skill_imports'], 'chars': chars['external_skill_imports']},
     'total_chars': total_chars,
     'history': history,
     'items': items,

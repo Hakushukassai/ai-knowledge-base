@@ -17,10 +17,10 @@
     --text-2: #6e6e73;
     --text-3: #a1a1a6;
     --row-hover: rgba(0,0,0,0.035);
-    --row-selected: rgba(0,0,0,0.065);
+    --row-selected: #dbe9ff;
     --chip-bg: rgba(0,0,0,0.045);
-    --chip-active-bg: #1d1d1f;
-    --chip-active-text: #ffffff;
+    --chip-active-bg: transparent;
+    --chip-active-text: #007aff;
     --input-bg: rgba(0,0,0,0.045);
     --scrollbar: rgba(0,0,0,0.18);
 
@@ -28,6 +28,7 @@
     --cat-candidate: #a68a5c;
     --cat-incident: #a97b70;
     --cat-archive: #9a9a9f;
+    --cat-external: #6f84a6;
 
     --radius-lg: 14px;
     --radius-md: 10px;
@@ -45,10 +46,10 @@
       --text-2: #98989d;
       --text-3: #6e6e73;
       --row-hover: rgba(255,255,255,0.045);
-      --row-selected: rgba(255,255,255,0.09);
+      --row-selected: #164d8a;
       --chip-bg: rgba(255,255,255,0.075);
-      --chip-active-bg: #f5f5f7;
-      --chip-active-text: #1d1d1f;
+      --chip-active-bg: transparent;
+      --chip-active-text: #0a84ff;
       --input-bg: rgba(255,255,255,0.075);
       --scrollbar: rgba(255,255,255,0.2);
 
@@ -56,6 +57,7 @@
       --cat-candidate: #c3a97b;
       --cat-incident: #c2938a;
       --cat-archive: #838388;
+      --cat-external: #8fa8c9;
     }
   }
 
@@ -165,7 +167,7 @@
     margin-bottom: 1px;
   }
   .nav-row:hover{ background: var(--row-hover); }
-  .nav-row.active{ background: var(--row-selected); font-weight: 600; }
+  .nav-row.active{ background: var(--row-selected); color:var(--chip-active-text); font-weight: 600; }
   .nav-row .nav-dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; background:var(--text-3); }
   .nav-row .nav-label{ flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .nav-row .nav-count{ font-size:11.5px; color: var(--text-3); flex-shrink:0; }
@@ -207,28 +209,21 @@
   .pane-body{ padding: 14px 16px 40px; }
 
   /* ---------- バナー ---------- */
-  .banner{
-    border-radius: var(--radius-md);
-    padding: 11px 13px;
-    margin-bottom: 12px;
-    background: var(--chip-bg);
-    border-left: 3px solid var(--text-3);
+  .attention-line{
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    padding: 0 0 15px; margin-bottom:18px; border-bottom:1px solid var(--line);
   }
-  .banner.tone-warn{ border-left-color: var(--cat-incident); }
-  .banner.tone-info{ border-left-color: var(--cat-candidate); }
-  .banner .banner-title{ font-size: 12.5px; font-weight: 600; margin-bottom: 3px; }
-  .banner .banner-body{ font-size: 12px; line-height: 1.65; color: var(--text-2); word-break: break-word; }
-  .banner .banner-body .md-p{ margin: 6px 0 0; }
-  .banner .banner-body .md-p:first-child{ margin-top:0; }
-  .banner .banner-body .md-h{ font-size: 12px; font-weight:600; color: var(--text-1); margin: 10px 0 2px; }
-  .banner.clickable{ cursor:pointer; }
-
+  .attention-line .attention-copy{ font-size:12.5px; color:var(--text-2); }
+  .attention-line .attention-copy strong{ color:var(--text-1); font-weight:600; }
+  .attention-line .attention-copy .attention-dot{ display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--cat-candidate); margin:0 7px 1px 0; }
+  .attention-line button{ border:none; background:var(--chip-active-text); color:white; padding:5px 9px; border-radius:5px; font-size:11px; font-weight:500; cursor:pointer; white-space:nowrap; }
   /* ---------- 概要ダッシュボード ---------- */
-  .stat-grid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 18px; }
+  .stat-grid{ display:grid; grid-template-columns: repeat(3, 1fr); margin-bottom: 22px; border-bottom:1px solid var(--line); }
   .stat-card{
-    border:1px solid var(--line); border-radius: var(--radius-md);
-    padding: 14px 14px 12px; background: var(--detail-bg); cursor:pointer; text-align:left;
+    border:none; border-radius:0; border-right:1px solid var(--line);
+    padding: 4px 14px 15px; background:transparent; cursor:pointer; text-align:left;
   }
+  .stat-card:last-child{ border-right:none; }
   .stat-card:hover{ background: var(--row-hover); }
   .stat-card .stat-num{ font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
   .stat-card .stat-label{ font-size: 11.5px; color: var(--text-2); margin-top: 3px; display:flex; align-items:center; gap:5px; }
@@ -240,12 +235,12 @@
   }
 
   /* ---------- 検索・タグ絞り込みチップ ---------- */
-  .chip-row{ display:flex; flex-wrap:wrap; gap:6px; margin-bottom: 12px; }
+  .chip-row{ display:flex; flex-wrap:wrap; gap:14px; margin-bottom: 14px; border-bottom:1px solid var(--line-soft); }
   .chip{
-    font-size: 11.5px; padding: 4px 11px; border-radius: 12px;
-    border: none; background: var(--chip-bg); color: var(--text-2); cursor:pointer;
+    font-size: 11.5px; padding: 0 0 6px; border-radius: 0;
+    border: none; border-bottom:2px solid transparent; background:transparent; color: var(--text-2); cursor:pointer;
   }
-  .chip.active{ background: var(--chip-active-bg); color: var(--chip-active-text); }
+  .chip.active{ background: var(--chip-active-bg); border-bottom-color:var(--chip-active-text); color: var(--chip-active-text); font-weight:600; }
   .filter-label{ font-size: 10.5px; font-weight:600; color: var(--text-3); margin-bottom:5px; }
 
   .filter-toggle{
@@ -262,8 +257,8 @@
     padding: 11px 16px; border-bottom: 1px solid var(--line-soft);
   }
   .row-item:hover{ background: var(--row-hover); }
-  .row-item.selected{ background: var(--row-selected); }
-  .row-item.kbd-focus{ outline: 2px solid var(--text-3); outline-offset: -2px; }
+  .row-item.selected{ background: var(--row-selected); box-shadow:inset 3px 0 0 var(--chip-active-text); }
+  .row-item.kbd-focus{ outline: 2px solid var(--chip-active-text); outline-offset: -2px; }
   .row-item .row-dot{ width:7px; height:7px; border-radius:50%; flex-shrink:0; }
   .row-item .row-main{ flex:1; min-width:0; }
   .row-item .row-title{
@@ -293,7 +288,7 @@
 
   /* ---------- 詳細ペイン ---------- */
   .detail-header{ margin-bottom: 14px; }
-  .detail-header h2{ font-size: 20px; font-weight: 600; letter-spacing: -0.015em; line-height:1.35; }
+  .detail-header h2{ font-size: 25px; font-weight: 600; letter-spacing: -0.035em; line-height:1.28; }
   .detail-meta-row{
     display:flex; flex-wrap:wrap; align-items:center; gap: 8px;
     margin-top: 8px; font-size: 12px; color: var(--text-2);
@@ -327,22 +322,19 @@
     background: var(--chip-bg); border-radius: var(--radius-md); padding: 12px 14px;
   }
 
-  .badge{
-    display:inline-flex; align-items:center; gap:5px;
-    font-size: 11px; padding: 3px 9px; border-radius: 11px;
-    background: var(--chip-bg); color: var(--text-2);
-  }
+  .badge{ display:inline-flex; align-items:center; gap:5px; font-size:11px; padding:0; border-radius:0; background:transparent; color:var(--text-2); }
   .badge.tone-good{ color: var(--cat-rule); }
   .badge.tone-warn{ color: var(--cat-incident); }
   .badge .badge-dot{ width:6px; height:6px; border-radius:50%; background:currentColor; }
 
-  .tag-row{ display:flex; flex-wrap:wrap; gap:6px; margin-top: 10px; }
-  .pill{ font-size: 10.5px; padding: 3px 10px; border-radius: 9px; background: var(--chip-bg); color: var(--text-2); }
+  .tag-row{ display:flex; flex-wrap:wrap; gap:9px; margin-top: 11px; }
+  .tag-row > * + *::before{ content:'·'; color:var(--text-3); margin-right:9px; }
+  .pill{ font-size:10.5px; padding:0; border-radius:0; background:transparent; color:var(--text-2); }
 
   .field-block{ margin: 18px 0; }
   .field-block .field-label{
     font-size: 10.5px; font-weight:600; color: var(--text-3);
-    text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px;
+    letter-spacing: 0; margin-bottom: 6px;
   }
   .field-block .field-text{ font-size: 13.5px; line-height: 1.75; color: var(--text-1); word-break: break-word; }
 
@@ -369,7 +361,7 @@
   <section class="pane pane-detail" id="pane-detail"></section>
 </div>
 
-<script src="stats-data.js?v=20260824171901"></script>
+<script src="stats-data.js?v=20260825000622"></script>
 <script>
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, ch => ({
@@ -377,9 +369,9 @@ function escapeHtml(s){
   }[ch]));
 }
 
-const CAT_LABEL = {rules: 'ルール(確定)', candidates: '候補', incidents: '事例ログ', archived: 'アーカイブ'};
-const CAT_LABEL_SHORT = {rules: 'ルール', candidates: '候補', incidents: '事例', archived: 'アーカイブ'};
-const CAT_COLOR = {rules: 'var(--cat-rule)', candidates: 'var(--cat-candidate)', incidents: 'var(--cat-incident)', archived: 'var(--cat-archive)'};
+const CAT_LABEL = {rules: 'ルール(確定)', candidates: '候補', incidents: '事例ログ', archived: 'アーカイブ', external_skill_imports: '外部Skill導入記録'};
+const CAT_LABEL_SHORT = {rules: 'ルール', candidates: '候補', incidents: '事例', archived: 'アーカイブ', external_skill_imports: '外部Skill'};
+const CAT_COLOR = {rules: 'var(--cat-rule)', candidates: 'var(--cat-candidate)', incidents: 'var(--cat-incident)', archived: 'var(--cat-archive)', external_skill_imports: 'var(--cat-external)'};
 const NAV_SECTIONS = ['overview', 'rules', 'candidates', 'incidents', 'skills', 'history'];
 const NUMBER_KEY_SECTIONS = ['overview', 'rules', 'candidates', 'incidents', 'skills', 'history'];
 const WIDE_SECTIONS = ['overview', 'help'];
@@ -398,7 +390,7 @@ let focusedRowIndex = -1;
 function isMobile(){ return window.matchMedia('(max-width: 860px)').matches; }
 
 function githubItemUrl(cat, filename){
-  const dir = cat === 'archived' ? 'candidates/archive' : cat;
+  const dir = cat === 'archived' ? 'candidates/archive' : cat === 'external_skill_imports' ? 'external-skill-imports' : cat;
   return `${GITHUB_REPO_URL}/blob/master/${dir}/${filename}`;
 }
 function githubSkillUrl(folderName, retired){
@@ -609,7 +601,7 @@ function toolbar({title, sub, showBack, onBack}){
 function searchAll(query){
   const q = query.toLowerCase();
   const results = [];
-  ['rules', 'candidates', 'incidents', 'archived'].forEach(cat => {
+  ['rules', 'candidates', 'incidents', 'archived', 'external_skill_imports'].forEach(cat => {
     (statsData.items[cat] || []).forEach(item => {
       const haystack = [item.title, item.content, ...(item.tags || [])].join(' ').toLowerCase();
       if (haystack.includes(q)) results.push({cat, item});
@@ -656,6 +648,9 @@ function renderSidebar(){
   if ((statsData.archived || {}).count > 0){
     navDefs.push({key: 'archived', label: 'アーカイブ', count: statsData.archived.count, dot: CAT_COLOR.archived});
   }
+  if ((statsData.external_skill_imports || {}).count > 0){
+    navDefs.push({key: 'external_skill_imports', label: CAT_LABEL.external_skill_imports, count: statsData.external_skill_imports.count, dot: CAT_COLOR.external_skill_imports});
+  }
 
   const navGroup = document.createElement('div');
   navGroup.className = 'nav-group';
@@ -694,26 +689,16 @@ function renderSidebar(){
 
 /* ================= 概要(ダッシュボード) ================= */
 function renderOverview(container){
-  if (statsData.promotion_suggestions){
-    const banner = document.createElement('div');
-    banner.className = 'banner tone-info clickable';
-    banner.innerHTML = `<div class="banner-title">昇格の提案があります</div><div class="banner-body">${renderMarkdownLite(statsData.promotion_suggestions)}</div>`;
-    banner.onclick = () => goSection('candidates');
-    container.appendChild(banner);
-  }
-  if (statsData.merge_suggestions){
-    const banner = document.createElement('div');
-    banner.className = 'banner tone-info clickable';
-    banner.innerHTML = `<div class="banner-title">統合の提案があります</div><div class="banner-body">${renderMarkdownLite(statsData.merge_suggestions)}</div>`;
-    banner.onclick = () => goSection('candidates');
-    container.appendChild(banner);
-  }
-  if (statsData.stale_count > 0){
-    const banner = document.createElement('div');
-    banner.className = 'banner tone-warn clickable';
-    banner.innerHTML = `<div class="banner-title">動きのない候補</div><div class="banner-body">${statsData.stale_count}件の候補が30日以上更新されていません。</div>`;
-    banner.onclick = () => goSection('candidates');
-    container.appendChild(banner);
+  const attention = [];
+  if (statsData.promotion_ready_count > 0) attention.push(`${statsData.promotion_ready_count}件の昇格候補`);
+  if (statsData.merge_suggestions) attention.push('統合候補');
+  if (statsData.stale_count > 0) attention.push(`${statsData.stale_count}件の見直し候補`);
+  if (attention.length > 0){
+    const line = document.createElement('div');
+    line.className = 'attention-line';
+    line.innerHTML = `<div class="attention-copy"><span class="attention-dot"></span><strong>次の判断</strong>　${escapeHtml(attention.join('・'))}があります</div><button type="button">候補を見る</button>`;
+    line.querySelector('button').onclick = () => goSection('candidates');
+    container.appendChild(line);
   }
 
   const grid = document.createElement('div');
@@ -899,12 +884,12 @@ function renderCategoryListBody(container, cat){
 
   const selected = route.detail && route.detail.kind === 'item' ? route.detail.filename : null;
   const rows = entries.map(item => makeRow({
-    title: (item.stale ? '⏳ ' : '') + (item.source === 'external' ? '🔗 ' : '') + item.title,
+    title: item.title,
     sub: itemSubtext(cat, item),
     date: item.date,
     daysOld: item.days_old,
     selected: item.filename === selected,
-    dotColor: cat === 'rules' && item.skill_installed ? 'var(--cat-rule)' : null,
+    dotColor: item.source === 'external' ? 'var(--cat-external)' : (item.stale ? 'var(--cat-incident)' : (cat === 'rules' && item.skill_installed ? 'var(--cat-rule)' : CAT_COLOR[cat])),
     onClick: () => selectItem(cat, item.filename)
   }));
   container.appendChild(makeRowList(rows));
@@ -986,7 +971,7 @@ function renderSearchListBody(container){
 }
 
 function sectionCountSub(section){
-  if (['rules','candidates','incidents','archived'].includes(section)){
+  if (['rules','candidates','incidents','archived','external_skill_imports'].includes(section)){
     const c = statsData[section];
     return `${c.count}件 · ${c.chars.toLocaleString()}文字`;
   }
@@ -1020,7 +1005,7 @@ function renderListPane(){
   switch(route.section){
     case 'overview': renderOverview(body); break;
     case 'help': renderHelp(body); break;
-    case 'rules': case 'candidates': case 'incidents': case 'archived':
+    case 'rules': case 'candidates': case 'incidents': case 'archived': case 'external_skill_imports':
       renderCategoryListBody(body, route.section); break;
     case 'skills': renderSkillsListBody(body); break;
     case 'history': renderHistoryListBody(body); break;

@@ -40,7 +40,7 @@
 
 「`<スキル名>` のSkillを引退させて」
 
-内部では `python3 ~/.claude/hooks/retire_skill.py <スキル名>` が実行され、
+内部では `sh ~/knowledge-base/scripts/pyrun.sh ~/.claude/hooks/retire_skill.py <スキル名>` が実行され、
 - `~/.claude/skills/<スキル名>/` が `knowledge-base/claude-config/skills-archive/`
   に移動される(削除ではないので中身は残る。Claude Codeは以後自動使用しない)
 - 対応する `rules/*.md` に `skill_status: retired` が追記される

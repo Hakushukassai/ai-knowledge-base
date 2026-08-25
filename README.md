@@ -9,8 +9,9 @@ AIとの作業で得た知見を「候補→確定ルール→Skill」の3段階
 ```
 knowledge-base/
   rules/            確定ルール(2つ以上のプロジェクトで確認済み)
-  candidates/       候補(1回だけ観測された仮説)
+  candidates/       候補(1回だけ観測された仮説。純粋な技術的発見のみ)
   incidents/        事例ログ(具体的なトラブルの記録)
+  external-skill-imports/  外部Skillの試験導入記録(通常の昇格ゲートを迂回するため、candidates/とは別管理)
   docs/             知識ベースを見るためのビジュアライザ(index.htmlをダブルクリック、またはGitHub Pagesで公開)
   scripts/          docsの数字を更新するスクリプト
   claude-config/    別のパソコンにセットアップするための設定コピー(自動更新される)

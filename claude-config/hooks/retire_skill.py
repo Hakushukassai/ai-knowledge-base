@@ -1,5 +1,5 @@
 """手動で実行する: Skillを「引退」させる。
-使い方: python3 ~/.claude/hooks/retire_skill.py <skill名>
+使い方: sh ~/knowledge-base/scripts/pyrun.sh ~/.claude/hooks/retire_skill.py <skill名>
 
 やること:
 1. ~/.claude/skills/<name>/ を knowledge-base/claude-config/skills-archive/<name>/

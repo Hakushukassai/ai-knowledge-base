@@ -5,7 +5,11 @@
 # 有効にするには、このリポジトリで一度だけ以下を実行する:
 #   git config core.hooksPath .githooks
 #
+# scan_secrets.pyはリポジトリ内(claude-config/hooks/)のものを直接呼ぶ。
+# ~/.claude/hooks/への同期コピーに依存すると、ローカル側だけファイルが
+# 欠けたり古くなったりした時にチェックが静かに壊れるため。
+#
 # knowledge-base/README.md および claude-config/SETUP.md も参照。
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
-python3 "$HOME/.claude/hooks/scan_secrets.py" "$REPO_ROOT"
+sh "$REPO_ROOT/scripts/pyrun.sh" "$REPO_ROOT/claude-config/hooks/scan_secrets.py" "$REPO_ROOT"

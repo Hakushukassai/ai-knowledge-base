@@ -1,7 +1,7 @@
 # [候補] Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける
 
 status: candidate
-observed_count: 1
+observed_count: 2
 observed_in: [ai-dev-knowledge-system]
 tags: [windows, python, 環境構築]
 date: 2026-08-23
@@ -27,6 +27,12 @@ Windows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊
 シェルスクリプト(bashやhookコマンド)内で `python3` をハードコードしていると、
 このマシン・この手のWindows環境では静かに失敗する、または不可解な出力になる
 点に注意。
+
+(2026-08-25、ai-dev-knowledge-systemで再確認: `python3 -c ""`の終了コードで
+実体を判定し、失敗時は`py -3`にフォールバックする`scripts/pyrun.sh`を実装し、
+knowledge-base内でpython3をハードコードしていた9箇所すべてに導入した。
+実際にこのラッパー経由で`http.server`等を起動できることを確認しており、
+`py -3`への統一が実用上十分な回避策であることが確認できた)
 
 ## まだ確認できていないこと
 - 他のWindowsマシン/ユーザー環境でも同じスタブ配置になっているか未確認

@@ -1,12 +1,12 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-24T17:19:01Z",
+  "generated_at": "2026-08-25T00:06:22Z",
   "rules": {
     "count": 1,
-    "chars": 540
+    "chars": 780
   },
   "candidates": {
-    "count": 42,
-    "chars": 51759
+    "count": 32,
+    "chars": 41023
   },
   "incidents": {
     "count": 1,
@@ -16,7 +16,11 @@ window.STATS_DATA = {
     "count": 0,
     "chars": 0
   },
-  "total_chars": 52798,
+  "external_skill_imports": {
+    "count": 12,
+    "chars": 13663
+  },
+  "total_chars": 55965,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -513,6 +517,22 @@ window.STATS_DATA = {
       "candidates_count": 42,
       "incidents_count": 1,
       "total_chars": 52798
+    },
+    {
+      "date": "2026-08-24T23:58:40Z",
+      "summary": "[外部Skill導入記録] 外部Skill `frontend-design`(Anthropic公式)を試験導入 / [外部Skill導入記録] 外部Skill `game-ai`を試験導入 ほか10件",
+      "rules_count": 1,
+      "candidates_count": 30,
+      "incidents_count": 1,
+      "total_chars": 53050
+    },
+    {
+      "date": "2026-08-25T00:06:22Z",
+      "summary": "[候補] Codex CLIには(2026年8月時点で)Claude CodeのSessionEndに相当するフックが無い / [候補] ルール昇格時、AIが「作ったつもり」の参照ファイルを実際には作り忘れることがある",
+      "rules_count": 1,
+      "candidates_count": 32,
+      "incidents_count": 1,
+      "total_chars": 55965
     }
   ],
   "items": {
@@ -520,7 +540,7 @@ window.STATS_DATA = {
       {
         "filename": "godot-optimization.md",
         "title": "Godot 4 最適化ルール",
-        "content": "# Godot 4 最適化ルール\n\nstatus: confirmed\npromoted_from: candidates/2026-06-multimesh-discovery.md\nconfirmed_in: [RESODIVE, DEPTH//]\nconfirmed_count: 2\ntags: [godot, ゲーム開発, パフォーマンス最適化]\nskill: godot-optimization\n\n## ルール\n敵や弾丸など同一メッシュの大量インスタンスは、個別の Node ではなく\nMultiMeshInstance3D を使う。個別 Node は 200 体を超えたあたりから\n_process のオーバーヘッドで明確にフレームが落ちる。\n\n## 判断基準\n- 「同じ見た目のオブジェクトが同時に50体以上存在しうるか」で判定する\n- 存在しうるなら最初から MultiMeshInstance3D 設計にする\n  (後から個別Node実装を移行するコストの方が高い)\n\n## 根拠になった事例\n- incidents/2026-05-resodive-enemy-lag.md\n- incidents/2026-06-depth-bullet-lag.md\n",
+        "content": "# Godot 4 最適化ルール\n\nstatus: confirmed\nconfirmed_in: [RESODIVE, DEPTH//]\nconfirmed_count: 2\ntags: [godot, ゲーム開発, パフォーマンス最適化]\nskill: godot-optimization\n\n<!-- 2026-08-25: validate_kb.py導入時に検出。promoted_fromが指していた\n     candidates/2026-06-multimesh-discovery.md、および下記の事例のうち\n     incidents/2026-05-resodive-enemy-lag.md は、git履歴上一度もコミット\n     された形跡が無い(実際には作成されないまま昇格時に参照だけされた)。\n     RESODIVE側の実際の経緯を知っている場合は、事例ファイルを新規作成して\n     このコメントごと置き換えてください。 -->\n\n\n## ルール\n敵や弾丸など同一メッシュの大量インスタンスは、個別の Node ではなく\nMultiMeshInstance3D を使う。個別 Node は 200 体を超えたあたりから\n_process のオーバーヘッドで明確にフレームが落ちる。\n\n## 判断基準\n- 「同じ見た目のオブジェクトが同時に50体以上存在しうるか」で判定する\n- 存在しうるなら最初から MultiMeshInstance3D 設計にする\n  (後から個別Node実装を移行するコストの方が高い)\n\n## 根拠になった事例\n- incidents/2026-06-depth-bullet-lag.md\n- (RESODIVEの敵AI実装での同様の事例は、ファイルが未作成のため上のコメント参照)\n",
         "tags": [
           "godot",
           "ゲーム開発",
@@ -528,14 +548,20 @@ window.STATS_DATA = {
         ],
         "projects": [],
         "date": "2026-08-23",
-        "days_old": 1,
+        "days_old": 2,
         "stale": false,
         "problem_summary": null,
         "solution_summary": "敵や弾丸など同一メッシュの大量インスタンスは、個別の Node ではなく MultiMeshInstance3D を使う。個別 Node は 200 体を超えたあたりから _pro…",
         "observed_count": 1,
         "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
+        "reference_count": 1,
+        "reference_recent": [
+          {
+            "date": "2026-08-25T00:04:49Z",
+            "verdict": "役立った",
+            "reason": "壊れた参照の検証・修正に直接使った"
+          }
+        ],
         "source": null,
         "source_url": null,
         "skill_name": "godot-optimization",
@@ -544,6 +570,137 @@ window.STATS_DATA = {
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-24-writing-about-secret-scan-false-positives-retriggers-them.md",
+        "title": "誤検知の「説明文」を書く行為自体が同じ誤検知を再発させる",
+        "content": "# [候補] 誤検知の「説明文」を書く行為自体が同じ誤検知を再発させる\n\nstatus: candidate\nobserved_count: 4\nobserved_in: [knowledge-base]\ntags: [claude-code, セキュリティ, ドキュメント]\ndate: 2026-08-24\nendorsed: false\n\n## 何が起きたか\n機密情報スキャンの誤検知(プレースホルダーメールアドレス等)について「こう直した」と説明する文章の中に、直す前の実例(`@`付きのメールアドレス)をそのまま引用すると、その説明文自体が新たに誤検知される。同じ日に2回(候補ファイル本文、および外部Skill導入ガイド本文)で発生した。\n\n## わかったこと・今の対応\n機密情報の誤検知について書く時は、問題のパターンを説明する際も実際に検知されるフォーマットそのものを書かない(「メールアドレス形式の文字列」のように抽象化するか、区切り記号を意図的に別の表記に置き換えて言及する)。\n\n## 詳しい経緯\n1回目: `ux-designer`導入時、候補ファイルの本文に「置換前後のメールアドレスの実例」をそのまま書いたところ、`docs/stats.json`等への埋め込みも含めてスキャナーが再検知した。2回目: 本件を教訓化した`EXTERNAL-SKILL-GUIDE.md`の中で、「実例をそのまま書かない」という注意書き自体に同じ実例を書いてしまい、再度検知された。3回目: この候補ファイルの初稿でも同様の実例を書いてしまい、三度検知された。いずれも実害はなく(pre-commitで正しく止まった)、都度抽象化した表現に書き換えて解消した。\n\n(2026-08-25、ai-dev-knowledge-systemで再確認: 機密情報スキャンではなく、新設した`scripts/validate_kb.py`のリンク切れチェッカーでも同じ現象が発生した。「壊れた参照ファイル名をそのまま説明文に書く」候補ファイルを作成したところ、その説明文自体がリンク切れとして検知された。この4回目は対象がsecret-scannerではなくlink-checkerだったため、この現象は特定のスキャナーに限らず「パターンマッチ型の検証ツール全般について、その誤検知/検知対象を実例入りで説明する文章を書くと、説明文自体が同じ検知に引っかかる」という、より一般的な現象である可能性が高い)\n\n## まだ確認できていないこと\n- この手のメタ的な言及(誤検知の実例を説明する文章)を最初から誤検知させない、もっと良い書き方の型があるか\n",
+        "tags": [
+          "claude-code",
+          "セキュリティ",
+          "ドキュメント"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "機密情報スキャンの誤検知(プレースホルダーメールアドレス等)について「こう直した」と説明する文章の中に、直す前の実例(`@`付きのメールアドレス)をそのまま引用すると、その説明文自…",
+        "solution_summary": "機密情報の誤検知について書く時は、問題のパターンを説明する際も実際に検知されるフォーマットそのものを書かない(「メールアドレス形式の文字列」のように抽象化するか、区切り記号を意図的…",
+        "observed_count": 4,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": true
+      },
+      {
+        "filename": "2026-08-25-promotion-cites-files-never-actually-created.md",
+        "title": "ルール昇格時、AIが「作ったつもり」の参照ファイルを実際には作り忘れることがある",
+        "content": "# [候補] ルール昇格時、AIが「作ったつもり」の参照ファイルを実際には作り忘れることがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [ナレッジベース運用, データ整合性, AI]\ndate: 2026-08-25\n\n## 何が起きたか\n確定ルール`rules/godot-optimization.md`が、根拠として事例ログ1件(ファイル名に2026-05・resodive・enemy-lagを含む)と昇格元の候補1件(ファイル名に2026-06・multimesh・discoveryを含む)を参照していたが、どちらもgit履歴上一度もコミットされた形跡が無く、実際には作られていなかった。\n\n## わかったこと・今の対応\n過去のセッションで候補をルールに昇格させた際、AIが「もっともらしいファイル名」を参照として書いただけで、実際にそのファイル(事例ログや元候補)を作成し忘れていたと考えられる。対応として、存在しない参照はコメントとして経緯を残す形に修正し、`scripts/validate_kb.py`でリンク切れを機械的に検出できるようにした。昇格作業(ルール化・事例作成)を行う時は、参照先を書いたらその場で実際にファイルが存在するか確認する一手間を入れるとよい。\n\n## 詳しい経緯\n`scripts/validate_kb.py`(このセッションで新設)で全ファイルのリンク切れを機械チェックしたところ、`godot-optimization.md`の2つの参照が実在しないことが判明した。片方(`incidents/...`)は外部レビューで最初に指摘され、もう片方(`promoted_from: candidates/...`)は検証の過程で追加で見つかった。いずれもファイル名や日付が具体的で一見もっともらしく、目視だけでは気づきにくい。LLMが「次にこのファイルを作る」という自分の意図と「実際にそのファイルを作った」という完了状態を混同し、参照だけ書いて中身を作らずに終えてしまうパターンだと考えられる。\n\n## まだ確認できていないこと\n- 他のプロジェクトの知識ベースやドキュメント生成タスクでも同様の「参照だけ書いて実体を作り忘れる」パターンが起きるか\n- ルール昇格のワークフロー自体に「参照ファイルの存在確認」を必須ステップとして組み込むべきか\n",
+        "tags": [
+          "ナレッジベース運用",
+          "データ整合性",
+          "AI"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-25",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "確定ルール`rules/godot-optimization.md`が、根拠として事例ログ1件(ファイル名に2026-05・resodive・enemy-lagを含む)と昇格元の候…",
+        "solution_summary": "過去のセッションで候補をルールに昇格させた際、AIが「もっともらしいファイル名」を参照として書いただけで、実際にそのファイル(事例ログや元候補)を作成し忘れていたと考えられる。対応…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-25-codex-cli-no-sessionend-hook.md",
+        "title": "Codex CLIには(2026年8月時点で)Claude CodeのSessionEndに相当するフックが無い",
+        "content": "# [候補] Codex CLIには(2026年8月時点で)Claude CodeのSessionEndに相当するフックが無い\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [codex, claude-code, hooks, 移植性]\ndate: 2026-08-25\n\n## 何が起きたか\nClaude Codeの知識ベース自動化(セッション終了時にAI自身が候補記録・HANDOFF更新・git pushまで行う仕組み)を、OpenAIのCodex CLIにも移植できるか調査した。Codexにも2026年に入って似た「フック」機能が追加されていたが、セッション終了のタイミングを捕まえる仕組み(Claude CodeのSessionEnd相当)が無いことが分かった。\n\n## わかったこと・今の対応\nCodexのフックにはSessionStart・UserPromptSubmit・PreToolUse・PostToolUse・Stopはあるが、Claude CodeのSessionEnd(`/clear`や終了時に自動発火し、AI自身に「会話を振り返って候補を書き出して」等の指示を出せるもの)に相当するものが無い(2026年8月時点、GitHub上でも追加要望がまだ未実装)。回避策として、セッション終了時の自動化は諦め、ユーザーが会話の最後に明示的に呼び出すSkill(Claude Codeの`/kb-sync`に相当)を用意する形にした。\n\n## 詳しい経緯\nCodexは2026年に入ってhooksエンジン(v0.114で初登場、v0.124で安定版)とSkills機能(SKILL.md、暗黙発動対応)を追加しており、読み込み側(セッション開始時にルールを自動で文脈に注入する、Skillを自動発動させる)はClaude Codeとほぼ同等のことができる。一方で書き込み側、特に「セッションが終わったタイミングを検知して、AI自身に振り返りタスクをやらせる」機能は無い。CodexのフックはJSON stdin/stdoutでテキストを注入する薄い仕組みで、Claude Codeの`\"type\": \"prompt\"`フックのように独立した1つのエージェントターン(ファイル書き込み・git操作を含む)を自動起動する設計ではない点も異なる。\n\n## まだ確認できていないこと\n- Codexの「Stop」イベントが本当に1ターンごとの停止なのか、セッション全体の終了に近いものなのか未検証(前者だと候補記録が毎ターン走ってしまい使えない)\n- Stopイベントのフック内から`codex exec \"プロンプト\"`のように再帰的にCodex自身を非対話呼び出しすることで、Claude Codeの`\"type\": \"prompt\"`フックに近いことができるかは未検証\n- Codex自体がまだこのマシンに導入されていないため、上記はすべてドキュメント調査に基づく机上の結論で実機未検証\n",
+        "tags": [
+          "codex",
+          "claude-code",
+          "hooks",
+          "移植性"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-25",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "Claude Codeの知識ベース自動化(セッション終了時にAI自身が候補記録・HANDOFF更新・git pushまで行う仕組み)を、OpenAIのCodex CLIにも移植でき…",
+        "solution_summary": "CodexのフックにはSessionStart・UserPromptSubmit・PreToolUse・PostToolUse・Stopはあるが、Claude CodeのSessi…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-23-windows-python3-stub-broken.md",
+        "title": "Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける",
+        "content": "# [候補] Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける\n\nstatus: candidate\nobserved_count: 2\nobserved_in: [ai-dev-knowledge-system]\ntags: [windows, python, 環境構築]\ndate: 2026-08-23\n\n## 何が起きたか\nWindows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。\n\n## わかったこと・今の対応\n本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。\n\n## 詳しい経緯\nこのマシン(Windows + Git Bash環境)で `python3` を実行すると、\n実際のPythonではなく `C:\\Users\\owner\\AppData\\Local\\Microsoft\\WindowsApps\\python3.exe`\n(Microsoft Store の AppInstallerPythonRedirector.exe へのシンボリックリンク)が\n呼ばれてしまい、正常に動作しない(`print()`すら実行できず、意味不明な\n出力とexit code 49で終了する)。\n\n一方 `python`(3ではなく)コマンドも同じWindowsAppsのstubを指しているが、\n`py`ランチャーは正常に動作する。実体のPythonは\n`C:\\Users\\owner\\AppData\\Local\\Programs\\Python\\Python312\\python.exe` にあり、\nこれを直接PATHに通す(またはシムスクリプトを作る)ことで回避できる。\n\nシェルスクリプト(bashやhookコマンド)内で `python3` をハードコードしていると、\nこのマシン・この手のWindows環境では静かに失敗する、または不可解な出力になる\n点に注意。\n\n(2026-08-25、ai-dev-knowledge-systemで再確認: `python3 -c \"\"`の終了コードで\n実体を判定し、失敗時は`py -3`にフォールバックする`scripts/pyrun.sh`を実装し、\nknowledge-base内でpython3をハードコードしていた9箇所すべてに導入した。\n実際にこのラッパー経由で`http.server`等を起動できることを確認しており、\n`py -3`への統一が実用上十分な回避策であることが確認できた)\n\n## まだ確認できていないこと\n- 他のWindowsマシン/ユーザー環境でも同じスタブ配置になっているか未確認\n  (Microsoft Store版Pythonのインストール有無に依存する可能性)\n- `python3` を直接使わず `py -3` や絶対パス指定に統一するのが\n  一般的な回避策として十分か未検証\n\n## 昇格の条件\n別のプロジェクト、または別セッションでも同じ現象(`python3`がスタブに\n化けて動かない)が確認されたら rules/ に昇格する。\n",
+        "tags": [
+          "windows",
+          "python",
+          "環境構築"
+        ],
+        "projects": [
+          "ai-dev-knowledge-system"
+        ],
+        "date": "2026-08-23",
+        "days_old": 2,
+        "stale": false,
+        "problem_summary": "Windows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。",
+        "solution_summary": "本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。",
+        "observed_count": 2,
+        "endorsed": false,
+        "reference_count": 1,
+        "reference_recent": [
+          {
+            "date": "2026-08-25T00:04:49Z",
+            "verdict": "役立った",
+            "reason": "pyrun.shのpy-3フォールバック設計に活用"
+          }
+        ],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-24-skill-recognized-same-session-as-created.md",
+        "title": "同一会話中に作成したSkillも、その場で認識・発動することがある",
+        "content": "# [候補] 同一会話中に作成したSkillも、その場で認識・発動することがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, skill]\ndate: 2026-08-24\n\n## 何が起きたか\n`SKILL-PROMOTION-GUIDE.md`には「新しいClaude Codeセッションを開始して動作確認する(今の会話中に作ったSkillは、今の会話では認識されない)」と書かれていたが、実際に`~/.claude/skills/godot-code-gen/`を作成した直後、同じ会話内でSkill一覧に表示され、関連する相談を投げたところ明示指定なしで正しく自動発動した。\n\n## わかったこと・今の対応\n少なくとも今回の環境では、Skillの認識は「次回セッションを待つ必要がある」という従来の想定より早いタイミングで反映されることがある。ただし1回の観測に過ぎないため、常にそうなるのか、特定の条件(ファイル作成のタイミング、既存のSkillの有無など)に依存するのかは不明。Skillを追加した際は「新しいセッションでないと確認できない」と決めつけず、まず同一会話内で発動確認を試すのが早い。\n\n## 詳しい経緯\n`external-skill-imports/2026-08-24-godot-code-gen-external-skill.md`として外部Skillを試験導入した際、`~/.claude/skills/godot-code-gen/SKILL.md`をWriteツールで作成した直後のsystem-reminderに「godot-code-gen」がSkill一覧として表示された。半信半疑で同一会話内で関連する相談(GDScriptのステートマシン実装)を投げたところ、Skillツール経由で正しく発動し、内容も適切だった。\n\n## まだ確認できていないこと\n- 再現性(別のSkill作成時、別のタイミングでも同様に即時認識されるか)\n- `SKILL-PROMOTION-GUIDE.md`の記載がいつの時点の挙動を元にしているか、環境差なのかタイミング差なのか\n",
+        "tags": [
+          "claude-code",
+          "skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "`SKILL-PROMOTION-GUIDE.md`には「新しいClaude Codeセッションを開始して動作確認する(今の会話中に作ったSkillは、今の会話では認識されない)」…",
+        "solution_summary": "少なくとも今回の環境では、Skillの認識は「次回セッションを待つ必要がある」という従来の想定より早いタイミングで反映されることがある。ただし1回の観測に過ぎないため、常にそうなる…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
       {
         "filename": "2026-08-25-godot-headless-viewport-defaults-to-64x64.md",
         "title": "Godot: `--headless`実行時、ビューポートは`project.godot`の設定解像度ではなく既定で64",
@@ -558,7 +715,7 @@ window.STATS_DATA = {
           "resodive"
         ],
         "date": "2026-08-25",
-        "days_old": -1,
+        "days_old": 0,
         "stale": false,
         "problem_summary": "Godot 4プロジェクトのUIレイアウト(アンカー計算)に不具合が疑われたため、`godot --headless --path <project> <scene.tscn> -…",
         "solution_summary": "`get_viewport().get_visible_rect().size`を直接printして確認したところ、`--headless`実行時のビューポートサイズは`(64.0…",
@@ -583,7 +740,7 @@ window.STATS_DATA = {
           "resodive"
         ],
         "date": "2026-08-25",
-        "days_old": -1,
+        "days_old": 0,
         "stale": false,
         "problem_summary": "Godot 4のGDScriptで、コードから動的にUIを組み立てる際、「画面下端中央の1点」にメニュー項目群(VBoxContainer)を配置し、項目数に応じて自動で高さが決ま…",
         "solution_summary": "Controlは通常、アンカーがゼロサイズ(4隅とも同じ座標)でも、`custom_minimum_size`や(Containerなら)子要素から計算される最小サイズがあればそれ…",
@@ -607,7 +764,7 @@ window.STATS_DATA = {
           "resodive"
         ],
         "date": "2026-08-25",
-        "days_old": -1,
+        "days_old": 0,
         "stale": false,
         "problem_summary": "Godot 4のGDScriptで、アイコンを線画で描くカスタムControlに、頂点座標の固定リストを`const`で持たせようとした。 ```gdscript const HE…",
         "solution_summary": "`Color(r,g,b,a)`のような単純な組み込み型コンストラクタは`const`の初期化式として問題なく使えるが(このプロジェクトの既存コードでも多用されていた)、`Pack…",
@@ -632,7 +789,7 @@ window.STATS_DATA = {
           "resodive"
         ],
         "date": "2026-08-25",
-        "days_old": -1,
+        "days_old": 0,
         "stale": false,
         "problem_summary": "Godot 4のGDScriptで、UI背景にほんのり淡い光の滲みを出す目的で`Gradient.new()`→`GradientTexture2D`(FILL_RADIAL)を動…",
         "solution_summary": "`Gradient.new()`は空の状態では生成されず、**既定で2点(offset 0.0=黒・不透明、offset 1.0=白・不透明)を持った状態**で返ってくる。`set…",
@@ -658,7 +815,7 @@ window.STATS_DATA = {
           "resodive"
         ],
         "date": "2026-08-25",
-        "days_old": -1,
+        "days_old": 0,
         "stale": false,
         "problem_summary": "Godotゲームプロジェクトのメインメニュー/HUDデザインを依頼された。ユーザーは最初から明示的に「テンプレっぽい配色・レイアウトにせず、意図のある配色を」と指示しており、さらに…",
         "solution_summary": "「テンプレっぽくしないで」という指示や、テンプレ回避を目的とした明文化ガイドラインの存在だけでは、生成物が実際にテンプレっぽくなることを防げない。今回のケースでは、ガイドライン自体…",
@@ -683,7 +840,7 @@ window.STATS_DATA = {
           "kabu-simurator-app"
         ],
         "date": "2026-08-25",
-        "days_old": -1,
+        "days_old": 0,
         "stale": false,
         "problem_summary": "アプリの動作確認中、同じブラウザタブを使い回しながら複数回の`preview_start`/`preview_stop`やコード修正・再起動を行っていた。ある時点で「AIに1回だけ…",
         "solution_summary": "`read_network_requests`や`read_console_messages`は、そのタブが開かれてから(あるいはツール自体が使われ始めてから)の全リクエスト/全ロ…",
@@ -709,7 +866,7 @@ window.STATS_DATA = {
           "kabu-simurator-app"
         ],
         "date": "2026-08-25",
-        "days_old": -1,
+        "days_old": 0,
         "stale": false,
         "problem_summary": "株価チャートを折れ線グラフからローソク足(陽線/陰線、ヒゲ+実体)に変更したいという要望があった。Rechartsには`CandlestickChart`のような専用コンポーネント…",
         "solution_summary": "`Bar`コンポーネントの`dataKey`に、各データ点の`[low, high]`という2要素配列を返すフィールド(例: `range: [c.low, c.high]`)を指…",
@@ -735,7 +892,7 @@ window.STATS_DATA = {
           "kabu-simurator-app"
         ],
         "date": "2026-08-25",
-        "days_old": -1,
+        "days_old": 0,
         "stale": false,
         "problem_summary": "「起動直後は判断材料が無いので、1回だけ即時取得してからN分おきのループに入る」という設計のスケジューラー(Web検索を伴うAIによるニュース要約、既定24時間に1回)を実装してい…",
         "solution_summary": "原因は、開発中に何度も`git push`→Railway再デプロイ(SIGTERM再起動)を行っており、そのたびに「起動直後の即時取得」が無条件で発火していたため。スケジューラー…",
@@ -762,7 +919,7 @@ window.STATS_DATA = {
           "kabu-simurator-app"
         ],
         "date": "2026-08-25",
-        "days_old": -1,
+        "days_old": 0,
         "stale": false,
         "problem_summary": "価格更新をポーリングからSSEのプッシュ配信に変更した。既存のSIGTERMハンドラは`server.close(callback)`でコールバックが呼ばれるのを待ってから`pro…",
         "solution_summary": "`server.close()`は「新規接続の受付を止め、既存のアクティブな接続がすべて自然に終了してから」コールバックを呼ぶ。SSEは意図的に接続を張りっぱなしにする仕組みのため…",
@@ -787,7 +944,7 @@ window.STATS_DATA = {
           "kabu-simurator-app"
         ],
         "date": "2026-08-25",
-        "days_old": -1,
+        "days_old": 0,
         "stale": false,
         "problem_summary": "株価シミュレーターでFinnhubを使い、現在値(`/quote`)と過去90日の日足(`/stock/candle`)の両方を取得する実装をしたところ、現在値は正常に取れるのにチ…",
         "solution_summary": "バックエンドのエラーを直接curlで再現したところ、Finnhubから`{\"error\":\"You don't have access to this resource.\"}`が返…",
@@ -813,7 +970,7 @@ window.STATS_DATA = {
           "kabu-simurator-app"
         ],
         "date": "2026-08-24",
-        "days_old": 0,
+        "days_old": 1,
         "stale": false,
         "problem_summary": "既存のFinnhub無料枠は米国取引所限定で暗号資産(BTC-USD等)のリアルタイム気配値が取得できなかった。日次終値取得には既に非公式のYahoo Finance Chart…",
         "solution_summary": "`https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=1d&interval=1d` を叩くと、`cha…",
@@ -823,334 +980,6 @@ window.STATS_DATA = {
         "reference_recent": [],
         "source": null,
         "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-game-ai-external-skill.md",
-        "title": "外部Skill `game-ai`を試験導入",
-        "content": "# [候補] 外部Skill `game-ai`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [ゲーム開発, AI設計, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\nRESODIVE・DEPTH//とも「敵」が中心的な要素であることから、`awesome-gamedev-agent-skills`リポジトリの`game-ai`(discipline系、エンジン非依存)Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。有限状態機械・ビヘイビアツリー・操舵行動(steering)・A*経路探索の使い分けをまとめたもの。\n\n## わかったこと・今の対応\nこれまでの4件(godot-audio/physics/signals-groups/3d-essentials)は`skills/godot/`配下だったが、今回は`skills/disciplines/`配下のエンジン非依存Skill。フロントマター完備・参照ファイル2件(`behavior-trees.md`・`pathfinding.md`、SKILL.md本文が指す2件とも一致)。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンス。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザーが既に`git clone`済みの同リポジトリから取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱2つの参照ファイルも目視確認(コードスニペットのみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/game-ai/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n",
-        "tags": [
-          "ゲーム開発",
-          "AI設計",
-          "external-skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "RESODIVE・DEPTH//とも「敵」が中心的な要素であることから、`awesome-gamedev-agent-skills`リポジトリの`game-ai`(discipli…",
-        "solution_summary": "これまでの4件(godot-audio/physics/signals-groups/3d-essentials)は`skills/godot/`配下だったが、今回は`skills…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": "external",
-        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills",
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-godot-3d-essentials-external-skill.md",
-        "title": "外部Skill `godot-3d-essentials`を試験導入",
-        "content": "# [候補] 外部Skill `godot-3d-essentials`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, 3D, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n既存の`godot-optimization`ルールがMultiMeshInstance3D前提であることから、RESODIVE・DEPTH//とも3D前提のプロジェクトだと分かっていたが、3D特有(カメラ・ライティング・環境/ポストプロセス・GridMap)の知見がまだ手薄だったため、`awesome-gamedev-agent-skills`リポジトリの`godot-3d-essentials`Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。\n\n## わかったこと・今の対応\n`godot-audio`・`godot-physics`・`godot-signals-groups`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンス。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザーが既に`git clone`済みの同リポジトリから取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱`references/scene-and-environment.md`も目視確認(コードスニペットのみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/godot-3d-essentials/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n",
-        "tags": [
-          "godot",
-          "3D",
-          "external-skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "既存の`godot-optimization`ルールがMultiMeshInstance3D前提であることから、RESODIVE・DEPTH//とも3D前提のプロジェクトだと分かっ…",
-        "solution_summary": "`godot-audio`・`godot-physics`・`godot-signals-groups`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": "external",
-        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills",
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-godot-signals-groups-external-skill.md",
-        "title": "外部Skill `godot-signals-groups`を試験導入",
-        "content": "# [候補] 外部Skill `godot-signals-groups`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, アーキテクチャ, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\nシグナル(イベント駆動)はGodot開発の土台になる基礎分野として、`awesome-gamedev-agent-skills`リポジトリの`godot-signals-groups`Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。カスタムシグナルの宣言・発行・Callableでの接続(bind/one-shot含む)・グループでの一斉制御・Godot 3.x→4.x移行時のconnect構文の違いをまとめたもの。\n\n## わかったこと・今の対応\n`godot-audio`・`godot-physics`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンス。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザーが既に`git clone`済みの同リポジトリから取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱`references/signal-patterns.md`も目視確認(コードスニペットのみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/godot-signals-groups/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n",
-        "tags": [
-          "godot",
-          "アーキテクチャ",
-          "external-skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "シグナル(イベント駆動)はGodot開発の土台になる基礎分野として、`awesome-gamedev-agent-skills`リポジトリの`godot-signals-group…",
-        "solution_summary": "`godot-audio`・`godot-physics`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": "external",
-        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills",
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-godot-physics-external-skill.md",
-        "title": "外部Skill `godot-physics`を試験導入",
-        "content": "# [候補] 外部Skill `godot-physics`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, 物理演算, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\nRESODIVE・DEPTH//とも敵や弾丸の大量発生・衝突が絡む設計で、既存の`godot-optimization`(MultiMeshInstance3D)と相性が良い分野として、`awesome-gamedev-agent-skills`リポジトリの`godot-physics`Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。RigidBody/StaticBody/Area/CharacterBodyの使い分け・衝突レイヤーとマスク・オーバーラップ検出・レイキャストをまとめたもの。\n\n## わかったこと・今の対応\n`godot-audio`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンス。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザーが既に`git clone`済みの同リポジトリから取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱`references/bodies-and-queries.md`も目視確認(コードスニペットと表のみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/godot-physics/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n",
-        "tags": [
-          "godot",
-          "物理演算",
-          "external-skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "RESODIVE・DEPTH//とも敵や弾丸の大量発生・衝突が絡む設計で、既存の`godot-optimization`(MultiMeshInstance3D)と相性が良い分野と…",
-        "solution_summary": "`godot-audio`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセ…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": "external",
-        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills",
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-godot-audio-external-skill.md",
-        "title": "外部Skill `godot-audio`を試験導入",
-        "content": "# [候補] 外部Skill `godot-audio`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, オーディオ, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\nDEPTH//で実際に発生した「シーン切り替え時の音声バス切り替えで音が途切れる」という既存の候補(`2026-08-example-candidate.md`)に関連する分野として、`awesome-gamedev-agent-skills`リポジトリの`godot-audio`Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。AudioStreamPlayerの使い分け・バス経由のルーティング・dB変換・ビート同期などをまとめたもの。\n\n## わかったこと・今の対応\n`godot-testing-deploy`等と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンスなので、`frontend-design`のような特殊な扱いは不要。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザー自身に`git clone`してもらい取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱`references/buses-and-effects.md`も目視確認(コードスニペットのみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/godot-audio/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n- 既存の音声関連の候補(DEPTH//のバス切り替えバグ)との組み合わせで、実際に役立つか\n",
-        "tags": [
-          "godot",
-          "オーディオ",
-          "external-skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "DEPTH//で実際に発生した「シーン切り替え時の音声バス切り替えで音が途切れる」という既存の候補(`2026-08-example-candidate.md`)に関連する分野とし…",
-        "solution_summary": "`godot-testing-deploy`等と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apa…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": "external",
-        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills",
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-writing-about-secret-scan-false-positives-retriggers-them.md",
-        "title": "誤検知の「説明文」を書く行為自体が同じ誤検知を再発させる",
-        "content": "# [候補] 誤検知の「説明文」を書く行為自体が同じ誤検知を再発させる\n\nstatus: candidate\nobserved_count: 3\nobserved_in: [knowledge-base]\ntags: [claude-code, セキュリティ, ドキュメント]\ndate: 2026-08-24\nendorsed: false\n\n## 何が起きたか\n機密情報スキャンの誤検知(プレースホルダーメールアドレス等)について「こう直した」と説明する文章の中に、直す前の実例(`@`付きのメールアドレス)をそのまま引用すると、その説明文自体が新たに誤検知される。同じ日に2回(候補ファイル本文、および外部Skill導入ガイド本文)で発生した。\n\n## わかったこと・今の対応\n機密情報の誤検知について書く時は、問題のパターンを説明する際も実際に検知されるフォーマットそのものを書かない(「メールアドレス形式の文字列」のように抽象化するか、区切り記号を意図的に別の表記に置き換えて言及する)。\n\n## 詳しい経緯\n1回目: `ux-designer`導入時、候補ファイルの本文に「置換前後のメールアドレスの実例」をそのまま書いたところ、`docs/stats.json`等への埋め込みも含めてスキャナーが再検知した。2回目: 本件を教訓化した`EXTERNAL-SKILL-GUIDE.md`の中で、「実例をそのまま書かない」という注意書き自体に同じ実例を書いてしまい、再度検知された。3回目: この候補ファイルの初稿でも同様の実例を書いてしまい、三度検知された。いずれも実害はなく(pre-commitで正しく止まった)、都度抽象化した表現に書き換えて解消した。\n\n## まだ確認できていないこと\n- この手のメタ的な言及(誤検知の実例を説明する文章)を最初から誤検知させない、もっと良い書き方の型があるか\n",
-        "tags": [
-          "claude-code",
-          "セキュリティ",
-          "ドキュメント"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "機密情報スキャンの誤検知(プレースホルダーメールアドレス等)について「こう直した」と説明する文章の中に、直す前の実例(`@`付きのメールアドレス)をそのまま引用すると、その説明文自…",
-        "solution_summary": "機密情報の誤検知について書く時は、問題のパターンを説明する際も実際に検知されるフォーマットそのものを書かない(「メールアドレス形式の文字列」のように抽象化するか、区切り記号を意図的…",
-        "observed_count": 3,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": true
-      },
-      {
-        "filename": "2026-08-24-skill-recognized-same-session-as-created.md",
-        "title": "同一会話中に作成したSkillも、その場で認識・発動することがある",
-        "content": "# [候補] 同一会話中に作成したSkillも、その場で認識・発動することがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, skill]\ndate: 2026-08-24\n\n## 何が起きたか\n`SKILL-PROMOTION-GUIDE.md`には「新しいClaude Codeセッションを開始して動作確認する(今の会話中に作ったSkillは、今の会話では認識されない)」と書かれていたが、実際に`~/.claude/skills/godot-code-gen/`を作成した直後、同じ会話内でSkill一覧に表示され、関連する相談を投げたところ明示指定なしで正しく自動発動した。\n\n## わかったこと・今の対応\n少なくとも今回の環境では、Skillの認識は「次回セッションを待つ必要がある」という従来の想定より早いタイミングで反映されることがある。ただし1回の観測に過ぎないため、常にそうなるのか、特定の条件(ファイル作成のタイミング、既存のSkillの有無など)に依存するのかは不明。Skillを追加した際は「新しいセッションでないと確認できない」と決めつけず、まず同一会話内で発動確認を試すのが早い。\n\n## 詳しい経緯\n`candidates/2026-08-24-godot-code-gen-external-skill.md`として外部Skillを試験導入した際、`~/.claude/skills/godot-code-gen/SKILL.md`をWriteツールで作成した直後のsystem-reminderに「godot-code-gen」がSkill一覧として表示された。半信半疑で同一会話内で関連する相談(GDScriptのステートマシン実装)を投げたところ、Skillツール経由で正しく発動し、内容も適切だった。\n\n## まだ確認できていないこと\n- 再現性(別のSkill作成時、別のタイミングでも同様に即時認識されるか)\n- `SKILL-PROMOTION-GUIDE.md`の記載がいつの時点の挙動を元にしているか、環境差なのかタイミング差なのか\n",
-        "tags": [
-          "claude-code",
-          "skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "`SKILL-PROMOTION-GUIDE.md`には「新しいClaude Codeセッションを開始して動作確認する(今の会話中に作ったSkillは、今の会話では認識されない)」…",
-        "solution_summary": "少なくとも今回の環境では、Skillの認識は「次回セッションを待つ必要がある」という従来の想定より早いタイミングで反映されることがある。ただし1回の観測に過ぎないため、常にそうなる…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-ux-designer-external-skill.md",
-        "title": "外部Skill `ux-designer` を試験導入(Godot以外の一般UI/UX設計向け)",
-        "content": "# [候補] 外部Skill `ux-designer` を試験導入(Godot以外の一般UI/UX設計向け)\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [UI, UX, デザイン, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/szilu/ux-designer-skill\n\n## 何が起きたか\n「`godot-ui-control`・`game-feel`はゲーム専用で、一般的なUI/デザイン作業には使えないのでは」という指摘を受け、ゲームに限らない一般的なUX/UI設計のSkillを探し、`szilu/ux-designer-skill`(アクセシビリティ・フォーム・多言語対応・AI UI・データ可視化等を網羅する24本の参照ファイル付きSkill)を`~/.claude/skills/ux-designer/`として試験導入した。\n\n## わかったこと・今の対応\nMITライセンス、フロントマター完備で修正不要だった。機密情報スキャンで`references/`内のプレースホルダーメールアドレス(「user［アットマーク］example.com」等、フォーム入力例)が6ファイル・14箇所で誤検知された。引き継ぎメモが事前に警告していた事象そのもの。`@`記号を`(at)`に置換する表記に直して解消した(意味は保持)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。ただし今回は`~/Downloads`への読み取りアクセスがこのセッションから拒否される事象が発生し(macOSのプライバシー保護によるものと推測、詳細は別候補`2026-08-24-downloads-folder-access-denied-mid-session.md`参照)、`~/Documents/original-game/`配下に再取得してもらって回避した。既存の`godot-ui-control`・`game-feel`とは「ゲーム特化」対「汎用UI/UX」という住み分けになり、内容として矛盾しない。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のUI設計・レビュー作業での有用性\n- `godot-ui-control`と両方に該当する場面(Godot上のUI)でどちらが優先的に発動するか、あるいは両方発動して補い合うか\n",
-        "tags": [
-          "UI",
-          "UX",
-          "デザイン",
-          "external-skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "「`godot-ui-control`・`game-feel`はゲーム専用で、一般的なUI/デザイン作業には使えないのでは」という指摘を受け、ゲームに限らない一般的なUX/UI設計…",
-        "solution_summary": "MITライセンス、フロントマター完備で修正不要だった。機密情報スキャンで`references/`内のプレースホルダーメールアドレス(「user［アットマーク］example.co…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": "external",
-        "source_url": "https://github.com/szilu/ux-designer-skill",
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-godot-code-gen-external-skill.md",
-        "title": "外部Skill `godot-code-gen` を試験導入",
-        "content": "# [候補] 外部Skill `godot-code-gen` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/alexmeckes/godot-claude-skills\n\n## 何が起きたか\n外部Skillマーケットプレイス由来のGDScript生成支援Skill(`godot-claude-skills`リポジトリの`godot-code-gen`)を、`~/.claude/skills/godot-code-gen/`として試験導入した。\n\n## わかったこと・今の対応\n元のSKILL.mdにはこのシステムが要求するフロントマター(`name`/`description`)が無かったため、既存Skillの慣習(強めのトリガー表現)に合わせて追加した。機密情報スキャンには引っかからないことを確認済み(`godot-code-gen/SKILL.md`単体をスキャンし異常なし)。設置直後の同一会話内で「プレイヤーキャラクターの待機・歩行・ジャンプのステートマシン」という自然な相談を投げたところ、明示指定なしで正しく自動発動し、実用的な実装例を生成できた(2026-08-24)。RESODIVEでの実作業での有用性はまだ未検証。\n\n## 詳しい経緯\n`外部Skill導入_引き継ぎ.md`の推奨に従い、まず1件のみを試験導入する方針とした。取得はユーザー自身が`git clone`で実行している(Claude Codeは外部リポジトリのダウンロードを自ら実行しない設計のため)。内容はGodot 4.xのGDScript構文(型ヒント・アノテーション・シグナル・ステートマシン・Resourceパターン・Tween等)のベストプラクティス集で、既存の`godot-optimization`(大量インスタンス最適化)とは話題が異なり衝突しない。ただし`CharacterBody2D/3D`移動のサンプルコード自体には「50体以上の量産時はMultiMeshInstance3Dを検討」という`godot-optimization`側の知見は含まれていないため、両方のSkillを踏まえた判断が必要な場面があることは留意点として残る。\n\n設置直後の発動テストでは、`SKILL-PROMOTION-GUIDE.md`に記載の「同一会話中に作ったSkillはその会話では認識されない」という制約は再現しなかった(むしろ設置直後から利用可能だった)。環境やタイミングによって挙動が変わる可能性があるため、今後Skillを追加する際は都度確認すること。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。実際に使ってみて役立った場合は、他の気づきと同じ通常フロー(このファイルへの再観測記録、または`/kb-endorse`)で昇格を検討する。\n\n## まだ確認できていないこと\n- RESODIVEでの実作業での有用性(発動確認自体はknowledge-baseのセッション内で完了)\n",
-        "tags": [
-          "godot",
-          "ゲーム開発",
-          "external-skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "外部Skillマーケットプレイス由来のGDScript生成支援Skill(`godot-claude-skills`リポジトリの`godot-code-gen`)を、`~/.cla…",
-        "solution_summary": "元のSKILL.mdにはこのシステムが要求するフロントマター(`name`/`description`)が無かったため、既存Skillの慣習(強めのトリガー表現)に合わせて追加した…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": "external",
-        "source_url": "https://github.com/alexmeckes/godot-claude-skills",
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-godot-testing-deploy-external-skill.md",
-        "title": "外部Skill `godot-testing-deploy`(元名`godot`)を試験導入",
-        "content": "# [候補] 外部Skill `godot-testing-deploy`(元名`godot`)を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, テスト, CI/CD, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/Randroids-Dojo/Godot-Claude-Skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`の次点候補、`Randroids-Dojo/Godot-Claude-Skills`(GdUnit4テスト・PlayGodotによるE2E自動化・エクスポート・CI/CD・Vercel等へのデプロイ)を`~/.claude/skills/godot-testing-deploy/`として試験導入した。\n\n## わかったこと・今の対応\nこれまでの3件と異なり、4本のPythonスクリプト(`run_tests.py`/`parse_results.py`/`validate_project.py`/`export_build.py`)が同梱されていたため、実行可能コードとして通常より丁寧にレビューした。内容はいずれも`subprocess`でGodot CLIを呼び出すだけの素直な実装で、ネットワーク通信・`eval`/`exec`・難読化・認証情報の収集など不審な処理は見当たらなかった。機密情報スキャンもフォルダ全体でクリーン。\n\n元のfrontmatterは`name: godot`という汎用的すぎる名前だったため、`godot-testing-deploy`にリネームして配置した(内容は変更なし)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。PlayGodot部分は`Randroids-Dojo/godot`のカスタムフォーク(automationブランチ)をソースからビルドする必要があり、GdUnit4テスト単体より導入コストが高い(このリポジトリが引き継ぎメモで「次点」扱いだった理由と合致)。既存の4件のSkillとは話題が重複しない(実装ではなくテスト・ビルド・デプロイが対象)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際にGdUnit4やPlayGodotをRESODIVE等に導入して使う場面での有用性(現時点では設置のみ)\n- PlayGodot用カスタムGodotフォークのビルドは未実施(重量級の追加セットアップが必要なため、GdUnit4部分から先に試すのが現実的)\n",
-        "tags": [
-          "godot",
-          "ゲーム開発",
-          "テスト",
-          "CI/CD",
-          "external-skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "`外部Skill導入_引き継ぎ.md`の次点候補、`Randroids-Dojo/Godot-Claude-Skills`(GdUnit4テスト・PlayGodotによるE2E自動…",
-        "solution_summary": "これまでの3件と異なり、4本のPythonスクリプト(`run_tests.py`/`parse_results.py`/`validate_project.py`/`export…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": "external",
-        "source_url": "https://github.com/Randroids-Dojo/Godot-Claude-Skills",
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-godot-ui-control-external-skill.md",
-        "title": "外部Skill `godot-ui-control` を試験導入",
-        "content": "# [候補] 外部Skill `godot-ui-control` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, UI, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`のUI・デザイン向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`godot-ui-control`(Control/Containerでのレスポンシブレイアウト、Themeでのスタイリング、フォーカスナビゲーション)を`~/.claude/skills/godot-ui-control/`として試験導入した。\n\n## わかったこと・今の対応\n`game-feel`と同様、元のSKILL.mdは最初からフロントマターが揃っており修正不要だった。`references/layout-and-theming.md`もあわせて配置。機密情報スキャンはクリーン。「WEBベースならまだまとも、ゲームに組み込むと酷い」という元の課題感に対し、このSkillは`game-feel`と組み合わせて使う想定(引き継ぎメモの指摘通り)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。Godot 4.7のControl/Containerノードの設計知識に特化しており、`godot-optimization`・`godot-code-gen`・`game-feel`のいずれとも話題が重複しない。SKILL.md内で`game-ui-ux`・`godot-animation`・`godot-signals-groups`・`input-systems`など、同じ元リポジトリの未導入の他Skillへの言及がある(`game-feel`と同様の留意点)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のUI実装作業(RESODIVE等)での有用性、特にゲーム内UIの見た目改善に実際に効くか\n",
-        "tags": [
-          "godot",
-          "ゲーム開発",
-          "UI",
-          "external-skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "`外部Skill導入_引き継ぎ.md`のUI・デザイン向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`godot-ui-control`(…",
-        "solution_summary": "`game-feel`と同様、元のSKILL.mdは最初からフロントマターが揃っており修正不要だった。`references/layout-and-theming.md`もあわせて…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": "external",
-        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills",
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-game-feel-external-skill.md",
-        "title": "外部Skill `game-feel` を試験導入",
-        "content": "# [候補] 外部Skill `game-feel` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`のUI・game feel向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`game-feel`(画面シェイク・ヒットストップ・イージング・スクワッシュ&ストレッチ等、動きの気持ちよさに関する知見)を`~/.claude/skills/game-feel/`として試験導入した。\n\n## わかったこと・今の対応\n元のSKILL.mdは`godot-code-gen`と異なり、最初から`name`/`description`のフロントマターが揃っており、そのまま配置できた(修正不要)。`references/feedback-recipes.md`という参照ファイルも本体が明示的に読み込む前提のため、あわせて配置した。機密情報スキャンは本体・参照ファイルともクリーン。設置直後にSkill一覧へ即座に反映されることを確認(godot-code-genの時と同様の挙動)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。エンジン非依存の設計で、Godot 4.7とUnity 6.3 LTS両方のコード例が併記されている。既存の`godot-optimization`・`godot-code-gen`とは話題が異なり衝突しない。SKILL.md内で`camera-systems`・`audio-design`・`physics-tuning`・`godot-animation`など、同じ元リポジトリの**未導入の他Skill**への言及が複数あるが、それらは今回導入していないため、参照されても実体が無い状態になる(動作は壊れないが、案内通りには追従できない場面がありうる)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のゲーム開発作業(RESODIVE等)での有用性\n- 言及されている未導入の関連Skill(`camera-systems`等)を追加導入すべきか\n",
-        "tags": [
-          "godot",
-          "ゲーム開発",
-          "external-skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "`外部Skill導入_引き継ぎ.md`のUI・game feel向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`game-feel`(画面…",
-        "solution_summary": "元のSKILL.mdは`godot-code-gen`と異なり、最初から`name`/`description`のフロントマターが揃っており、そのまま配置できた(修正不要)。`re…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": "external",
-        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills",
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-godot-animation-external-skill.md",
-        "title": "外部Skill `godot-animation` を試験導入",
-        "content": "# [候補] 外部Skill `godot-animation` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`の次点候補、`awesome-gamedev-agent-skills`リポジトリの`godot-animation`(AnimationPlayer/AnimationTree/Tweenの使い分け)を`~/.claude/skills/godot-animation/`として試験導入した。`game-feel`・`godot-ui-control`と同じリポジトリから取得済みだったため、追加のcloneは不要だった。\n\n## わかったこと・今の対応\n`game-feel`・`godot-ui-control`と同様、フロントマター完備・機密情報スキャンともクリーン。`references/animation-tree-and-tween.md`をあわせて配置。既存の`godot-optimization`・`godot-code-gen`・`game-feel`・`godot-ui-control`のいずれとも話題が重複しない(アニメーション実装そのものに特化)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行済みの`awesome-gamedev-agent-skills`から。SKILL.md内で`godot-2d-movement`・`godot-3d-essentials`・`game-ai`など、同リポジトリの未導入の他Skillへの言及がある(`game-feel`・`godot-ui-control`と同様の留意点)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のアニメーション実装作業(RESODIVE等)での有用性\n",
-        "tags": [
-          "godot",
-          "ゲーム開発",
-          "external-skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "`外部Skill導入_引き継ぎ.md`の次点候補、`awesome-gamedev-agent-skills`リポジトリの`godot-animation`(AnimationPl…",
-        "solution_summary": "`game-feel`・`godot-ui-control`と同様、フロントマター完備・機密情報スキャンともクリーン。`references/animation-tree-and-…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": "external",
-        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills",
         "promotion_ready": false
       },
       {
@@ -1166,7 +995,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 0,
+        "days_old": 1,
         "stale": false,
         "problem_summary": "同じ会話内で以前は`~/Downloads`配下のファイルを問題なく読み書きできていたのに、セッション再開(resume)後に`ls ~/Downloads`が`Operation…",
         "solution_summary": "macOSのプライバシー保護機能(TCC、Downloadsフォルダへのアクセスはアプリ単位で許可が必要)が、セッション再開で生成された新しいプロセスにはまだ許可されていないためと…",
@@ -1176,31 +1005,6 @@ window.STATS_DATA = {
         "reference_recent": [],
         "source": null,
         "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-frontend-design-external-skill.md",
-        "title": "外部Skill `frontend-design`(Anthropic公式)を試験導入",
-        "content": "# [候補] 外部Skill `frontend-design`(Anthropic公式)を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [UI, デザイン, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design\n\n## 何が起きたか\n`ux-designer`と同じ動機(Godot以外の一般UI/デザイン向け知見)で、Anthropic公式のclaude-codeリポジトリに同梱されている`frontend-design`プラグインのSkill本体を`~/.claude/skills/frontend-design/`として試験導入した。「テンプレっぽく見えない、意図のあるデザイン」のための考え方(配色・タイポグラフィ・レイアウトを毎回同じパターンに逃げず選ぶ、モーションは狙って使う、コピーライティングも設計要素として扱う)をまとめたもの。\n\n## わかったこと・今の対応\nこれまでの5件と異なり、**ライセンスがMITなどのオープンソースではなく「All rights reserved」**(claude-codeリポジトリ全体がAnthropic Commercial Terms of Service準拠)。本来は`/plugin marketplace add anthropics/claude-code` → `/plugin install frontend-design@claude-code`という公式のプラグイン機構でインストールする想定だったが、**この環境では`/plugin`コマンド自体が使えなかった**(`/plugin isn't available in this environment.`)。そのため、これまでと同じ「ファイルを直接配置」する方法に切り替えた。個人利用目的でのナレッジベースへの配置と判断したが、他のMITライセンスのSkillとは扱いが異なる点に注意(SKILL.md内に`license_note`フィールドとして明記済み)。\n\n## 詳しい経緯\n内容はGitHub上のSKILL.mdを直接確認して取得(著者: AnthropicのPrithvi Rajasekaran氏・Alexander Bricken氏)。ゲーム要素は無く、Web/アプリのUI全般が対象。`ux-designer`(UX原則・アクセシビリティ寄り)とは補完関係で、`frontend-design`は美的方向性・独自性、`ux-designer`は使いやすさ・アクセシビリティ・パターンという住み分け。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のUI/フロントエンド実装作業での有用性\n- この環境で`/plugin`が使えない理由(Claude Code SDKベースの環境固有の制約なのか、他の条件があるのか)\n",
-        "tags": [
-          "UI",
-          "デザイン",
-          "external-skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "`ux-designer`と同じ動機(Godot以外の一般UI/デザイン向け知見)で、Anthropic公式のclaude-codeリポジトリに同梱されている`frontend-d…",
-        "solution_summary": "これまでの5件と異なり、**ライセンスがMITなどのオープンソースではなく「All rights reserved」**(claude-codeリポジトリ全体がAnthropic…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": "external",
-        "source_url": "https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design",
         "promotion_ready": false
       },
       {
@@ -1217,7 +1021,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 0,
+        "days_old": 1,
         "stale": false,
         "problem_summary": "`gh auth login`をClaude Codeのチャット上(コードブロックのRunボタン経由)で実行してもらったところ、ユーザーは完了したつもりでも`gh auth sta…",
         "solution_summary": "Macの通常のターミナル(Terminal.appなど)で直接`gh auth login`を実行し直してもらったところ、ブラウザでの認可まできちんと完了し、`gh auth st…",
@@ -1242,7 +1046,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 0,
+        "days_old": 1,
         "stale": false,
         "problem_summary": "モバイル用に`@media (max-width: 860px){ .foo{ margin-top: 28px } }`を書いたのに、実際のブラウザでは適用されず、無関係に見える…",
         "solution_summary": "原因はCSSの記述順。同じ詳細度(セレクタの強さ)のルールは、`@media`の中かどうかに関係なく「あとに書かれた方」が勝つ。今回は`.foo{ margin-top: 28px…",
@@ -1268,7 +1072,7 @@ window.STATS_DATA = {
           "kabu-simurator-app"
         ],
         "date": "2026-08-24",
-        "days_old": 0,
+        "days_old": 1,
         "stale": false,
         "problem_summary": "Railway上のExpressサーバーで、`process.on(\"SIGTERM\", ...)` によるgraceful shutdown(サーバーclose→DB close…",
         "solution_summary": "実際のDeploy Logsを確認すると、アプリ自身のシャットダウンログは正常に出ている一方で、`npm error signal SIGTERM` という行が別途出力されていた。…",
@@ -1294,7 +1098,7 @@ window.STATS_DATA = {
           "kabu-simurator-app"
         ],
         "date": "2026-08-24",
-        "days_old": 0,
+        "days_old": 1,
         "stale": false,
         "problem_summary": "株価アプリで「上昇=緑、下降=赤」の色分けクラス(`.positive`/`.negative`/`.buyTag`/`.sellTag`)をテーブルのセルに適用していたが、実際の…",
         "solution_summary": "共通スタイル側の `.table td { color: var(--color-text); }`(要素セレクタ`td` + クラスセレクタ`.table`の組み合わせ、詳細度…",
@@ -1320,7 +1124,7 @@ window.STATS_DATA = {
           "kabu-simurator-app"
         ],
         "date": "2026-08-24",
-        "days_old": 0,
+        "days_old": 1,
         "stale": false,
         "problem_summary": "米国株式市場(NYSE, 9:30-16:00 America/New_York)の開場・閉場判定と「次に市場が開く時刻」の計算を、`date-fns-tz`や`luxon`のよう…",
         "solution_summary": "Node標準の`Intl.DateTimeFormat(\"en-US\", { timeZone: \"America/New_York\", ... }).formatToParts(…",
@@ -1345,7 +1149,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 0,
+        "days_old": 1,
         "stale": false,
         "problem_summary": "UI動作確認のため、スクリーンショットを見て座標を指定してクリックしたところ、意図した要素とは別の行がクリックされ続けた。エラーは出ず、スクリーンショットも一見更新されているように…",
         "solution_summary": "`read_page`で要素の参照ID(ref)を取得し、座標ではなく`ref`を指定してクリックする方式に切り替えたところ確実になった。座標クリックは、レイアウトのわずかな差やス…",
@@ -1370,7 +1174,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 0,
+        "days_old": 1,
         "stale": false,
         "problem_summary": "Claude Codeに`~/.claude/settings.json`(hooksの設定ファイル)を新規作成・編集させようとすると、BashツールでもWriteツールでも、au…",
         "solution_summary": "ツールを変えても同じ理由で拒否されるため、回避策ではなく仕様と考えられる。内容をファイルに書き出し、ユーザー本人に自分のターミナルで`cp`させることで設置できた。他の`~/.cl…",
@@ -1394,7 +1198,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-23",
-        "days_old": 1,
+        "days_old": 2,
         "stale": false,
         "problem_summary": "「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available…",
         "solution_summary": "`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案…",
@@ -1418,7 +1222,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-23",
-        "days_old": 1,
+        "days_old": 2,
         "stale": false,
         "problem_summary": "SessionEndフックに複数のhook(会話内容をAIに判断させて文章を書く「prompt」タイプを含む)を並べていたが、どのhookにも`timeout`を指定していなかった…",
         "solution_summary": "SessionEndフックだけは特別に、`timeout`を指定しない場合「複数のhook全部合わせてわずか1.5秒」しか実行時間が無い(他のイベントでは`command`が600…",
@@ -1442,7 +1246,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-23",
-        "days_old": 1,
+        "days_old": 2,
         "stale": false,
         "problem_summary": "Claude CodeのSessionEndフックに`matcher: \"clear\"`とだけ書いていたら、ユーザーが`/clear`と入力した時にしか動かなかった。ターミナルを閉…",
         "solution_summary": "`matcher`に`\"clear|prompt_input_exit\"`のようにパイプ区切りで複数の終了理由を書けば、両方のタイミングで発動するようになる。`matcher`は配…",
@@ -1468,7 +1272,7 @@ window.STATS_DATA = {
           "pokemon-champions-BattleAI"
         ],
         "date": "2026-08-23",
-        "days_old": 1,
+        "days_old": 2,
         "stale": false,
         "problem_summary": "Windows上でtorch(easyocrが内部で使用)を初めてimportする処理を、メインスレッドではなく新しく作ったバックグラウンドスレッド(監視ループ用のスレッド)の中で…",
         "solution_summary": "原因は完全には確定できなかった(意図的な再現実験ではエラー自体を再現できなかった)。ただし「torchのようなネイティブDLLを持つライブラリの初回importを、メインスレッド以…",
@@ -1493,7 +1297,7 @@ window.STATS_DATA = {
           "pokemon-champions-BattleAI"
         ],
         "date": "2026-08-23",
-        "days_old": 1,
+        "days_old": 2,
         "stale": false,
         "problem_summary": "OpenCVの`TM_CCORR_NORMED`という比較方法を使うと、明るい画像は内容と無関係な場所にも高い一致スコアを出してしまう。",
         "solution_summary": "別の比較方法(`TM_CCOEFF_NORMED`)に切り替えると、既存の検証済みケースの精度が落ちてしまったため、今回は不採用。切り替えを検討する際は、既知の正解データで必ず事前…",
@@ -1517,7 +1321,7 @@ window.STATS_DATA = {
           "pokemon-champions-BattleAI"
         ],
         "date": "2026-08-23",
-        "days_old": 1,
+        "days_old": 2,
         "stale": false,
         "problem_summary": "EasyOCRで、小さい「ゃ」「や」のような拗音の仮名を、大きい仮名と読み間違える。",
         "solution_summary": "画質を上げても二値化(白黒に変換する処理)を変えても直らなかった。前処理では直せない、モデル自体の限界の可能性が高い。他のOCRエンジンを試すか、辞書で後から補正する方法はまだ試せ…",
@@ -1541,35 +1345,10 @@ window.STATS_DATA = {
           "pokemon-champions-BattleAI"
         ],
         "date": "2026-08-23",
-        "days_old": 1,
+        "days_old": 2,
         "stale": false,
         "problem_summary": "小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。",
         "solution_summary": "切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-23-windows-python3-stub-broken.md",
-        "title": "Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける",
-        "content": "# [候補] Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [ai-dev-knowledge-system]\ntags: [windows, python, 環境構築]\ndate: 2026-08-23\n\n## 何が起きたか\nWindows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。\n\n## わかったこと・今の対応\n本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。\n\n## 詳しい経緯\nこのマシン(Windows + Git Bash環境)で `python3` を実行すると、\n実際のPythonではなく `C:\\Users\\owner\\AppData\\Local\\Microsoft\\WindowsApps\\python3.exe`\n(Microsoft Store の AppInstallerPythonRedirector.exe へのシンボリックリンク)が\n呼ばれてしまい、正常に動作しない(`print()`すら実行できず、意味不明な\n出力とexit code 49で終了する)。\n\n一方 `python`(3ではなく)コマンドも同じWindowsAppsのstubを指しているが、\n`py`ランチャーは正常に動作する。実体のPythonは\n`C:\\Users\\owner\\AppData\\Local\\Programs\\Python\\Python312\\python.exe` にあり、\nこれを直接PATHに通す(またはシムスクリプトを作る)ことで回避できる。\n\nシェルスクリプト(bashやhookコマンド)内で `python3` をハードコードしていると、\nこのマシン・この手のWindows環境では静かに失敗する、または不可解な出力になる\n点に注意。\n\n## まだ確認できていないこと\n- 他のWindowsマシン/ユーザー環境でも同じスタブ配置になっているか未確認\n  (Microsoft Store版Pythonのインストール有無に依存する可能性)\n- `python3` を直接使わず `py -3` や絶対パス指定に統一するのが\n  一般的な回避策として十分か未検証\n\n## 昇格の条件\n別のプロジェクト、または別セッションでも同じ現象(`python3`がスタブに\n化けて動かない)が確認されたら rules/ に昇格する。\n",
-        "tags": [
-          "windows",
-          "python",
-          "環境構築"
-        ],
-        "projects": [
-          "ai-dev-knowledge-system"
-        ],
-        "date": "2026-08-23",
-        "days_old": 1,
-        "stale": false,
-        "problem_summary": "Windows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。",
-        "solution_summary": "本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
@@ -1591,7 +1370,7 @@ window.STATS_DATA = {
           "DEPTH//"
         ],
         "date": "2026-08-20",
-        "days_old": 4,
+        "days_old": 5,
         "stale": false,
         "problem_summary": "シーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。",
         "solution_summary": "シーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。",
@@ -1612,7 +1391,7 @@ window.STATS_DATA = {
         "tags": [],
         "projects": [],
         "date": "2026-06-15",
-        "days_old": 70,
+        "days_old": 71,
         "stale": false,
         "problem_summary": "雑魚敵を30体以上同時に倒すと、弾丸ノードが同時に150個近く発生し、 フレームレートが60→22まで落ちた。",
         "solution_summary": "MultiMeshInstance3D + 独自の当たり判定計算に置き換え、 150個発生時でも58fps以上を維持できるようになった。",
@@ -1622,6 +1401,300 @@ window.STATS_DATA = {
         "reference_recent": [],
         "source": null,
         "source_url": null
+      }
+    ],
+    "external_skill_imports": [
+      {
+        "filename": "2026-08-24-game-ai-external-skill.md",
+        "title": "外部Skill `game-ai`を試験導入",
+        "content": "# [候補] 外部Skill `game-ai`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [ゲーム開発, AI設計, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\nRESODIVE・DEPTH//とも「敵」が中心的な要素であることから、`awesome-gamedev-agent-skills`リポジトリの`game-ai`(discipline系、エンジン非依存)Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。有限状態機械・ビヘイビアツリー・操舵行動(steering)・A*経路探索の使い分けをまとめたもの。\n\n## わかったこと・今の対応\nこれまでの4件(godot-audio/physics/signals-groups/3d-essentials)は`skills/godot/`配下だったが、今回は`skills/disciplines/`配下のエンジン非依存Skill。フロントマター完備・参照ファイル2件(`behavior-trees.md`・`pathfinding.md`、SKILL.md本文が指す2件とも一致)。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンス。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザーが既に`git clone`済みの同リポジトリから取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱2つの参照ファイルも目視確認(コードスニペットのみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/game-ai/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n",
+        "tags": [
+          "ゲーム開発",
+          "AI設計",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "RESODIVE・DEPTH//とも「敵」が中心的な要素であることから、`awesome-gamedev-agent-skills`リポジトリの`game-ai`(discipli…",
+        "solution_summary": "これまでの4件(godot-audio/physics/signals-groups/3d-essentials)は`skills/godot/`配下だったが、今回は`skills…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills"
+      },
+      {
+        "filename": "2026-08-24-godot-3d-essentials-external-skill.md",
+        "title": "外部Skill `godot-3d-essentials`を試験導入",
+        "content": "# [候補] 外部Skill `godot-3d-essentials`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, 3D, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n既存の`godot-optimization`ルールがMultiMeshInstance3D前提であることから、RESODIVE・DEPTH//とも3D前提のプロジェクトだと分かっていたが、3D特有(カメラ・ライティング・環境/ポストプロセス・GridMap)の知見がまだ手薄だったため、`awesome-gamedev-agent-skills`リポジトリの`godot-3d-essentials`Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。\n\n## わかったこと・今の対応\n`godot-audio`・`godot-physics`・`godot-signals-groups`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンス。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザーが既に`git clone`済みの同リポジトリから取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱`references/scene-and-environment.md`も目視確認(コードスニペットのみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/godot-3d-essentials/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n",
+        "tags": [
+          "godot",
+          "3D",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "既存の`godot-optimization`ルールがMultiMeshInstance3D前提であることから、RESODIVE・DEPTH//とも3D前提のプロジェクトだと分かっ…",
+        "solution_summary": "`godot-audio`・`godot-physics`・`godot-signals-groups`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills"
+      },
+      {
+        "filename": "2026-08-24-godot-signals-groups-external-skill.md",
+        "title": "外部Skill `godot-signals-groups`を試験導入",
+        "content": "# [候補] 外部Skill `godot-signals-groups`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, アーキテクチャ, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\nシグナル(イベント駆動)はGodot開発の土台になる基礎分野として、`awesome-gamedev-agent-skills`リポジトリの`godot-signals-groups`Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。カスタムシグナルの宣言・発行・Callableでの接続(bind/one-shot含む)・グループでの一斉制御・Godot 3.x→4.x移行時のconnect構文の違いをまとめたもの。\n\n## わかったこと・今の対応\n`godot-audio`・`godot-physics`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンス。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザーが既に`git clone`済みの同リポジトリから取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱`references/signal-patterns.md`も目視確認(コードスニペットのみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/godot-signals-groups/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n",
+        "tags": [
+          "godot",
+          "アーキテクチャ",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "シグナル(イベント駆動)はGodot開発の土台になる基礎分野として、`awesome-gamedev-agent-skills`リポジトリの`godot-signals-group…",
+        "solution_summary": "`godot-audio`・`godot-physics`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills"
+      },
+      {
+        "filename": "2026-08-24-godot-physics-external-skill.md",
+        "title": "外部Skill `godot-physics`を試験導入",
+        "content": "# [候補] 外部Skill `godot-physics`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, 物理演算, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\nRESODIVE・DEPTH//とも敵や弾丸の大量発生・衝突が絡む設計で、既存の`godot-optimization`(MultiMeshInstance3D)と相性が良い分野として、`awesome-gamedev-agent-skills`リポジトリの`godot-physics`Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。RigidBody/StaticBody/Area/CharacterBodyの使い分け・衝突レイヤーとマスク・オーバーラップ検出・レイキャストをまとめたもの。\n\n## わかったこと・今の対応\n`godot-audio`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンス。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザーが既に`git clone`済みの同リポジトリから取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱`references/bodies-and-queries.md`も目視確認(コードスニペットと表のみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/godot-physics/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n",
+        "tags": [
+          "godot",
+          "物理演算",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "RESODIVE・DEPTH//とも敵や弾丸の大量発生・衝突が絡む設計で、既存の`godot-optimization`(MultiMeshInstance3D)と相性が良い分野と…",
+        "solution_summary": "`godot-audio`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセ…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills"
+      },
+      {
+        "filename": "2026-08-24-godot-audio-external-skill.md",
+        "title": "外部Skill `godot-audio`を試験導入",
+        "content": "# [候補] 外部Skill `godot-audio`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, オーディオ, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\nDEPTH//で実際に発生した「シーン切り替え時の音声バス切り替えで音が途切れる」という既存の候補(`2026-08-example-candidate.md`)に関連する分野として、`awesome-gamedev-agent-skills`リポジトリの`godot-audio`Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。AudioStreamPlayerの使い分け・バス経由のルーティング・dB変換・ビート同期などをまとめたもの。\n\n## わかったこと・今の対応\n`godot-testing-deploy`等と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンスなので、`frontend-design`のような特殊な扱いは不要。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザー自身に`git clone`してもらい取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱`references/buses-and-effects.md`も目視確認(コードスニペットのみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/godot-audio/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n- 既存の音声関連の候補(DEPTH//のバス切り替えバグ)との組み合わせで、実際に役立つか\n",
+        "tags": [
+          "godot",
+          "オーディオ",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "DEPTH//で実際に発生した「シーン切り替え時の音声バス切り替えで音が途切れる」という既存の候補(`2026-08-example-candidate.md`)に関連する分野とし…",
+        "solution_summary": "`godot-testing-deploy`等と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apa…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills"
+      },
+      {
+        "filename": "2026-08-24-ux-designer-external-skill.md",
+        "title": "外部Skill `ux-designer` を試験導入(Godot以外の一般UI/UX設計向け)",
+        "content": "# [候補] 外部Skill `ux-designer` を試験導入(Godot以外の一般UI/UX設計向け)\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [UI, UX, デザイン, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/szilu/ux-designer-skill\n\n## 何が起きたか\n「`godot-ui-control`・`game-feel`はゲーム専用で、一般的なUI/デザイン作業には使えないのでは」という指摘を受け、ゲームに限らない一般的なUX/UI設計のSkillを探し、`szilu/ux-designer-skill`(アクセシビリティ・フォーム・多言語対応・AI UI・データ可視化等を網羅する24本の参照ファイル付きSkill)を`~/.claude/skills/ux-designer/`として試験導入した。\n\n## わかったこと・今の対応\nMITライセンス、フロントマター完備で修正不要だった。機密情報スキャンで`references/`内のプレースホルダーメールアドレス(「user［アットマーク］example.com」等、フォーム入力例)が6ファイル・14箇所で誤検知された。引き継ぎメモが事前に警告していた事象そのもの。`@`記号を`(at)`に置換する表記に直して解消した(意味は保持)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。ただし今回は`~/Downloads`への読み取りアクセスがこのセッションから拒否される事象が発生し(macOSのプライバシー保護によるものと推測、詳細は別候補`2026-08-24-downloads-folder-access-denied-mid-session.md`参照)、`~/Documents/original-game/`配下に再取得してもらって回避した。既存の`godot-ui-control`・`game-feel`とは「ゲーム特化」対「汎用UI/UX」という住み分けになり、内容として矛盾しない。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のUI設計・レビュー作業での有用性\n- `godot-ui-control`と両方に該当する場面(Godot上のUI)でどちらが優先的に発動するか、あるいは両方発動して補い合うか\n",
+        "tags": [
+          "UI",
+          "UX",
+          "デザイン",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "「`godot-ui-control`・`game-feel`はゲーム専用で、一般的なUI/デザイン作業には使えないのでは」という指摘を受け、ゲームに限らない一般的なUX/UI設計…",
+        "solution_summary": "MITライセンス、フロントマター完備で修正不要だった。機密情報スキャンで`references/`内のプレースホルダーメールアドレス(「user［アットマーク］example.co…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/szilu/ux-designer-skill"
+      },
+      {
+        "filename": "2026-08-24-godot-code-gen-external-skill.md",
+        "title": "外部Skill `godot-code-gen` を試験導入",
+        "content": "# [候補] 外部Skill `godot-code-gen` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/alexmeckes/godot-claude-skills\n\n## 何が起きたか\n外部Skillマーケットプレイス由来のGDScript生成支援Skill(`godot-claude-skills`リポジトリの`godot-code-gen`)を、`~/.claude/skills/godot-code-gen/`として試験導入した。\n\n## わかったこと・今の対応\n元のSKILL.mdにはこのシステムが要求するフロントマター(`name`/`description`)が無かったため、既存Skillの慣習(強めのトリガー表現)に合わせて追加した。機密情報スキャンには引っかからないことを確認済み(`godot-code-gen/SKILL.md`単体をスキャンし異常なし)。設置直後の同一会話内で「プレイヤーキャラクターの待機・歩行・ジャンプのステートマシン」という自然な相談を投げたところ、明示指定なしで正しく自動発動し、実用的な実装例を生成できた(2026-08-24)。RESODIVEでの実作業での有用性はまだ未検証。\n\n## 詳しい経緯\n`外部Skill導入_引き継ぎ.md`の推奨に従い、まず1件のみを試験導入する方針とした。取得はユーザー自身が`git clone`で実行している(Claude Codeは外部リポジトリのダウンロードを自ら実行しない設計のため)。内容はGodot 4.xのGDScript構文(型ヒント・アノテーション・シグナル・ステートマシン・Resourceパターン・Tween等)のベストプラクティス集で、既存の`godot-optimization`(大量インスタンス最適化)とは話題が異なり衝突しない。ただし`CharacterBody2D/3D`移動のサンプルコード自体には「50体以上の量産時はMultiMeshInstance3Dを検討」という`godot-optimization`側の知見は含まれていないため、両方のSkillを踏まえた判断が必要な場面があることは留意点として残る。\n\n設置直後の発動テストでは、`SKILL-PROMOTION-GUIDE.md`に記載の「同一会話中に作ったSkillはその会話では認識されない」という制約は再現しなかった(むしろ設置直後から利用可能だった)。環境やタイミングによって挙動が変わる可能性があるため、今後Skillを追加する際は都度確認すること。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。実際に使ってみて役立った場合は、他の気づきと同じ通常フロー(このファイルへの再観測記録、または`/kb-endorse`)で昇格を検討する。\n\n## まだ確認できていないこと\n- RESODIVEでの実作業での有用性(発動確認自体はknowledge-baseのセッション内で完了)\n",
+        "tags": [
+          "godot",
+          "ゲーム開発",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "外部Skillマーケットプレイス由来のGDScript生成支援Skill(`godot-claude-skills`リポジトリの`godot-code-gen`)を、`~/.cla…",
+        "solution_summary": "元のSKILL.mdにはこのシステムが要求するフロントマター(`name`/`description`)が無かったため、既存Skillの慣習(強めのトリガー表現)に合わせて追加した…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/alexmeckes/godot-claude-skills"
+      },
+      {
+        "filename": "2026-08-24-godot-testing-deploy-external-skill.md",
+        "title": "外部Skill `godot-testing-deploy`(元名`godot`)を試験導入",
+        "content": "# [候補] 外部Skill `godot-testing-deploy`(元名`godot`)を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, テスト, CI/CD, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/Randroids-Dojo/Godot-Claude-Skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`の次点候補、`Randroids-Dojo/Godot-Claude-Skills`(GdUnit4テスト・PlayGodotによるE2E自動化・エクスポート・CI/CD・Vercel等へのデプロイ)を`~/.claude/skills/godot-testing-deploy/`として試験導入した。\n\n## わかったこと・今の対応\nこれまでの3件と異なり、4本のPythonスクリプト(`run_tests.py`/`parse_results.py`/`validate_project.py`/`export_build.py`)が同梱されていたため、実行可能コードとして通常より丁寧にレビューした。内容はいずれも`subprocess`でGodot CLIを呼び出すだけの素直な実装で、ネットワーク通信・`eval`/`exec`・難読化・認証情報の収集など不審な処理は見当たらなかった。機密情報スキャンもフォルダ全体でクリーン。\n\n元のfrontmatterは`name: godot`という汎用的すぎる名前だったため、`godot-testing-deploy`にリネームして配置した(内容は変更なし)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。PlayGodot部分は`Randroids-Dojo/godot`のカスタムフォーク(automationブランチ)をソースからビルドする必要があり、GdUnit4テスト単体より導入コストが高い(このリポジトリが引き継ぎメモで「次点」扱いだった理由と合致)。既存の4件のSkillとは話題が重複しない(実装ではなくテスト・ビルド・デプロイが対象)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際にGdUnit4やPlayGodotをRESODIVE等に導入して使う場面での有用性(現時点では設置のみ)\n- PlayGodot用カスタムGodotフォークのビルドは未実施(重量級の追加セットアップが必要なため、GdUnit4部分から先に試すのが現実的)\n",
+        "tags": [
+          "godot",
+          "ゲーム開発",
+          "テスト",
+          "CI/CD",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "`外部Skill導入_引き継ぎ.md`の次点候補、`Randroids-Dojo/Godot-Claude-Skills`(GdUnit4テスト・PlayGodotによるE2E自動…",
+        "solution_summary": "これまでの3件と異なり、4本のPythonスクリプト(`run_tests.py`/`parse_results.py`/`validate_project.py`/`export…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/Randroids-Dojo/Godot-Claude-Skills"
+      },
+      {
+        "filename": "2026-08-24-godot-ui-control-external-skill.md",
+        "title": "外部Skill `godot-ui-control` を試験導入",
+        "content": "# [候補] 外部Skill `godot-ui-control` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, UI, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`のUI・デザイン向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`godot-ui-control`(Control/Containerでのレスポンシブレイアウト、Themeでのスタイリング、フォーカスナビゲーション)を`~/.claude/skills/godot-ui-control/`として試験導入した。\n\n## わかったこと・今の対応\n`game-feel`と同様、元のSKILL.mdは最初からフロントマターが揃っており修正不要だった。`references/layout-and-theming.md`もあわせて配置。機密情報スキャンはクリーン。「WEBベースならまだまとも、ゲームに組み込むと酷い」という元の課題感に対し、このSkillは`game-feel`と組み合わせて使う想定(引き継ぎメモの指摘通り)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。Godot 4.7のControl/Containerノードの設計知識に特化しており、`godot-optimization`・`godot-code-gen`・`game-feel`のいずれとも話題が重複しない。SKILL.md内で`game-ui-ux`・`godot-animation`・`godot-signals-groups`・`input-systems`など、同じ元リポジトリの未導入の他Skillへの言及がある(`game-feel`と同様の留意点)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のUI実装作業(RESODIVE等)での有用性、特にゲーム内UIの見た目改善に実際に効くか\n",
+        "tags": [
+          "godot",
+          "ゲーム開発",
+          "UI",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "`外部Skill導入_引き継ぎ.md`のUI・デザイン向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`godot-ui-control`(…",
+        "solution_summary": "`game-feel`と同様、元のSKILL.mdは最初からフロントマターが揃っており修正不要だった。`references/layout-and-theming.md`もあわせて…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills"
+      },
+      {
+        "filename": "2026-08-24-game-feel-external-skill.md",
+        "title": "外部Skill `game-feel` を試験導入",
+        "content": "# [候補] 外部Skill `game-feel` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`のUI・game feel向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`game-feel`(画面シェイク・ヒットストップ・イージング・スクワッシュ&ストレッチ等、動きの気持ちよさに関する知見)を`~/.claude/skills/game-feel/`として試験導入した。\n\n## わかったこと・今の対応\n元のSKILL.mdは`godot-code-gen`と異なり、最初から`name`/`description`のフロントマターが揃っており、そのまま配置できた(修正不要)。`references/feedback-recipes.md`という参照ファイルも本体が明示的に読み込む前提のため、あわせて配置した。機密情報スキャンは本体・参照ファイルともクリーン。設置直後にSkill一覧へ即座に反映されることを確認(godot-code-genの時と同様の挙動)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。エンジン非依存の設計で、Godot 4.7とUnity 6.3 LTS両方のコード例が併記されている。既存の`godot-optimization`・`godot-code-gen`とは話題が異なり衝突しない。SKILL.md内で`camera-systems`・`audio-design`・`physics-tuning`・`godot-animation`など、同じ元リポジトリの**未導入の他Skill**への言及が複数あるが、それらは今回導入していないため、参照されても実体が無い状態になる(動作は壊れないが、案内通りには追従できない場面がありうる)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のゲーム開発作業(RESODIVE等)での有用性\n- 言及されている未導入の関連Skill(`camera-systems`等)を追加導入すべきか\n",
+        "tags": [
+          "godot",
+          "ゲーム開発",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "`外部Skill導入_引き継ぎ.md`のUI・game feel向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`game-feel`(画面…",
+        "solution_summary": "元のSKILL.mdは`godot-code-gen`と異なり、最初から`name`/`description`のフロントマターが揃っており、そのまま配置できた(修正不要)。`re…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills"
+      },
+      {
+        "filename": "2026-08-24-godot-animation-external-skill.md",
+        "title": "外部Skill `godot-animation` を試験導入",
+        "content": "# [候補] 外部Skill `godot-animation` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`の次点候補、`awesome-gamedev-agent-skills`リポジトリの`godot-animation`(AnimationPlayer/AnimationTree/Tweenの使い分け)を`~/.claude/skills/godot-animation/`として試験導入した。`game-feel`・`godot-ui-control`と同じリポジトリから取得済みだったため、追加のcloneは不要だった。\n\n## わかったこと・今の対応\n`game-feel`・`godot-ui-control`と同様、フロントマター完備・機密情報スキャンともクリーン。`references/animation-tree-and-tween.md`をあわせて配置。既存の`godot-optimization`・`godot-code-gen`・`game-feel`・`godot-ui-control`のいずれとも話題が重複しない(アニメーション実装そのものに特化)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行済みの`awesome-gamedev-agent-skills`から。SKILL.md内で`godot-2d-movement`・`godot-3d-essentials`・`game-ai`など、同リポジトリの未導入の他Skillへの言及がある(`game-feel`・`godot-ui-control`と同様の留意点)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のアニメーション実装作業(RESODIVE等)での有用性\n",
+        "tags": [
+          "godot",
+          "ゲーム開発",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "`外部Skill導入_引き継ぎ.md`の次点候補、`awesome-gamedev-agent-skills`リポジトリの`godot-animation`(AnimationPl…",
+        "solution_summary": "`game-feel`・`godot-ui-control`と同様、フロントマター完備・機密情報スキャンともクリーン。`references/animation-tree-and-…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills"
+      },
+      {
+        "filename": "2026-08-24-frontend-design-external-skill.md",
+        "title": "外部Skill `frontend-design`(Anthropic公式)を試験導入",
+        "content": "# [候補] 外部Skill `frontend-design`(Anthropic公式)を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [UI, デザイン, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design\n\n## 何が起きたか\n`ux-designer`と同じ動機(Godot以外の一般UI/デザイン向け知見)で、Anthropic公式のclaude-codeリポジトリに同梱されている`frontend-design`プラグインのSkill本体を`~/.claude/skills/frontend-design/`として試験導入した。「テンプレっぽく見えない、意図のあるデザイン」のための考え方(配色・タイポグラフィ・レイアウトを毎回同じパターンに逃げず選ぶ、モーションは狙って使う、コピーライティングも設計要素として扱う)をまとめたもの。\n\n## わかったこと・今の対応\nこれまでの5件と異なり、**ライセンスがMITなどのオープンソースではなく「All rights reserved」**(claude-codeリポジトリ全体がAnthropic Commercial Terms of Service準拠)。本来は`/plugin marketplace add anthropics/claude-code` → `/plugin install frontend-design@claude-code`という公式のプラグイン機構でインストールする想定だったが、**この環境では`/plugin`コマンド自体が使えなかった**(`/plugin isn't available in this environment.`)。そのため、これまでと同じ「ファイルを直接配置」する方法に切り替えた。個人利用目的でのナレッジベースへの配置と判断したが、他のMITライセンスのSkillとは扱いが異なる点に注意(SKILL.md内に`license_note`フィールドとして明記済み)。\n\n## 詳しい経緯\n内容はGitHub上のSKILL.mdを直接確認して取得(著者: AnthropicのPrithvi Rajasekaran氏・Alexander Bricken氏)。ゲーム要素は無く、Web/アプリのUI全般が対象。`ux-designer`(UX原則・アクセシビリティ寄り)とは補完関係で、`frontend-design`は美的方向性・独自性、`ux-designer`は使いやすさ・アクセシビリティ・パターンという住み分け。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のUI/フロントエンド実装作業での有用性\n- この環境で`/plugin`が使えない理由(Claude Code SDKベースの環境固有の制約なのか、他の条件があるのか)\n",
+        "tags": [
+          "UI",
+          "デザイン",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 1,
+        "stale": false,
+        "problem_summary": "`ux-designer`と同じ動機(Godot以外の一般UI/デザイン向け知見)で、Anthropic公式のclaude-codeリポジトリに同梱されている`frontend-d…",
+        "solution_summary": "これまでの5件と異なり、**ライセンスがMITなどのオープンソースではなく「All rights reserved」**(claude-codeリポジトリ全体がAnthropic…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/anthropics/claude-code/tree/main/plugins/frontend-design"
       }
     ],
     "archived": []
