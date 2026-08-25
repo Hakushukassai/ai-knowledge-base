@@ -352,14 +352,156 @@
     background: var(--chip-bg); border-radius: 4px; padding: 1px 6px;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px;
   }
+
+  /* ---------- macOS window pass ---------- */
+  :root{
+    --page-bg:#e7e7ea;
+    --sidebar-bg:rgba(246,246,248,.88);
+    --list-bg:#fbfbfc;
+    --detail-bg:#fff;
+    --row-selected:#dbe9ff;
+    --chip-active-text:#007aff;
+    --line:rgba(60,60,67,.16);
+    --line-soft:rgba(60,60,67,.10);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{
+      --page-bg:#151517;
+      --sidebar-bg:rgba(38,38,41,.90);
+      --list-bg:#1f1f22;
+      --detail-bg:#1e1e20;
+      --row-selected:#164d8a;
+      --chip-active-text:#0a84ff;
+      --line:rgba(255,255,255,.13);
+      --line-soft:rgba(255,255,255,.09);
+    }
+  }
+  body{
+    display:grid;
+    place-items:center;
+    padding:24px;
+    background:var(--page-bg);
+  }
+  .app-window{
+    width:min(1440px, calc(100vw - 48px));
+    height:min(860px, calc(100vh - 48px));
+    min-height:600px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    border:1px solid rgba(0,0,0,.12);
+    border-radius:13px;
+    background:var(--detail-bg);
+    box-shadow:0 22px 60px rgba(0,0,0,.22);
+  }
+  .window-titlebar{
+    height:52px;
+    flex:none;
+    display:grid;
+    grid-template-columns:126px 1fr 180px;
+    align-items:center;
+    padding:0 16px;
+    border-bottom:1px solid var(--line);
+    background:var(--sidebar-bg);
+  }
+  .traffic-lights{display:flex;gap:8px;}
+  .traffic-lights i{display:block;width:12px;height:12px;border-radius:50%;}
+  .traffic-lights i:nth-child(1){background:#ff5f57;}
+  .traffic-lights i:nth-child(2){background:#febc2e;}
+  .traffic-lights i:nth-child(3){background:#28c840;}
+  .window-title{text-align:center;font-size:12px;font-weight:600;letter-spacing:-.01em;}
+  .window-status{justify-self:end;display:flex;align-items:center;gap:6px;color:var(--text-2);font-size:11px;white-space:nowrap;}
+  .window-status i{width:7px;height:7px;border-radius:50%;background:#30b262;}
+  .window-statusbar{
+    height:28px;
+    flex:none;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+    border-top:1px solid var(--line);
+    background:var(--sidebar-bg);
+    color:var(--text-2);
+    font-size:10px;
+  }
+  .window-statusbar b{color:var(--text-1);font-weight:500;}
+  .app-shell{height:auto;min-height:0;flex:1;}
+  .pane-sidebar{flex-basis:220px;padding:15px 9px;background:var(--sidebar-bg);}
+  .pane-list{flex-basis:365px;background:var(--list-bg);}
+  .pane-detail{background:var(--detail-bg);}
+  .brand{padding:3px 9px 15px;}
+  .brand h1{font-size:13px;letter-spacing:-.01em;}
+  .brand .brand-sub{margin-top:3px;font-size:11px;line-height:1.45;}
+  .brand .brand-updated{margin-top:5px;font-size:10px;}
+  .search-field{height:30px;margin:0 8px 14px;padding:0 8px;border-radius:6px;background:rgba(118,118,128,.12);}
+  .nav-row{min-height:29px;padding:0 9px;border-radius:5px;font-size:13px;}
+  .nav-row.active{background:var(--row-selected);color:var(--chip-active-text);}
+  .nav-row .nav-count{font-size:11px;}
+  .sidebar-footer{border-top:0;padding:8px 9px 1px;font-size:10px;}
+  .toolbar{height:52px;padding:0 16px;border-bottom:1px solid var(--line);background:inherit;}
+  .toolbar .toolbar-title h2{font-size:20px;letter-spacing:-.04em;}
+  .toolbar .toolbar-sub{margin-top:2px;font-size:11px;}
+  .pane-body{padding:18px 16px 34px;}
+  .attention-line{padding:0 0 16px;margin-bottom:20px;}
+  .attention-line .attention-copy{font-size:12px;}
+  .attention-line button{padding:5px 9px;border-radius:5px;}
+  .stat-grid{margin:0 0 24px;border-bottom:1px solid var(--line);}
+  .stat-card{padding:3px 14px 16px;border:0;border-right:1px solid var(--line);background:transparent;}
+  .stat-card:last-child{border-right:0;}
+  .stat-card .stat-num{font-size:26px;font-weight:600;letter-spacing:-.04em;}
+  .section-heading{margin:0 0 7px;font-size:10px;letter-spacing:.04em;}
+  .filter-toggle{padding:1px 0 11px;}
+  .chip-row{gap:15px;margin-bottom:14px;border-bottom:1px solid var(--line-soft);}
+  .chip{padding:0 0 6px;border-radius:0;border-bottom:2px solid transparent;background:transparent;}
+  .chip.active{border-bottom-color:var(--chip-active-text);background:transparent;color:var(--chip-active-text);}
+  .row-item{min-height:60px;padding:11px 16px;border-bottom:1px solid var(--line-soft);transition:background .14s ease;}
+  .row-item.selected{background:var(--row-selected);box-shadow:inset 3px 0 0 var(--chip-active-text);}
+  .row-item.kbd-focus{outline:2px solid var(--chip-active-text);outline-offset:-2px;}
+  .row-item .row-title{font-size:12.5px;font-weight:600;}
+  .row-item .row-sub{font-size:11px;}
+  .row-item .row-date{font-size:10px;}
+  .load-more-row{padding:14px;color:var(--chip-active-text);}
+  .detail-header{margin:7px 0 18px;}
+  .detail-header h2{font-size:27px;letter-spacing:-.045em;line-height:1.2;}
+  .detail-meta-row{gap:7px;margin-top:12px;font-size:11px;}
+  .tag-row{gap:9px;margin-top:12px;}
+  .badge,.pill{padding:0;border-radius:0;background:transparent;font-size:10.5px;}
+  .tag-row > * + *::before{content:'·';margin-right:9px;color:var(--text-3);}
+  .field-block{margin:25px 0;}
+  .field-block .field-label{margin-bottom:7px;text-transform:none;letter-spacing:0;font-size:11px;}
+  .field-block .field-text{font-size:13px;line-height:1.72;}
+  .fulltext-block{margin-top:26px;padding-top:18px;font-size:13px;line-height:1.8;}
+  .help-block{margin-bottom:30px;}
+  .help-flow .flow-step,.dir-tree{border-radius:6px;}
+  @media (max-width:860px){
+    body{display:block;padding:0;overflow:visible;}
+    .app-window{width:100%;height:auto;min-height:100vh;border:0;border-radius:0;box-shadow:none;}
+    .window-titlebar{grid-template-columns:100px 1fr 150px;}
+    .app-shell{display:block;min-height:calc(100vh - 80px);}
+    .pane-sidebar{padding:15px 9px;}
+    .pane-list,.pane-detail{background:var(--detail-bg);}
+  }
+  @media (max-width:600px){
+    .window-titlebar{grid-template-columns:90px 1fr 0;}
+    .window-status{display:none;}
+    .window-statusbar{height:28px;}
+  }
 </style>
 </head>
 <body>
-<div class="app-shell" id="app" data-mobile-screen="sidebar">
-  <aside class="pane pane-sidebar" id="pane-sidebar"></aside>
-  <section class="pane pane-list" id="pane-list"></section>
-  <section class="pane pane-detail" id="pane-detail"></section>
-</div>
+<main class="app-window" aria-label="AI開発ナレッジベース">
+  <header class="window-titlebar">
+    <div class="traffic-lights" aria-hidden="true"><i></i><i></i><i></i></div>
+    <div class="window-title">Knowledge Base</div>
+    <div class="window-status" id="window-status"><i></i>Markdown から生成</div>
+  </header>
+  <div class="app-shell" id="app" data-mobile-screen="sidebar">
+    <aside class="pane pane-sidebar" id="pane-sidebar"></aside>
+    <section class="pane pane-list" id="pane-list"></section>
+    <section class="pane pane-detail" id="pane-detail"></section>
+  </div>
+  <footer class="window-statusbar"><b>同期済み</b><span>·</span><span>⌘K で検索</span></footer>
+</main>
 
 <script src="stats-data.js?v=20260825000622"></script>
 <script>
@@ -618,8 +760,8 @@ function renderSidebar(){
   const brand = document.createElement('div');
   brand.className = 'brand';
   brand.innerHTML = `
-    <h1>学びの記録</h1>
-    <p class="brand-sub">AIとの作業で得た気づきを、プロジェクトをまたいで記録しています。</p>
+    <h1>開発の学び</h1>
+    <p class="brand-sub">候補から、次の判断へ。</p>
     <div class="brand-updated">更新: ${escapeHtml(new Date(statsData.generated_at).toLocaleString('ja-JP', {year:'numeric', month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'}))}</div>
   `;
   el.appendChild(brand);
@@ -1266,6 +1408,11 @@ async function load(){
     }
   }
   statsData = data;
+  const status = document.getElementById('window-status');
+  if (status && statsData.generated_at){
+    const updated = new Date(statsData.generated_at).toLocaleString('ja-JP', {month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit'});
+    status.innerHTML = `<i></i>更新 ${escapeHtml(updated)}`;
+  }
   renderApp();
 }
 load();
