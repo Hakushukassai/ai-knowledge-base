@@ -377,57 +377,36 @@
     }
   }
   body{
-    display:grid;
-    place-items:center;
-    padding:24px;
+    display:block;
+    padding:0;
     background:var(--page-bg);
   }
   .app-window{
-    width:min(1440px, calc(100vw - 48px));
-    height:min(860px, calc(100vh - 48px));
-    min-height:600px;
+    width:100%;
+    height:100vh;
+    height:100dvh;
+    min-height:0;
     overflow:hidden;
     display:flex;
     flex-direction:column;
-    border:1px solid rgba(0,0,0,.12);
-    border-radius:13px;
     background:var(--detail-bg);
-    box-shadow:0 22px 60px rgba(0,0,0,.22);
   }
   .window-titlebar{
-    height:52px;
+    height:44px;
     flex:none;
     display:grid;
-    grid-template-columns:126px 1fr 180px;
+    grid-template-columns:minmax(0, 1fr) auto;
     align-items:center;
-    padding:0 16px;
+    padding:0 18px;
     border-bottom:1px solid var(--line);
     background:var(--sidebar-bg);
   }
-  .traffic-lights{display:flex;gap:8px;}
-  .traffic-lights i{display:block;width:12px;height:12px;border-radius:50%;}
-  .traffic-lights i:nth-child(1){background:#ff5f57;}
-  .traffic-lights i:nth-child(2){background:#febc2e;}
-  .traffic-lights i:nth-child(3){background:#28c840;}
-  .window-title{text-align:center;font-size:12px;font-weight:600;letter-spacing:-.01em;}
+  .window-title{text-align:start;font-size:13px;font-weight:600;letter-spacing:-.01em;}
   .window-status{justify-self:end;display:flex;align-items:center;gap:6px;color:var(--text-2);font-size:11px;white-space:nowrap;}
   .window-status i{width:7px;height:7px;border-radius:50%;background:#30b262;}
-  .window-statusbar{
-    height:28px;
-    flex:none;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    border-top:1px solid var(--line);
-    background:var(--sidebar-bg);
-    color:var(--text-2);
-    font-size:10px;
-  }
-  .window-statusbar b{color:var(--text-1);font-weight:500;}
   .app-shell{height:auto;min-height:0;flex:1;}
-  .pane-sidebar{flex-basis:220px;padding:15px 9px;background:var(--sidebar-bg);}
-  .pane-list{flex-basis:365px;background:var(--list-bg);}
+  .pane-sidebar{flex:0 0 clamp(204px, 18vw, 264px);padding:15px 9px;background:var(--sidebar-bg);}
+  .pane-list{flex:0 1 clamp(300px, 30vw, 438px);background:var(--list-bg);}
   .pane-detail{background:var(--detail-bg);}
   .brand{padding:3px 9px 15px;}
   .brand h1{font-size:13px;letter-spacing:-.01em;}
@@ -436,6 +415,11 @@
   .search-field{height:30px;margin:0 8px 14px;padding:0 8px;border-radius:6px;background:rgba(118,118,128,.12);}
   .nav-row{min-height:29px;padding:0 9px;border-radius:5px;font-size:13px;}
   .nav-row.active{background:var(--row-selected);color:var(--chip-active-text);}
+  .nav-section-label{margin:15px 9px 5px;color:var(--text-3);font-size:10px;font-weight:600;letter-spacing:.04em;}
+  .nav-group:first-of-type .nav-section-label{margin-top:4px;}
+  .nav-icon{width:15px;height:15px;flex:none;color:var(--text-2);stroke:currentColor;stroke-width:1.6;fill:none;stroke-linecap:round;stroke-linejoin:round;}
+  .nav-row.active .nav-icon{color:currentColor;}
+  .nav-row .nav-flag{margin-left:2px;}
   .nav-row .nav-count{font-size:11px;}
   .sidebar-footer{border-top:0;padding:8px 9px 1px;font-size:10px;}
   .toolbar{height:52px;padding:0 16px;border-bottom:1px solid var(--line);background:inherit;}
@@ -475,23 +459,26 @@
   .help-flow .flow-step,.dir-tree{border-radius:6px;}
   @media (max-width:860px){
     body{display:block;padding:0;overflow:visible;}
-    .app-window{width:100%;height:auto;min-height:100vh;border:0;border-radius:0;box-shadow:none;}
-    .window-titlebar{grid-template-columns:100px 1fr 150px;}
-    .app-shell{display:block;min-height:calc(100vh - 80px);}
+    .app-window{height:auto;min-height:100vh;min-height:100dvh;}
+    .app-shell{display:block;min-height:calc(100vh - 44px);min-height:calc(100dvh - 44px);}
+    .app-shell[data-mobile-screen="sidebar"] .pane-sidebar,
+    .app-shell[data-mobile-screen="list"] .pane-list,
+    .app-shell[data-mobile-screen="detail"] .pane-detail{
+      min-height:calc(100vh - 44px);
+      min-height:calc(100dvh - 44px);
+    }
     .pane-sidebar{padding:15px 9px;}
     .pane-list,.pane-detail{background:var(--detail-bg);}
   }
   @media (max-width:600px){
-    .window-titlebar{grid-template-columns:90px 1fr 0;}
     .window-status{display:none;}
-    .window-statusbar{height:28px;}
+    .window-titlebar{padding:0 14px;}
   }
 </style>
 </head>
 <body>
 <main class="app-window" aria-label="AI開発ナレッジベース">
   <header class="window-titlebar">
-    <div class="traffic-lights" aria-hidden="true"><i></i><i></i><i></i></div>
     <div class="window-title">Knowledge Base</div>
     <div class="window-status" id="window-status"><i></i>Markdown から生成</div>
   </header>
@@ -500,7 +487,6 @@
     <section class="pane pane-list" id="pane-list"></section>
     <section class="pane pane-detail" id="pane-detail"></section>
   </div>
-  <footer class="window-statusbar"><b>同期済み</b><span>·</span><span>⌘K で検索</span></footer>
 </main>
 
 <script src="stats-data.js?v=20260825000622"></script>
@@ -753,6 +739,21 @@ function searchAll(query){
 }
 
 /* ================= サイドバー ================= */
+function navIcon(name){
+  const icons = {
+    overview: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/></svg>',
+    rules: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4.5A2.5 2.5 0 0 1 7.5 2H20v17.5H7.5A2.5 2.5 0 0 0 5 22Z"/><path d="M5 4.5v15"/><path d="M9 6h7"/></svg>',
+    candidates: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 7 7-7 11L5 10Z"/><path d="m9.5 12.5 5-5"/></svg>',
+    incidents: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 3h9l3 3v15H6Z"/><path d="M15 3v4h4"/><path d="M9 11h6M9 15h4"/></svg>',
+    archived: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16v13H4Z"/><path d="M3 4h18v3H3Z"/><path d="M10 12h4"/></svg>',
+    external: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v11"/><path d="m8 10 4 4 4-4"/><path d="M5 17v3h14v-3"/></svg>',
+    skills: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m14 4 6 6-10 10H4v-6Z"/><path d="m14 4-2 2"/><circle cx="16.5" cy="7.5" r="1"/></svg>',
+    history: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12a8 8 0 1 0 2.35-5.65"/><path d="M4 5v4h4"/><path d="M12 7v5l3 2"/></svg>',
+    help: '<svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="M9.75 9a2.32 2.32 0 1 1 3.7 1.86c-.94.7-1.45 1.16-1.45 2.39"/><path d="M12 16.5h.01"/></svg>'
+  };
+  return icons[name] || icons.overview;
+}
+
 function renderSidebar(){
   const el = document.getElementById('pane-sidebar');
   el.innerHTML = '';
@@ -779,44 +780,55 @@ function renderSidebar(){
   el.appendChild(searchWrap);
 
   const navDefs = [
-    {key: 'overview', label: '概要', num: 1},
-    {key: 'rules', label: CAT_LABEL.rules, count: statsData.rules.count, dot: CAT_COLOR.rules, num: 2},
-    {key: 'candidates', label: CAT_LABEL.candidates, count: statsData.candidates.count, dot: CAT_COLOR.candidates,
+    {key: 'overview', label: '概要', icon: 'overview', num: 1},
+    {key: 'rules', label: CAT_LABEL.rules, icon: 'rules', count: statsData.rules.count, num: 2},
+    {key: 'candidates', label: CAT_LABEL.candidates, icon: 'candidates', count: statsData.candidates.count,
       flag: statsData.stale_count > 0 || !!statsData.promotion_suggestions || !!statsData.merge_suggestions, num: 3},
-    {key: 'incidents', label: CAT_LABEL.incidents, count: statsData.incidents.count, dot: CAT_COLOR.incidents, num: 4},
-    {key: 'skills', label: 'Skill一覧', count: (statsData.skills || []).length, num: 5},
-    {key: 'history', label: '更新履歴', num: 6},
+    {key: 'incidents', label: CAT_LABEL.incidents, icon: 'incidents', count: statsData.incidents.count, num: 4},
+    {key: 'skills', label: 'Skill一覧', icon: 'skills', count: (statsData.skills || []).length, num: 5},
+    {key: 'history', label: '更新履歴', icon: 'history', num: 6},
   ];
   if ((statsData.archived || {}).count > 0){
-    navDefs.push({key: 'archived', label: 'アーカイブ', count: statsData.archived.count, dot: CAT_COLOR.archived});
+    navDefs.splice(4, 0, {key: 'archived', label: 'アーカイブ', icon: 'archived', count: statsData.archived.count});
   }
   if ((statsData.external_skill_imports || {}).count > 0){
-    navDefs.push({key: 'external_skill_imports', label: CAT_LABEL.external_skill_imports, count: statsData.external_skill_imports.count, dot: CAT_COLOR.external_skill_imports});
+    navDefs.splice(5, 0, {key: 'external_skill_imports', label: CAT_LABEL.external_skill_imports, icon: 'external', count: statsData.external_skill_imports.count});
   }
 
-  const navGroup = document.createElement('div');
-  navGroup.className = 'nav-group';
-  navDefs.forEach(def => {
-    const row = document.createElement('button');
-    row.type = 'button';
-    row.className = 'nav-row' + (route.section === def.key && !searchQuery.trim() ? ' active' : '');
-    row.innerHTML = `
-      ${def.dot ? `<span class="nav-dot" style="background:${def.dot}"></span>` : '<span class="nav-dot" style="background:none"></span>'}
-      <span class="nav-label">${escapeHtml(def.label)}</span>
-      ${def.flag ? '<span class="nav-flag"></span>' : ''}
-      ${def.num ? `<kbd class="mobile-only-hide">${def.num}</kbd>` : ''}
-      ${def.count !== undefined ? `<span class="nav-count">${def.count}</span>` : ''}
-    `;
-    row.onclick = () => goSection(def.key);
-    navGroup.appendChild(row);
-  });
-  el.appendChild(navGroup);
+  const addNavGroup = (label, defs) => {
+    const navGroup = document.createElement('div');
+    navGroup.className = 'nav-group';
+    if (label){
+      const heading = document.createElement('div');
+      heading.className = 'nav-section-label';
+      heading.textContent = label;
+      navGroup.appendChild(heading);
+    }
+    defs.forEach(def => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'nav-row' + (route.section === def.key && !searchQuery.trim() ? ' active' : '');
+      row.innerHTML = `
+        ${navIcon(def.icon)}
+        <span class="nav-label">${escapeHtml(def.label)}</span>
+        ${def.flag ? '<span class="nav-flag" title="要確認"></span>' : ''}
+        ${def.num ? `<kbd class="mobile-only-hide">${def.num}</kbd>` : ''}
+        ${def.count !== undefined ? `<span class="nav-count">${def.count}</span>` : ''}
+      `;
+      row.onclick = () => goSection(def.key);
+      navGroup.appendChild(row);
+    });
+    el.appendChild(navGroup);
+  };
+  addNavGroup('', navDefs.filter(def => def.key === 'overview'));
+  addNavGroup('ライブラリ', navDefs.filter(def => ['rules', 'candidates', 'incidents', 'archived', 'external_skill_imports'].includes(def.key)));
+  addNavGroup('運用', navDefs.filter(def => ['skills', 'history'].includes(def.key)));
 
   const helpRow = document.createElement('button');
   helpRow.type = 'button';
   helpRow.className = 'nav-row' + (route.section === 'help' && !searchQuery.trim() ? ' active' : '');
   helpRow.innerHTML = `
-    <span class="nav-dot" style="background:none"></span>
+    ${navIcon('help')}
     <span class="nav-label">使い方</span>
     <kbd class="mobile-only-hide">?</kbd>
   `;
