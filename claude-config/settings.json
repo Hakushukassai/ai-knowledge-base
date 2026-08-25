@@ -1,10 +1,8 @@
 {
-  "effortLevel": "xhigh",
-  "model": "sonnet",
   "permissions": {
     "allow": [
-      "Bash(sh ~/knowledge-base/scripts/pyrun.sh ~/.claude/hooks/scan_and_push.py:*)",
-      "Bash(sh ~/knowledge-base/scripts/pyrun.sh ~/.claude/hooks/archive_stale_candidates.py:*)",
+      "Bash(python3 ~/.claude/hooks/scan_and_push.py:*)",
+      "Bash(python3 ~/.claude/hooks/archive_stale_candidates.py:*)",
       "Bash(bash ~/knowledge-base/scripts/generate_stats.sh:*)"
     ]
   },
@@ -14,7 +12,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "(cd ~/knowledge-base 2>/dev/null && git pull --quiet 2>/dev/null); mkdir -p ~/.claude/skills ~/.claude/hooks ~/.claude/commands 2>/dev/null; cp -rn ~/knowledge-base/claude-config/skills/* ~/.claude/skills/ 2>/dev/null; cp -r ~/knowledge-base/claude-config/hooks/* ~/.claude/hooks/ 2>/dev/null; cp -r ~/knowledge-base/claude-config/commands/* ~/.claude/commands/ 2>/dev/null; cp ~/knowledge-base/claude-config/settings.json ~/.claude/settings.json 2>/dev/null; if [ -f ~/knowledge-base/SECURITY-WARNING.md ]; then echo '## ⚠ 機密情報チェックで警告あり(pushが止まっています)' && cat ~/knowledge-base/SECURITY-WARNING.md; fi; if [ -f ~/knowledge-base/SYNC-CONFLICT.md ]; then echo '## ⚠ 同期エラー(他PCとの取り込みが止まっています)' && cat ~/knowledge-base/SYNC-CONFLICT.md; fi; echo '## 知識ベース(rules。Skill化済みのものは省略)' && sh ~/knowledge-base/scripts/pyrun.sh ~/.claude/hooks/print_unskilled_rules.py 2>/dev/null; echo '## 昇格の提案(あれば)' && cat ~/knowledge-base/PROMOTION-SUGGESTIONS.md 2>/dev/null; if [ -f ~/knowledge-base/MERGE-SUGGESTIONS.md ]; then echo '## 統合の提案(あれば)' && cat ~/knowledge-base/MERGE-SUGGESTIONS.md; fi"
+            "command": "(cd ~/knowledge-base 2>/dev/null && git pull --quiet 2>/dev/null); mkdir -p ~/.claude/skills 2>/dev/null; cp -rn ~/knowledge-base/claude-config/skills/* ~/.claude/skills/ 2>/dev/null; if [ -f ~/knowledge-base/SECURITY-WARNING.md ]; then echo '## ⚠ 機密情報チェックで警告あり(pushが止まっています)' && cat ~/knowledge-base/SECURITY-WARNING.md; fi; if [ -f ~/knowledge-base/SYNC-CONFLICT.md ]; then echo '## ⚠ 同期エラー(他PCとの取り込みが止まっています)' && cat ~/knowledge-base/SYNC-CONFLICT.md; fi; echo '## 知識ベース(rules。Skill化済みのものは省略)' && python3 ~/.claude/hooks/print_unskilled_rules.py 2>/dev/null; echo '## 昇格の提案(あれば)' && cat ~/knowledge-base/PROMOTION-SUGGESTIONS.md 2>/dev/null; if [ -f ~/knowledge-base/MERGE-SUGGESTIONS.md ]; then echo '## 統合の提案(あれば)' && cat ~/knowledge-base/MERGE-SUGGESTIONS.md; fi"
           }
         ]
       }
@@ -23,21 +21,70 @@
       {
         "matcher": "clear|prompt_input_exit",
         "hooks": [
-          { "type": "prompt", "prompt": "このセッションの内容を、現在のプロジェクトディレクトリの HANDOFF.md に knowledge-base/HANDOFF-TEMPLATE.md の形式で書き出して(上書きではなく追記)。既存のHANDOFF.mdが無ければ新規作成する。", "timeout": 60 },
-          { "type": "prompt", "prompt": "この会話で、他プロジェクトでも再利用できそうな技術的発見(バグの直し方・設計判断・ライブラリの癖など)があれば、まず knowledge-base/candidates/*.md を確認し、内容的に同じ発見を指す既存ファイルが無いか探して。\n\n- 既存ファイルに同じ発見があれば: そのファイルのフロントマターの observed_count を1増やし、observed_in に今回のプロジェクト名が無ければ追加する。本文の「## 詳しい経緯」の末尾に「(YYYY-MM-DD、プロジェクト名で再確認)」の一文を追記する。新規ファイルは作らない。\n- 既存ファイルに無ければ: knowledge-base/candidates/ に YYYY-MM-DD-短い説明.md というファイル名で新規作成する。フォーマットは status: candidate / observed_count: 1 / observed_in: [プロジェクト名] / tags: [関連する技術領域やジャンルを1〜3個、例: godot, python, 画像処理] / date、に続けて本文は次の見出し構成にすること: 「## 何が起きたか」(専門用語をできるだけ避け、平易な言葉で1〜3文の要約)/ 「## わかったこと・今の対応」(結論や暫定的な対処法を平易な言葉で1〜3文。まだ対処法が無ければ「まだ対処法が見つかっていない」と明記する。このセクションは必ず書くこと、空にしない)/ 「## 詳しい経緯」(技術的な詳細、既存の書き方と同程度の詳しさで良い)/ 「## まだ確認できていないこと」。\n\n再利用性のある発見が無ければ何もしない。", "timeout": 60 },
-          { "type": "prompt", "prompt": "knowledge-base/candidates/ の中の全ファイルを読み、以下のいずれかに該当する候補があれば、knowledge-base/PROMOTION-SUGGESTIONS.md に昇格の提案を追記して(該当しなければ何もしない、新規作成もしない):\n\n1. 内容的に同じ技術的発見を指している候補が、異なるプロジェクト(observed_inが異なる)にまたがって複数存在する\n2. 1件の候補の observed_count が3以上(同じプロジェクト内で3回以上繰り返し観測されている)\n3. 1件の候補に endorsed: true が付いている(人が既に確認済み)\n\n該当する候補ごとに、『## 候補: ファイル名(該当する場合は+ファイル名B)』という見出し、該当した理由(上記1〜3のどれか)、それに続けて次の昇格前チェックリストを追記する: 「昇格前の確認: ・3件目の似た事例が出ても驚かない程度に一般的な話か / ・プロジェクトごとの前提条件の違いが大きすぎないか / ・「いつ・何をすべきか」を一言で言えるルール文にできるか」(既存内容は消さず追記。同じ候補が既に書かれていれば重複追加しない)。また、既存の提案が参照しているファイルがcandidates/に存在しなくなっていれば(昇格済み等)、その提案は削除する。", "timeout": 60 },
-          { "type": "prompt", "prompt": "knowledge-base/candidates/ の中の全ファイルを読み、内容的に同じ技術的発見を指しているのに別ファイルになっている候補が無いか探して(observed_inが同じ、または重なっている組み合わせが対象。異なるプロジェクトの組み合わせは別の昇格提案の対象なのでここでは扱わない)。該当する組み合わせがあれば、knowledge-base/MERGE-SUGGESTIONS.md に『## 統合候補: ファイルA と ファイルB』という見出し、同じ発見だと判断した理由、統合の提案(observed_countを合算して片方に内容を統合し、もう片方は削除する想定であること)を追記する(既存内容は消さず追記、同じ組み合わせが既にあれば重複追加しない)。参照先ファイルが無くなっていれば該当の提案は削除する。該当が無ければこのファイルには何もしない(新規作成もしない)。", "timeout": 60 },
-          { "type": "prompt", "prompt": "この会話中にSkillが使われていたか、~/knowledge-base/.skill_usage.log の末尾(このセッション中と思われる直近のタイムスタンプ)を確認して。使われていたSkillがあれば、この会話の流れからそのSkillの提案が実際に役立ったかを判断し、有効(役に立った)・微妙(部分的、または効果が怪しい)・不明(判断材料が無い)のいずれかと、15字程度の一言理由を、~/knowledge-base/.skill_effectiveness.log に1行、日時・Skill名・判定・理由の4項目をこの順にタブ文字1つずつで区切って追記する。Skillが1つも使われていなければ、このファイルには何もしない。", "timeout": 60 },
-          { "type": "prompt", "prompt": "この会話中に、knowledge-base/rules/ や knowledge-base/candidates/ の内容を実際に参照・活用した場面があったか(Skillとして自動発動したものは除く、手動でファイルを読んで参考にした場合が対象)を振り返って。参照した項目があれば、それぞれについて実際に役立ったかを判断し、~/knowledge-base/.reference_usage.log に1行、日時・カテゴリ(rules/candidates)・ファイル名・判定(役立った/参考程度/不明)・15字程度の一言理由の5項目をこの順にタブ文字1つずつで区切って追記する。参照した項目が無ければこのファイルには何もしない。", "timeout": 60 },
-          { "type": "command", "command": "sh ~/knowledge-base/scripts/pyrun.sh ~/.claude/hooks/archive_stale_candidates.py 2>/dev/null; true", "timeout": 60 },
-          { "type": "command", "command": "SCRIPT=\"$HOME/knowledge-base/scripts/generate_stats.sh\"; [ -f \"$SCRIPT\" ] && bash \"$SCRIPT\" 2>/dev/null || true", "timeout": 60 },
-          { "type": "command", "command": "mkdir -p ~/knowledge-base/claude-config/skills ~/knowledge-base/claude-config/hooks ~/knowledge-base/claude-config/commands 2>/dev/null; cp ~/.claude/settings.json ~/knowledge-base/claude-config/settings.json 2>/dev/null; rm -rf ~/knowledge-base/claude-config/skills/* 2>/dev/null; cp -r ~/.claude/skills/* ~/knowledge-base/claude-config/skills/ 2>/dev/null; cp -r ~/.claude/hooks/* ~/knowledge-base/claude-config/hooks/ 2>/dev/null; cp -r ~/.claude/commands/* ~/knowledge-base/claude-config/commands/ 2>/dev/null; true", "timeout": 60 },
-          { "type": "command", "command": "sh ~/knowledge-base/scripts/pyrun.sh ~/.claude/hooks/scan_and_push.py 2>/dev/null; true", "timeout": 60 }
+          {
+            "type": "prompt",
+            "prompt": "このセッションの内容を、現在のプロジェクトディレクトリの HANDOFF.md に knowledge-base/HANDOFF-TEMPLATE.md の形式で書き出して(上書きではなく追記)。既存のHANDOFF.mdが無ければ新規作成する。",
+            "timeout": 60
+          },
+          {
+            "type": "prompt",
+            "prompt": "この会話で、他プロジェクトでも再利用できそうな技術的発見(バグの直し方・設計判断・ライブラリの癖など)があれば、まず knowledge-base/candidates/*.md を確認し、内容的に同じ発見を指す既存ファイルが無いか探して。\n\n- 既存ファイルに同じ発見があれば: そのファイルのフロントマターの observed_count を1増やし、observed_in に今回のプロジェクト名が無ければ追加する。本文の「## 詳しい経緯」の末尾に「(YYYY-MM-DD、プロジェクト名で再確認)」の一文を追記する。新規ファイルは作らない。\n- 既存ファイルに無ければ: knowledge-base/candidates/ に YYYY-MM-DD-短い説明.md というファイル名で新規作成する。フォーマットは status: candidate / observed_count: 1 / observed_in: [プロジェクト名] / tags: [関連する技術領域やジャンルを1〜3個、例: godot, python, 画像処理] / date、に続けて本文は次の見出し構成にすること: 「## 何が起きたか」(専門用語をできるだけ避け、平易な言葉で1〜3文の要約)/ 「## わかったこと・今の対応」(結論や暫定的な対処法を平易な言葉で1〜3文。まだ対処法が無ければ「まだ対処法が見つかっていない」と明記する。このセクションは必ず書くこと、空にしない)/ 「## 詳しい経緯」(技術的な詳細、既存の書き方と同程度の詳しさで良い)/ 「## まだ確認できていないこと」。\n\n再利用性のある発見が無ければ何もしない。",
+            "timeout": 60
+          },
+          {
+            "type": "prompt",
+            "prompt": "knowledge-base/candidates/ の中の全ファイルを読み、以下のいずれかに該当する候補があれば、knowledge-base/PROMOTION-SUGGESTIONS.md に昇格の提案を追記して(該当しなければ何もしない、新規作成もしない):\n\n1. 内容的に同じ技術的発見を指している候補が、異なるプロジェクト(observed_inが異なる)にまたがって複数存在する\n2. 1件の候補の observed_count が3以上(同じプロジェクト内で3回以上繰り返し観測されている)\n3. 1件の候補に endorsed: true が付いている(人が既に確認済み)\n\n該当する候補ごとに、『## 候補: ファイル名(該当する場合は+ファイル名B)』という見出し、該当した理由(上記1〜3のどれか)、それに続けて次の昇格前チェックリストを追記する: 「昇格前の確認: ・3件目の似た事例が出ても驚かない程度に一般的な話か / ・プロジェクトごとの前提条件の違いが大きすぎないか / ・「いつ・何をすべきか」を一言で言えるルール文にできるか」(既存内容は消さず追記。同じ候補が既に書かれていれば重複追加しない)。また、既存の提案が参照しているファイルがcandidates/に存在しなくなっていれば(昇格済み等)、その提案は削除する。",
+            "timeout": 60
+          },
+          {
+            "type": "prompt",
+            "prompt": "knowledge-base/candidates/ の中の全ファイルを読み、内容的に同じ技術的発見を指しているのに別ファイルになっている候補が無いか探して(observed_inが同じ、または重なっている組み合わせが対象。異なるプロジェクトの組み合わせは別の昇格提案の対象なのでここでは扱わない)。該当する組み合わせがあれば、knowledge-base/MERGE-SUGGESTIONS.md に『## 統合候補: ファイルA と ファイルB』という見出し、同じ発見だと判断した理由、統合の提案(observed_countを合算して片方に内容を統合し、もう片方は削除する想定であること)を追記する(既存内容は消さず追記、同じ組み合わせが既にあれば重複追加しない)。参照先ファイルが無くなっていれば該当の提案は削除する。該当が無ければこのファイルには何もしない(新規作成もしない)。",
+            "timeout": 60
+          },
+          {
+            "type": "prompt",
+            "prompt": "この会話中にSkillが使われていたか、~/knowledge-base/.skill_usage.log の末尾(このセッション中と思われる直近のタイムスタンプ)を確認して。使われていたSkillがあれば、この会話の流れからそのSkillの提案が実際に役立ったかを判断し、有効(役に立った)・微妙(部分的、または効果が怪しい)・不明(判断材料が無い)のいずれかと、15字程度の一言理由を、~/knowledge-base/.skill_effectiveness.log に1行、日時・Skill名・判定・理由の4項目をこの順にタブ文字1つずつで区切って追記する。Skillが1つも使われていなければ、このファイルには何もしない。",
+            "timeout": 60
+          },
+          {
+            "type": "prompt",
+            "prompt": "この会話中に、knowledge-base/rules/ や knowledge-base/candidates/ の内容を実際に参照・活用した場面があったか(Skillとして自動発動したものは除く、手動でファイルを読んで参考にした場合が対象)を振り返って。参照した項目があれば、それぞれについて実際に役立ったかを判断し、~/knowledge-base/.reference_usage.log に1行、日時・カテゴリ(rules/candidates)・ファイル名・判定(役立った/参考程度/不明)・15字程度の一言理由の5項目をこの順にタブ文字1つずつで区切って追記する。参照した項目が無ければこのファイルには何もしない。",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/archive_stale_candidates.py 2>/dev/null; true",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "SCRIPT=\"$HOME/knowledge-base/scripts/generate_stats.sh\"; [ -f \"$SCRIPT\" ] && bash \"$SCRIPT\" 2>/dev/null || true",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "mkdir -p ~/knowledge-base/claude-config/skills ~/knowledge-base/claude-config/hooks ~/knowledge-base/claude-config/commands 2>/dev/null; cp ~/.claude/settings.json ~/knowledge-base/claude-config/settings.json 2>/dev/null; rm -rf ~/knowledge-base/claude-config/skills/* 2>/dev/null; cp -r ~/.claude/skills/* ~/knowledge-base/claude-config/skills/ 2>/dev/null; cp -r ~/.claude/hooks/* ~/knowledge-base/claude-config/hooks/ 2>/dev/null; cp -r ~/.claude/commands/* ~/knowledge-base/claude-config/commands/ 2>/dev/null; true",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/scan_and_push.py 2>/dev/null; true",
+            "timeout": 60
+          }
         ]
       }
     ],
     "PostToolUse": [
-      { "matcher": "Skill", "hooks": [ { "type": "command", "command": "sh ~/knowledge-base/scripts/pyrun.sh ~/.claude/hooks/log_skill_usage.py 2>/dev/null; true" } ] }
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ~/.claude/hooks/log_skill_usage.py 2>/dev/null; true"
+          }
+        ]
+      }
     ]
-  }
+  },
+  "theme": "dark"
 }

@@ -1,2 +1,6 @@
 2026-08-25T00:04:49Z	rules	godot-optimization.md	役立った	壊れた参照の検証・修正に直接使った
 2026-08-25T00:04:49Z	candidates	2026-08-23-windows-python3-stub-broken.md	役立った	pyrun.shのpy-3フォールバック設計に活用
+2026-08-25T08:07:53Z	candidates	2026-08-25-gdscript-const-packedvector2array-not-constant-expression.md	役立った	RESODIVEのGODOT_GOTCHAS.md作成時に、実コードの該当箇所を引用しながらそのまま活用した
+2026-08-25T08:07:53Z	candidates	2026-08-25-godot-container-nonorigin-zero-anchor-hides-children.md	役立った	同上、GODOT_GOTCHAS.mdの1項目として活用した
+2026-08-25T08:07:53Z	candidates	2026-08-25-godot-gradient-new-retains-default-color-points.md	役立った	同上、GODOT_GOTCHAS.mdの1項目として活用した
+2026-08-25T08:07:53Z	candidates	2026-08-25-godot-headless-viewport-defaults-to-64x64.md	役立った	同上、GODOT_GOTCHAS.mdの1項目として活用した

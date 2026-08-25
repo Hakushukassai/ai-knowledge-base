@@ -238,3 +238,25 @@
 ## 知識ベースに送る候補があるか
 - [ ] なし
 - [x] あり → knowledge-base/candidates/ に書き出し済み(finnhub無料枠の制限、SSE+SIGTERM、起動時無条件フェッチ×頻繁な再デプロイ、Rechartsローソク足の自作パターン、ブラウザツールのログ累積、Yahoo Finance APIの再確認の計6件)
+
+---
+
+## セッション概要
+- 日付: 2026-08-25
+- 対象プロジェクト: codex-claude-orchestrator(新規)・RESODIVE(Godot 4製FPSローグライク、実運用対象)
+- 今回やったこと(3行以内):
+  1. 既存のナレッジレイヤーシステム(このリポジトリ)を評価した上で、Codex(調査・設計・独立レビュー)×Claude Code(実装)を組み合わせたOrchestrator(`~/Documents/codex-claude-orchestrator`)を新規に設計・実装した。8段階(precheck→knowledge_retrieval→codex_plan→claude_implementation→smoke_test→codex_review→git_commit→git_push)のパイプラインで、mainには一切触れずfeatureブランチへのpushまでを自動化する。
+  2. ダミーCLIでの単体テスト(最終122件)を積み重ねながら実CLI(本物のCodex CLI・Claude Code CLI)での通し確認を複数回実施し、実運用前に3つの重大なバグ(`--`セパレータ問題、相対パスの解決基準、プロンプトの言葉選びによる非決定論的挙動)を発見・修正した。
+  3. RESODIVE(`https://github.com/Hakushukassai/resodive`)を実際にcloneし、Orchestrator経由で9件のタスク(ドキュメント追加・実ゲームコードのリファクタ・意図的な失敗経路の実証・自動テスト追加5件)を実行。この過程でOrchestrator自体の実装バグ2件(STOPPED時にfiles_changed等が0のまま記録される問題、Smoke Test設定がタスク開始時に一度だけ読み込まれタスク自身による設定変更を反映しない問題)と、Godotの`--script`ヘッドレステスト特有の癖(autoloadの識別子解決タイミング、`quit()`が即座に処理を中断しない問題)を発見し、いずれも修正・検証済み。
+
+## 到達点
+- 今、何が動く状態か: Orchestrator本体は完成し、RESODIVEに対して9件の実タスクをfeatureブランチへのpushまで完走させた実績がある(うち2件はSmoke Testが正しく問題を検知してSTOPPEDになり、原因調査・修正・再検証まで実施済み)。全ブランチはPR未作成のまま(`main`は無変更)、ユーザーが内容を精査してPR化するものを選ぶのを待っている状態。
+- 何がまだ未完成か: 「レビュー済みのcommit SHAと、実際にマージされるSHAが一致するかを機械的に照合する」という安全策が未実装(ユーザー提案、バックログ入り)。また9件のタスクのうち、実際にmainへマージされたのは初回の2件(PR #1・#2、`GODOT_GOTCHAS.md`とSmoke Test設定拡張)のみで、タスク3〜9(実質7件)はfeatureブランチに置かれたままレビュー待ち。
+
+## 次回、ここから始める
+- 次にやるべき最初の一手: ユーザーがタスク4〜9(ブランチ: `orchestrator/20260825T065340-RESODIVE`他5件)の内容を確認し、PR化するものを選ぶ。必要であれば`gh pr create`→レビュー→squash mergeの流れを前回同様に進める。
+- 判断が必要な未決事項: 約10タスク運用してから効果を確認しPhase 4以降を検討する、という当初方針のうち、安全な候補が5件しか無かったため9件目で打ち切った。10件目以降のタスク候補をどう見つけるか(RESODIVEの別領域を調査するか、別プロジェクトに広げるか)は次回の判断事項。
+
+## 知識ベースに送る候補があるか
+- [ ] なし
+- [x] あり → knowledge-base/candidates/ に書き出し済み(Godotの`--script`ヘッドレステストでautoloadが未登録なタイミング問題、GDScriptの`quit()`が即座に処理を中断しない問題、Godotのheadless実行がスクリプトエラーでもexit code 0のまま終了する問題、の計3件)
