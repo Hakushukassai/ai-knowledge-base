@@ -1,12 +1,12 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-25T08:08:43Z",
+  "generated_at": "2026-08-25T19:19:22Z",
   "rules": {
     "count": 1,
     "chars": 780
   },
   "candidates": {
-    "count": 35,
-    "chars": 47542
+    "count": 38,
+    "chars": 51630
   },
   "incidents": {
     "count": 1,
@@ -20,7 +20,7 @@ window.STATS_DATA = {
     "count": 12,
     "chars": 13663
   },
-  "total_chars": 62484,
+  "total_chars": 66572,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -541,6 +541,14 @@ window.STATS_DATA = {
       "candidates_count": 35,
       "incidents_count": 1,
       "total_chars": 62484
+    },
+    {
+      "date": "2026-08-25T19:19:22Z",
+      "summary": "[候補] 差分の改ざん検知には、集計統計(変更行数など)ではなくgit write-treeのツリーハッシュを比較する方が同じ形の / [候補] git commit/git pushの代わりにcommit-tree+update-refを使うと、フック実行という攻 ほか1件",
+      "rules_count": 1,
+      "candidates_count": 38,
+      "incidents_count": 1,
+      "total_chars": 66572
     }
   ],
   "items": {
@@ -578,6 +586,84 @@ window.STATS_DATA = {
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-25-security-hardening-loop-non-convergence-pause-and-redesign.md",
+        "title": "同じ脆弱性クラスの指摘が複数巡連続で新しい抜け穴を生み続けたら、個別パッチではなく自動化の一時停止+構造的再設計に切り替",
+        "content": "# [候補] 同じ脆弱性クラスの指摘が複数巡連続で新しい抜け穴を生み続けたら、個別パッチではなく自動化の一時停止+構造的再設計に切り替える\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [codex-claude-orchestrator]\ntags: [security, design-judgment, automation, code-review]\ndate: 2026-08-25\n\n## 何が起きたか\nAIエージェントによる自動commit/pushパイプラインに対し、別のAI(Codex)による独立したread-onlyセキュリティレビューを繰り返し実施していた。1巡ごとに指摘→修正→回帰テスト追加→再レビュー、というループを回していたが、6巡連続で「1つの穴を塞ぐと別の箇所に同種の穴が見つかる」という状態が続いた。7巡目の指摘は、それまでの防御(許可リスト・設定変更の無条件停止・ツリーハッシュ比較・HEAD一致確認・明示SHA push・commit-tree化)を全て素通りできる、かつ「敵対的な設定変更すら不要、対象リポジトリに元から仕込まれた悪意あるフックだけで成立する」という、それまでで最も広い前提の攻撃面だった。\n\n## わかったこと・今の対応\n個別修正自体は7巡とも技術的に妥当な指摘であり、無駄ではなかった。しかし「信頼された処理(commit/push)と未信頼な実行(AIが動かすコード・対象リポジトリ自体のフック)を同じプロセス・同じ環境内で動かしたまま、事後検証を積み増す」という同じアプローチを続ける限り、新しい抜け穴が出続ける構造そのものは変わらない、と判断した。7巡目の時点で、個別修正を続けるのではなく、(1) 「AIが実際にコードを書いて動かす実行環境」と「実際にcommit・pushを行う信頼された処理」を分離する構造的設計を次の独立タスクとして立てる、(2) その設計・実装が完了するまで、当該の自動化ステップ(このケースでは自動push)を一時停止する、という2つを判断した。\n\n## 詳しい経緯\nこのプロジェクトでの進化の順序: 禁止リスト(blocklist)→許可リスト(allowlist)+タスク中の設定変更は無条件停止→集計統計からコンテンツアドレス方式のツリーハッシュ比較へ→取得タイミングのTOCTOU解消(1回のステージから全て導出)→HEAD一致の明示検証→push時の明示SHA指定→`git commit`から`git commit-tree`+`git update-ref`へ(6巡目)。この6巡はいずれも「前の巡で見つかった具体的な穴」への対応であり、脅威モデル自体の見直しではなかった。7巡目でようやく「同じクラスの指摘が繰り返し出続けている」こと自体を問題視し、方針を転換した。\n\n## まだ確認できていないこと\n- 何巡目で「個別修正から構造的再設計へ切り替える」べきかの明確な基準は無く、今回は「6巡連続」という実績を見てからの判断だった。もっと早い巡数(例:3巡目時点)で切り替えるべきだったかは未検証\n- 「AI実行環境」と「信頼されたcommit/push処理」を分離する構造的設計自体は、このプロジェクトでもまだ着手前(次の独立タスクとして予定されているのみ)\n",
+        "tags": [
+          "security",
+          "design-judgment",
+          "automation",
+          "code-review"
+        ],
+        "projects": [
+          "codex-claude-orchestrator"
+        ],
+        "date": "2026-08-25",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "AIエージェントによる自動commit/pushパイプラインに対し、別のAI(Codex)による独立したread-onlyセキュリティレビューを繰り返し実施していた。1巡ごとに指摘…",
+        "solution_summary": "個別修正自体は7巡とも技術的に妥当な指摘であり、無駄ではなかった。しかし「信頼された処理(commit/push)と未信頼な実行(AIが動かすコード・対象リポジトリ自体のフック)を…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-25-content-addressed-tree-hash-beats-diff-stats-for-toctou.md",
+        "title": "差分の改ざん検知には、集計統計(変更行数など)ではなくgit write-treeのツリーハッシュを比較する方が同じ形の",
+        "content": "# [候補] 差分の改ざん検知には、集計統計(変更行数など)ではなくgit write-treeのツリーハッシュを比較する方が同じ形の別内容を見逃さない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [codex-claude-orchestrator]\ntags: [git, security, toctou, ci-cd]\ndate: 2026-08-25\n\n## 何が起きたか\n自動化パイプラインで「レビューされた内容」と「実際にcommitされる内容」が一致するかを検証する必要があった。当初は`files_changed`/`insertions`/`deletions`のような集計統計を比較して「差分が変わっていないか」を確認していた。\n\n## わかったこと・今の対応\nこの方式には、悪意あるプロセス(git hook等)が「同じファイル数・同じ行数だが中身が違う」変更にすり替えても統計値は変わらず検知できない、という抜け穴があると指摘された。対応として、`git add -A`+`git write-tree`で得られる、ステージ内容全体のコンテンツアドレス方式のハッシュ(木構造のハッシュ)を比較する方式に置き換えた。1バイトでも内容が変われば別のハッシュになるため、同じ形・別内容のすり替えを見逃さない。\n\n## 詳しい経緯\nさらに、この比較を行うための「差分取得」「統計取得」「ツリーハッシュ取得」が別々のタイミング・複数回のgit呼び出しに分かれていた場合、その間にバックグラウンドプロセスが作業ツリーを書き換える余地(TOCTOU、確認した瞬間と実際に使う瞬間の間に割り込まれる隙)がある、という追加指摘も受けた。対応として、1回の`git add -A`でステージした同一のインデックスから、diff・統計・ツリーハッシュの全てを導出するよう統一し、取得タイミングのズレそのものを無くした。\n\n## まだ確認できていないこと\nこのプロジェクトでは、レビュー時に生成する差分テキスト(`git diff --cached`)自体が比較対象を明示しておらず暗黙に`HEAD`(書き換え可能な値)と比較していた、という関連する抜け穴が別途見つかっている(ツリーハッシュ自体は正しくても、人間/AIが読む差分テキストの方が細工された`HEAD`のせいで実際の内容と異なって見える可能性)。ツリーハッシュ比較を導入しても、その比較対象の差分表示側で同種の「動く基準点」問題が起きうる、という点は今後の実装で要注意。\n",
+        "tags": [
+          "git",
+          "security",
+          "toctou",
+          "ci-cd"
+        ],
+        "projects": [
+          "codex-claude-orchestrator"
+        ],
+        "date": "2026-08-25",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "自動化パイプラインで「レビューされた内容」と「実際にcommitされる内容」が一致するかを検証する必要があった。当初は`files_changed`/`insertions`/`d…",
+        "solution_summary": "この方式には、悪意あるプロセス(git hook等)が「同じファイル数・同じ行数だが中身が違う」変更にすり替えても統計値は変わらず検知できない、という抜け穴があると指摘された。対応…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-25-git-commit-tree-update-ref-bypasses-hooks.md",
+        "title": "git commit/git pushの代わりにcommit-tree+update-refを使うと、フック実行という攻",
+        "content": "# [候補] git commit/git pushの代わりにcommit-tree+update-refを使うと、フック実行という攻撃/改ざん経路そのものを消せる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [codex-claude-orchestrator]\ntags: [git, automation, security, ci-cd]\ndate: 2026-08-25\n\n## 何が起きたか\nAIエージェント(Codex/Claude Code)に実装させた変更を、人が介在せず自動でcommit・pushするパイプラインを作っていた。セキュリティレビューを繰り返す中で、`git commit`を使う限り、対象リポジトリに(悪意ある、または単に予期しない)pre-commit/post-commit/commit-msgフックが仕込まれていた場合、commitの直後にそのフックがブランチを別の内容へ静かに差し替えられる、という指摘を受けた。事後に「ツリーハッシュが一致するか」「親コミットが期待通りか」を確認する対策を重ねても、フックが「同じツリーハッシュ・同じ1番目の親」を持つが2番目の親に未レビューの履歴を持つマージコミットを作ってすり替える、という抜け穴が残り続けた。\n\n## わかったこと・今の対応\n`git commit`自体がフックを呼び出す経路そのものであるため、事後検証をいくら強化してもフック実行の瞬間だけは防御の外側にある。根本対策として、`git commit`を使わず、hookを一切呼ばない低レベルのplumbingコマンドである`git commit-tree <tree> -p <parent> -m <msg>`で「検証済みのツリー+単一の明示的な親」からコミットオブジェクトを直接組み立て、`git update-ref refs/heads/<branch> <new> <expected-old>`という「期待する現在値」チェック付きの原子的更新でブランチへ反映するように置き換えた。フックの実行ポイント自体が無くなるため、コミット作成時点での改ざんという攻撃クラスそのものが構造的に消える(事後検証というアプローチ自体が不要になる)。\n\n## 詳しい経緯\nCodex(CLIレビューツール)によるread-onlyの独立レビューを繰り返す中で6巡目に発覚。この修正の後も、`git checkout -b`(post-checkoutフック)・`git update-ref`自体(reference-transactionフック)・`git push`(pre-pushフック)という別の3箇所でフックが呼ばれ続けている、という指摘が7巡目でさらに出ており、「commit作成」だけでなく「ブランチ作成・参照更新・push」それぞれが別々のフック発火点であることに注意が必要(このプロジェクトでは7巡目時点でこの3箇所は未対応のまま、自動push自体を一時停止する判断をした)。\n\n## まだ確認できていないこと\n- `git update-ref`のreference-transactionフックには`git push`の`--no-verify`に相当する「呼び出し側から明示的に無効化するオプション」が無い(監査目的で常時発火する設計のため)。これを回避するには「事後に参照の値を再確認する」検証に戻る必要があり、`commit-tree`ほどの構造的解決にはならない\n- コンテナ・専用ユーザー等による実行環境そのものの隔離であれば、フックの発火自体を防げず改ざんの余地が消えるはずだが、このプロジェクトではまだ未実装\n",
+        "tags": [
+          "git",
+          "automation",
+          "security",
+          "ci-cd"
+        ],
+        "projects": [
+          "codex-claude-orchestrator"
+        ],
+        "date": "2026-08-25",
+        "days_old": 0,
+        "stale": false,
+        "problem_summary": "AIエージェント(Codex/Claude Code)に実装させた変更を、人が介在せず自動でcommit・pushするパイプラインを作っていた。セキュリティレビューを繰り返す中で、…",
+        "solution_summary": "`git commit`自体がフックを呼び出す経路そのものであるため、事後検証をいくら強化してもフック実行の瞬間だけは防御の外側にある。根本対策として、`git commit`を使…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
       {
         "filename": "2026-08-25-godot-headless-exit-code-ignores-script-errors.md",
         "title": "Godot: `--headless`でシーンやスクリプトのパース/コンパイルエラーが起きても、プロセスの終了コードは0",
