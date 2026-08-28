@@ -1,5 +1,5 @@
 window.STATS_DATA = {
-  "generated_at": "2026-08-25T19:19:22Z",
+  "generated_at": "2026-08-28T13:39:10Z",
   "rules": {
     "count": 1,
     "chars": 780
@@ -549,6 +549,14 @@ window.STATS_DATA = {
       "candidates_count": 38,
       "incidents_count": 1,
       "total_chars": 66572
+    },
+    {
+      "date": "2026-08-28T13:39:10Z",
+      "summary": "[候補] 差分の改ざん検知には、集計統計(変更行数など)ではなくgit write-treeのツリーハッシュを比較する方が同じ形の / [候補] GDScript: `SceneTree.quit()`は即座に処理を中断しない(呼んだ後も関数の残りが実行され続け、後 ほか4件",
+      "rules_count": 1,
+      "candidates_count": 38,
+      "incidents_count": 1,
+      "total_chars": 66572
     }
   ],
   "items": {
@@ -564,7 +572,7 @@ window.STATS_DATA = {
         ],
         "projects": [],
         "date": "2026-08-23",
-        "days_old": 2,
+        "days_old": 5,
         "stale": false,
         "problem_summary": null,
         "solution_summary": "敵や弾丸など同一メッシュの大量インスタンスは、個別の Node ではなく MultiMeshInstance3D を使う。個別 Node は 200 体を超えたあたりから _pro…",
@@ -587,6 +595,33 @@ window.STATS_DATA = {
     ],
     "candidates": [
       {
+        "filename": "2026-08-25-godot-script-mode-autoload-not-yet-registered.md",
+        "title": "Godot: `--script`実行のSceneTreeエントリスクリプトから、autoloadを参照するスクリプトを",
+        "content": "# [候補] Godot: `--script`実行のSceneTreeエントリスクリプトから、autoloadを参照するスクリプトを読み込むと`_init()`ではまだautoloadが登録されておらず失敗する(`_initialize()`でも、エントリスクリプト自身がbareなautoload識別子を直接書いていればダメ)\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [resodive]\ntags: [godot, gdscript, testing, ci, headless]\ndate: 2026-08-25\n\n## 何が起きたか\n\nGodot 4のプロジェクトで、`godot --headless --path . --script <エントリスクリプト.gd>`という形でヘッドレスの自動テストスクリプト(`extends SceneTree`)を書き、GDScriptの純粋関数(例: ボスのHPフェーズ判定)を検証しようとした。\n\n1回目: エントリスクリプトの`_init()`(コンストラクタ)の中で、autoload(`GameState`等)を参照する別スクリプト(例: `enemy_boss.gd`。継承元の`enemy.gd`が`GameState`をbare識別子で参照している)を`preload()`/`load()`すると、`SCRIPT ERROR: Compile Error: Identifier not found: GameState`という偽陽性のエラーが毎回(3/3回再現)出た。ただし直後にGodotの既にコンパイル済みのクラスキャッシュへのフォールバックが働くらしく、最終的なテスト結果自体(`quit(0)`/`quit(1)`)は正しく出ることが多かった——しかしこの「SCRIPT ERROR:」等のノイズは、exit codeが信用できないGodotでよく使われる「出力に決まったエラー文言が含まれていないか」ベースのCI/Smoke Test判定を誤って失敗させてしまう。\n\n2回目(別関数のテストで発生): 1回目の教訓を踏まえ、対象スクリプトの読み込みを`_init()`から`_initialize()`(SceneTreeのライフサイクルフック、autoload登録後に呼ばれる)に移したところ、この時は解消した。しかし別の日にさらに別のテストを書いた際、**エントリスクリプト自身の中で`GameState.selected_weapon_index = 4`のようにautoloadをbareな識別子で直接参照した**ところ、`_initialize()`の中に書いていたにもかかわらず同じ`SCRIPT ERROR: Compile Error: Identifier not found: GameState`が再発した(今度はexit codeも0のまま何も実行されず、フォールバックも効かなかった)。\n\n## わかったこと・今の対応\n\nGodotのスクリプトコンパイルには、性質の異なる2種類のグローバル識別子解決がある:\n- `class_name`で宣言されたグローバルクラス(例: `Enemy`, `Weapon`)は、`.godot/global_script_class_cache.cfg`(プロジェクトの初回インポートで構築される)経由で早期に解決できるため、`--script`のエントリスクリプトから直接`Weapon.new()`のように書いても問題ない。\n- autoload(`project.godot`の`[autoload]`セクションで登録されるシングルトン、例: `GameState`)は、実際のエンジン起動シーケンスの中でautoloadノードがルート以下に追加されるタイミングでのみ解決できる識別子で、これは`_init()`(スクリプトのコンストラクタ、エンジン初期化のかなり早い段階で呼ばれる)より後、`_initialize()`(SceneTreeのライフサイクルフック)より前後どちらか際どいタイミングになる。\n\n重要なのは、**「autoloadを参照する識別子が、どのスクリプトのどこに書かれているか」で挙動が変わる**という点:\n1. **別スクリプトの中**(例: `enemy.gd`内の`GameState`参照)を`load()`/`preload()`で読み込む場合: その別スクリプトの実際のコンパイルは`load()`が呼ばれた時点まで遅延されるため、`load()`を呼ぶ場所を`_init()`から`_initialize()`に移すだけで解決する。\n2. **エントリスクリプト自身の中**にbareなautoload識別子を直接書く場合(`_initialize()`の中に書いていても): エントリスクリプト自体は`--script`実行時に「クラス全体を1つの単位」としてまるごとコンパイルされ、これはどのライフサイクルメソッドが実際に呼ばれるより前に完了する必要がある。そのため`_initialize()`の中に書いても手遅れで、コンパイル自体が失敗する。\n\n対策:\n- 別スクリプトを`load()`する場合は、その`load()`呼び出しを`_init()`ではなく`_initialize()`の中に置く。\n- エントリスクリプト自身の中でautoloadの値を読み書きしたい場合は、bareな識別子(`GameState.foo`)ではなく、`root.get_node(\"GameState\").foo`のような実行時の動的参照にする(`SceneTree.root`はautoloadノードが追加されている実際のルートノードを指すため、これはいつ呼んでも安全)。\n\n## 詳しい経緯\n\nこのプロジェクトでは、`.orchestrator/`配下に`--headless --script`で実行するヘッドレステスト(GDScriptの純粋関数の回帰テスト)を複数追加する作業を行っており、Smoke Test(fail_patternsとして`\"SCRIPT ERROR:\"`等の文字列を出力からスキャンする方式)がこの2つのパターンをどちらも正しく検知して停止させた——1つ目は自動化パイプラインの実行中(そのままでは動くには動いたが偽陽性ノイズが出ていたため後で手直し)、2つ目は実際にテストの実行自体が失敗する形で。いずれもGodotエンジン自体のバグではなく、テスト対象のコード(`enemy_boss.gd`, `inventory_panel.gd`)側の問題でもない——ヘッドレステストのハーネス(エントリスクリプト)の書き方の問題だった。\n\n## まだ確認できていないこと\n\n- `_initialize()`より後、かつ`_process()`より前の、より正確なautoload登録完了タイミング(Godotエンジン内部の正確なコード経路)までは未調査\n- Godot 4.6以外のバージョンでも同じ挙動か未確認\n- `Engine.get_singleton()`など他のアクセス方法でも同様に安全か(`root.get_node()`以外の代替手段)は未検証\n",
+        "tags": [
+          "godot",
+          "gdscript",
+          "testing",
+          "ci",
+          "headless"
+        ],
+        "projects": [
+          "resodive"
+        ],
+        "date": "2026-08-25",
+        "days_old": 3,
+        "stale": false,
+        "problem_summary": "Godot 4のプロジェクトで、`godot --headless --path . --script <エントリスクリプト.gd>`という形でヘッドレスの自動テストスクリプト(`…",
+        "solution_summary": "Godotのスクリプトコンパイルには、性質の異なる2種類のグローバル識別子解決がある: - `class_name`で宣言されたグローバルクラス(例: `Enemy`, `Weap…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
         "filename": "2026-08-25-security-hardening-loop-non-convergence-pause-and-redesign.md",
         "title": "同じ脆弱性クラスの指摘が複数巡連続で新しい抜け穴を生み続けたら、個別パッチではなく自動化の一時停止+構造的再設計に切り替",
         "content": "# [候補] 同じ脆弱性クラスの指摘が複数巡連続で新しい抜け穴を生み続けたら、個別パッチではなく自動化の一時停止+構造的再設計に切り替える\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [codex-claude-orchestrator]\ntags: [security, design-judgment, automation, code-review]\ndate: 2026-08-25\n\n## 何が起きたか\nAIエージェントによる自動commit/pushパイプラインに対し、別のAI(Codex)による独立したread-onlyセキュリティレビューを繰り返し実施していた。1巡ごとに指摘→修正→回帰テスト追加→再レビュー、というループを回していたが、6巡連続で「1つの穴を塞ぐと別の箇所に同種の穴が見つかる」という状態が続いた。7巡目の指摘は、それまでの防御(許可リスト・設定変更の無条件停止・ツリーハッシュ比較・HEAD一致確認・明示SHA push・commit-tree化)を全て素通りできる、かつ「敵対的な設定変更すら不要、対象リポジトリに元から仕込まれた悪意あるフックだけで成立する」という、それまでで最も広い前提の攻撃面だった。\n\n## わかったこと・今の対応\n個別修正自体は7巡とも技術的に妥当な指摘であり、無駄ではなかった。しかし「信頼された処理(commit/push)と未信頼な実行(AIが動かすコード・対象リポジトリ自体のフック)を同じプロセス・同じ環境内で動かしたまま、事後検証を積み増す」という同じアプローチを続ける限り、新しい抜け穴が出続ける構造そのものは変わらない、と判断した。7巡目の時点で、個別修正を続けるのではなく、(1) 「AIが実際にコードを書いて動かす実行環境」と「実際にcommit・pushを行う信頼された処理」を分離する構造的設計を次の独立タスクとして立てる、(2) その設計・実装が完了するまで、当該の自動化ステップ(このケースでは自動push)を一時停止する、という2つを判断した。\n\n## 詳しい経緯\nこのプロジェクトでの進化の順序: 禁止リスト(blocklist)→許可リスト(allowlist)+タスク中の設定変更は無条件停止→集計統計からコンテンツアドレス方式のツリーハッシュ比較へ→取得タイミングのTOCTOU解消(1回のステージから全て導出)→HEAD一致の明示検証→push時の明示SHA指定→`git commit`から`git commit-tree`+`git update-ref`へ(6巡目)。この6巡はいずれも「前の巡で見つかった具体的な穴」への対応であり、脅威モデル自体の見直しではなかった。7巡目でようやく「同じクラスの指摘が繰り返し出続けている」こと自体を問題視し、方針を転換した。\n\n## まだ確認できていないこと\n- 何巡目で「個別修正から構造的再設計へ切り替える」べきかの明確な基準は無く、今回は「6巡連続」という実績を見てからの判断だった。もっと早い巡数(例:3巡目時点)で切り替えるべきだったかは未検証\n- 「AI実行環境」と「信頼されたcommit/push処理」を分離する構造的設計自体は、このプロジェクトでもまだ着手前(次の独立タスクとして予定されているのみ)\n",
@@ -600,36 +635,10 @@ window.STATS_DATA = {
           "codex-claude-orchestrator"
         ],
         "date": "2026-08-25",
-        "days_old": 0,
+        "days_old": 3,
         "stale": false,
         "problem_summary": "AIエージェントによる自動commit/pushパイプラインに対し、別のAI(Codex)による独立したread-onlyセキュリティレビューを繰り返し実施していた。1巡ごとに指摘…",
         "solution_summary": "個別修正自体は7巡とも技術的に妥当な指摘であり、無駄ではなかった。しかし「信頼された処理(commit/push)と未信頼な実行(AIが動かすコード・対象リポジトリ自体のフック)を…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-25-content-addressed-tree-hash-beats-diff-stats-for-toctou.md",
-        "title": "差分の改ざん検知には、集計統計(変更行数など)ではなくgit write-treeのツリーハッシュを比較する方が同じ形の",
-        "content": "# [候補] 差分の改ざん検知には、集計統計(変更行数など)ではなくgit write-treeのツリーハッシュを比較する方が同じ形の別内容を見逃さない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [codex-claude-orchestrator]\ntags: [git, security, toctou, ci-cd]\ndate: 2026-08-25\n\n## 何が起きたか\n自動化パイプラインで「レビューされた内容」と「実際にcommitされる内容」が一致するかを検証する必要があった。当初は`files_changed`/`insertions`/`deletions`のような集計統計を比較して「差分が変わっていないか」を確認していた。\n\n## わかったこと・今の対応\nこの方式には、悪意あるプロセス(git hook等)が「同じファイル数・同じ行数だが中身が違う」変更にすり替えても統計値は変わらず検知できない、という抜け穴があると指摘された。対応として、`git add -A`+`git write-tree`で得られる、ステージ内容全体のコンテンツアドレス方式のハッシュ(木構造のハッシュ)を比較する方式に置き換えた。1バイトでも内容が変われば別のハッシュになるため、同じ形・別内容のすり替えを見逃さない。\n\n## 詳しい経緯\nさらに、この比較を行うための「差分取得」「統計取得」「ツリーハッシュ取得」が別々のタイミング・複数回のgit呼び出しに分かれていた場合、その間にバックグラウンドプロセスが作業ツリーを書き換える余地(TOCTOU、確認した瞬間と実際に使う瞬間の間に割り込まれる隙)がある、という追加指摘も受けた。対応として、1回の`git add -A`でステージした同一のインデックスから、diff・統計・ツリーハッシュの全てを導出するよう統一し、取得タイミングのズレそのものを無くした。\n\n## まだ確認できていないこと\nこのプロジェクトでは、レビュー時に生成する差分テキスト(`git diff --cached`)自体が比較対象を明示しておらず暗黙に`HEAD`(書き換え可能な値)と比較していた、という関連する抜け穴が別途見つかっている(ツリーハッシュ自体は正しくても、人間/AIが読む差分テキストの方が細工された`HEAD`のせいで実際の内容と異なって見える可能性)。ツリーハッシュ比較を導入しても、その比較対象の差分表示側で同種の「動く基準点」問題が起きうる、という点は今後の実装で要注意。\n",
-        "tags": [
-          "git",
-          "security",
-          "toctou",
-          "ci-cd"
-        ],
-        "projects": [
-          "codex-claude-orchestrator"
-        ],
-        "date": "2026-08-25",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "自動化パイプラインで「レビューされた内容」と「実際にcommitされる内容」が一致するかを検証する必要があった。当初は`files_changed`/`insertions`/`d…",
-        "solution_summary": "この方式には、悪意あるプロセス(git hook等)が「同じファイル数・同じ行数だが中身が違う」変更にすり替えても統計値は変わらず検知できない、という抜け穴があると指摘された。対応…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
@@ -652,7 +661,7 @@ window.STATS_DATA = {
           "codex-claude-orchestrator"
         ],
         "date": "2026-08-25",
-        "days_old": 0,
+        "days_old": 3,
         "stale": false,
         "problem_summary": "AIエージェント(Codex/Claude Code)に実装させた変更を、人が介在せず自動でcommit・pushするパイプラインを作っていた。セキュリティレビューを繰り返す中で、…",
         "solution_summary": "`git commit`自体がフックを呼び出す経路そのものであるため、事後検証をいくら強化してもフック実行の瞬間だけは防御の外側にある。根本対策として、`git commit`を使…",
@@ -678,7 +687,7 @@ window.STATS_DATA = {
           "resodive"
         ],
         "date": "2026-08-25",
-        "days_old": 0,
+        "days_old": 3,
         "stale": false,
         "problem_summary": "Godot 4のプロジェクトを`godot --headless --path . <scene.tscn>`(またはビルド済みインポートキャッシュが無い状態での`--script…",
         "solution_summary": "Godotの`--headless`実行は、致命的に見えるスクリプトエラーがあっても、エンジン自体がクラッシュせず動作を継続できる限り、プロセスの終了コードには反映しない(0のまま…",
@@ -703,7 +712,7 @@ window.STATS_DATA = {
           "resodive"
         ],
         "date": "2026-08-25",
-        "days_old": 0,
+        "days_old": 3,
         "stale": false,
         "problem_summary": "Godot 4のGDScriptで、`--headless --script`実行用の簡易テストランナー(`extends SceneTree`)を書いた。成功時と失敗時で終了コー…",
         "solution_summary": "`SceneTree.quit(exit_code)`は「次のフレーム(またはイテレーション)の終わりにメインループを終了する」という**予約**を行うだけで、呼び出した時点でGD…",
@@ -716,24 +725,23 @@ window.STATS_DATA = {
         "promotion_ready": false
       },
       {
-        "filename": "2026-08-25-godot-script-mode-autoload-not-yet-registered.md",
-        "title": "Godot: `--script`実行のSceneTreeエントリスクリプトから、autoloadを参照するスクリプトを",
-        "content": "# [候補] Godot: `--script`実行のSceneTreeエントリスクリプトから、autoloadを参照するスクリプトを読み込むと`_init()`ではまだautoloadが登録されておらず失敗する(`_initialize()`でも、エントリスクリプト自身がbareなautoload識別子を直接書いていればダメ)\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [resodive]\ntags: [godot, gdscript, testing, ci, headless]\ndate: 2026-08-25\n\n## 何が起きたか\n\nGodot 4のプロジェクトで、`godot --headless --path . --script <エントリスクリプト.gd>`という形でヘッドレスの自動テストスクリプト(`extends SceneTree`)を書き、GDScriptの純粋関数(例: ボスのHPフェーズ判定)を検証しようとした。\n\n1回目: エントリスクリプトの`_init()`(コンストラクタ)の中で、autoload(`GameState`等)を参照する別スクリプト(例: `enemy_boss.gd`。継承元の`enemy.gd`が`GameState`をbare識別子で参照している)を`preload()`/`load()`すると、`SCRIPT ERROR: Compile Error: Identifier not found: GameState`という偽陽性のエラーが毎回(3/3回再現)出た。ただし直後にGodotの既にコンパイル済みのクラスキャッシュへのフォールバックが働くらしく、最終的なテスト結果自体(`quit(0)`/`quit(1)`)は正しく出ることが多かった——しかしこの「SCRIPT ERROR:」等のノイズは、exit codeが信用できないGodotでよく使われる「出力に決まったエラー文言が含まれていないか」ベースのCI/Smoke Test判定を誤って失敗させてしまう。\n\n2回目(別関数のテストで発生): 1回目の教訓を踏まえ、対象スクリプトの読み込みを`_init()`から`_initialize()`(SceneTreeのライフサイクルフック、autoload登録後に呼ばれる)に移したところ、この時は解消した。しかし別の日にさらに別のテストを書いた際、**エントリスクリプト自身の中で`GameState.selected_weapon_index = 4`のようにautoloadをbareな識別子で直接参照した**ところ、`_initialize()`の中に書いていたにもかかわらず同じ`SCRIPT ERROR: Compile Error: Identifier not found: GameState`が再発した(今度はexit codeも0のまま何も実行されず、フォールバックも効かなかった)。\n\n## わかったこと・今の対応\n\nGodotのスクリプトコンパイルには、性質の異なる2種類のグローバル識別子解決がある:\n- `class_name`で宣言されたグローバルクラス(例: `Enemy`, `Weapon`)は、`.godot/global_script_class_cache.cfg`(プロジェクトの初回インポートで構築される)経由で早期に解決できるため、`--script`のエントリスクリプトから直接`Weapon.new()`のように書いても問題ない。\n- autoload(`project.godot`の`[autoload]`セクションで登録されるシングルトン、例: `GameState`)は、実際のエンジン起動シーケンスの中でautoloadノードがルート以下に追加されるタイミングでのみ解決できる識別子で、これは`_init()`(スクリプトのコンストラクタ、エンジン初期化のかなり早い段階で呼ばれる)より後、`_initialize()`(SceneTreeのライフサイクルフック)より前後どちらか際どいタイミングになる。\n\n重要なのは、**「autoloadを参照する識別子が、どのスクリプトのどこに書かれているか」で挙動が変わる**という点:\n1. **別スクリプトの中**(例: `enemy.gd`内の`GameState`参照)を`load()`/`preload()`で読み込む場合: その別スクリプトの実際のコンパイルは`load()`が呼ばれた時点まで遅延されるため、`load()`を呼ぶ場所を`_init()`から`_initialize()`に移すだけで解決する。\n2. **エントリスクリプト自身の中**にbareなautoload識別子を直接書く場合(`_initialize()`の中に書いていても): エントリスクリプト自体は`--script`実行時に「クラス全体を1つの単位」としてまるごとコンパイルされ、これはどのライフサイクルメソッドが実際に呼ばれるより前に完了する必要がある。そのため`_initialize()`の中に書いても手遅れで、コンパイル自体が失敗する。\n\n対策:\n- 別スクリプトを`load()`する場合は、その`load()`呼び出しを`_init()`ではなく`_initialize()`の中に置く。\n- エントリスクリプト自身の中でautoloadの値を読み書きしたい場合は、bareな識別子(`GameState.foo`)ではなく、`root.get_node(\"GameState\").foo`のような実行時の動的参照にする(`SceneTree.root`はautoloadノードが追加されている実際のルートノードを指すため、これはいつ呼んでも安全)。\n\n## 詳しい経緯\n\nこのプロジェクトでは、`.orchestrator/`配下に`--headless --script`で実行するヘッドレステスト(GDScriptの純粋関数の回帰テスト)を複数追加する作業を行っており、Smoke Test(fail_patternsとして`\"SCRIPT ERROR:\"`等の文字列を出力からスキャンする方式)がこの2つのパターンをどちらも正しく検知して停止させた——1つ目は自動化パイプラインの実行中(そのままでは動くには動いたが偽陽性ノイズが出ていたため後で手直し)、2つ目は実際にテストの実行自体が失敗する形で。いずれもGodotエンジン自体のバグではなく、テスト対象のコード(`enemy_boss.gd`, `inventory_panel.gd`)側の問題でもない——ヘッドレステストのハーネス(エントリスクリプト)の書き方の問題だった。\n\n## まだ確認できていないこと\n\n- `_initialize()`より後、かつ`_process()`より前の、より正確なautoload登録完了タイミング(Godotエンジン内部の正確なコード経路)までは未調査\n- Godot 4.6以外のバージョンでも同じ挙動か未確認\n- `Engine.get_singleton()`など他のアクセス方法でも同様に安全か(`root.get_node()`以外の代替手段)は未検証\n",
+        "filename": "2026-08-25-content-addressed-tree-hash-beats-diff-stats-for-toctou.md",
+        "title": "差分の改ざん検知には、集計統計(変更行数など)ではなくgit write-treeのツリーハッシュを比較する方が同じ形の",
+        "content": "# [候補] 差分の改ざん検知には、集計統計(変更行数など)ではなくgit write-treeのツリーハッシュを比較する方が同じ形の別内容を見逃さない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [codex-claude-orchestrator]\ntags: [git, security, toctou, ci-cd]\ndate: 2026-08-25\n\n## 何が起きたか\n自動化パイプラインで「レビューされた内容」と「実際にcommitされる内容」が一致するかを検証する必要があった。当初は`files_changed`/`insertions`/`deletions`のような集計統計を比較して「差分が変わっていないか」を確認していた。\n\n## わかったこと・今の対応\nこの方式には、悪意あるプロセス(git hook等)が「同じファイル数・同じ行数だが中身が違う」変更にすり替えても統計値は変わらず検知できない、という抜け穴があると指摘された。対応として、`git add -A`+`git write-tree`で得られる、ステージ内容全体のコンテンツアドレス方式のハッシュ(木構造のハッシュ)を比較する方式に置き換えた。1バイトでも内容が変われば別のハッシュになるため、同じ形・別内容のすり替えを見逃さない。\n\n## 詳しい経緯\nさらに、この比較を行うための「差分取得」「統計取得」「ツリーハッシュ取得」が別々のタイミング・複数回のgit呼び出しに分かれていた場合、その間にバックグラウンドプロセスが作業ツリーを書き換える余地(TOCTOU、確認した瞬間と実際に使う瞬間の間に割り込まれる隙)がある、という追加指摘も受けた。対応として、1回の`git add -A`でステージした同一のインデックスから、diff・統計・ツリーハッシュの全てを導出するよう統一し、取得タイミングのズレそのものを無くした。\n\n## まだ確認できていないこと\nこのプロジェクトでは、レビュー時に生成する差分テキスト(`git diff --cached`)自体が比較対象を明示しておらず暗黙に`HEAD`(書き換え可能な値)と比較していた、という関連する抜け穴が別途見つかっている(ツリーハッシュ自体は正しくても、人間/AIが読む差分テキストの方が細工された`HEAD`のせいで実際の内容と異なって見える可能性)。ツリーハッシュ比較を導入しても、その比較対象の差分表示側で同種の「動く基準点」問題が起きうる、という点は今後の実装で要注意。\n",
         "tags": [
-          "godot",
-          "gdscript",
-          "testing",
-          "ci",
-          "headless"
+          "git",
+          "security",
+          "toctou",
+          "ci-cd"
         ],
         "projects": [
-          "resodive"
+          "codex-claude-orchestrator"
         ],
         "date": "2026-08-25",
-        "days_old": 0,
+        "days_old": 3,
         "stale": false,
-        "problem_summary": "Godot 4のプロジェクトで、`godot --headless --path . --script <エントリスクリプト.gd>`という形でヘッドレスの自動テストスクリプト(`…",
-        "solution_summary": "Godotのスクリプトコンパイルには、性質の異なる2種類のグローバル識別子解決がある: - `class_name`で宣言されたグローバルクラス(例: `Enemy`, `Weap…",
+        "problem_summary": "自動化パイプラインで「レビューされた内容」と「実際にcommitされる内容」が一致するかを検証する必要があった。当初は`files_changed`/`insertions`/`d…",
+        "solution_summary": "この方式には、悪意あるプロセス(git hook等)が「同じファイル数・同じ行数だが中身が違う」変更にすり替えても統計値は変わらず検知できない、という抜け穴があると指摘された。対応…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
@@ -743,83 +751,29 @@ window.STATS_DATA = {
         "promotion_ready": false
       },
       {
-        "filename": "2026-08-25-unconditional-startup-fetch-plus-frequent-redeploys-multiplies-scheduled-api-calls.md",
-        "title": "「起動時に1回だけ即時実行」するスケジューラーは、頻繁な再デプロイと組み合わさると意図した間隔より高頻度にAPIを呼んで",
-        "content": "# [候補] 「起動時に1回だけ即時実行」するスケジューラーは、頻繁な再デプロイと組み合わさると意図した間隔より高頻度にAPIを呼んでしまう\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [scheduler, cost-control, deployment, node]\ndate: 2026-08-25\n\n## 何が起きたか\n「起動直後は判断材料が無いので、1回だけ即時取得してからN分おきのループに入る」という設計のスケジューラー(Web検索を伴うAIによるニュース要約、既定24時間に1回)を実装していた。ユーザーから「呼び出し回数が体感で多い」という指摘を受けて調査したところ、意図通りに24時間に1回しか呼ばれていないはずが、実際にはもっと頻繁にAI呼び出しが発生していた。\n\n## わかったこと・今の対応\n原因は、開発中に何度も`git push`→Railway再デプロイ(SIGTERM再起動)を行っており、そのたびに「起動直後の即時取得」が無条件で発火していたため。スケジューラーの間隔設定自体(24時間)は正しかったが、「起動時に1回」という無条件の即時実行ロジックが、通常運用では滅多に発生しない「再起動」というイベントと結びついていることを見落としていた。対応として、起動時にDB上の既存キャッシュの生成時刻を確認し、設定した間隔内(24時間以内)ならその即時取得をスキップし、代わりに`最終取得時刻`の状態をDBの値で復元するようにした。ローカルで実際にサーバーを2回連続起動し、2回目でAPI呼び出しがスキップされること(ステータスAPIの`lastAttemptAt`が再起動時刻ではなく元の取得時刻のまま変わらないこと)を確認し、本番デプロイ後も同様に再取得が起きていないことを確認した。\n\n## 詳しい経緯\n本番の`/api/scheduler-status`相当のエンドポイントで実際の`lastAttemptAt`を見比べ、想定より新しい値になっていることから「起動のたびに再取得している」という仮説を立てて実装を確認した。この日は機能追加のため複数回デプロイしており、通常の運用頻度(1日1回程度のデプロイ)であれば気づきにくいレベルの余分な呼び出しだったが、開発が活発な時期には無視できない差になっていた。\n\n## まだ確認できていないこと\n- 同様の「起動時に1回だけ即時実行」パターンが他の間隔(価格ポーリング5分おき等、コストの低い処理)にも残っているが、そちらはコストが無視できるレベルのため対応不要と判断した。より高コストな処理を追加する際は同じ落とし穴に注意する必要がある\n- キャッシュの生成時刻をDBではなくメモリ上だけで持っている構成(再起動でメモリが必ず消える構成)の場合は、この「DBの既存キャッシュを見てスキップする」対策自体が使えないため、別の対策(例: 起動時刻を外部に永続化する)が必要になる\n",
+        "filename": "2026-08-24-writing-about-secret-scan-false-positives-retriggers-them.md",
+        "title": "誤検知の「説明文」を書く行為自体が同じ誤検知を再発させる",
+        "content": "# [候補] 誤検知の「説明文」を書く行為自体が同じ誤検知を再発させる\n\nstatus: candidate\nobserved_count: 4\nobserved_in: [knowledge-base]\ntags: [claude-code, セキュリティ, ドキュメント]\ndate: 2026-08-24\nendorsed: false\n\n## 何が起きたか\n機密情報スキャンの誤検知(プレースホルダーメールアドレス等)について「こう直した」と説明する文章の中に、直す前の実例(`@`付きのメールアドレス)をそのまま引用すると、その説明文自体が新たに誤検知される。同じ日に2回(候補ファイル本文、および外部Skill導入ガイド本文)で発生した。\n\n## わかったこと・今の対応\n機密情報の誤検知について書く時は、問題のパターンを説明する際も実際に検知されるフォーマットそのものを書かない(「メールアドレス形式の文字列」のように抽象化するか、区切り記号を意図的に別の表記に置き換えて言及する)。\n\n## 詳しい経緯\n1回目: `ux-designer`導入時、候補ファイルの本文に「置換前後のメールアドレスの実例」をそのまま書いたところ、`docs/stats.json`等への埋め込みも含めてスキャナーが再検知した。2回目: 本件を教訓化した`EXTERNAL-SKILL-GUIDE.md`の中で、「実例をそのまま書かない」という注意書き自体に同じ実例を書いてしまい、再度検知された。3回目: この候補ファイルの初稿でも同様の実例を書いてしまい、三度検知された。いずれも実害はなく(pre-commitで正しく止まった)、都度抽象化した表現に書き換えて解消した。\n\n(2026-08-25、ai-dev-knowledge-systemで再確認: 機密情報スキャンではなく、新設した`scripts/validate_kb.py`のリンク切れチェッカーでも同じ現象が発生した。「壊れた参照ファイル名をそのまま説明文に書く」候補ファイルを作成したところ、その説明文自体がリンク切れとして検知された。この4回目は対象がsecret-scannerではなくlink-checkerだったため、この現象は特定のスキャナーに限らず「パターンマッチ型の検証ツール全般について、その誤検知/検知対象を実例入りで説明する文章を書くと、説明文自体が同じ検知に引っかかる」という、より一般的な現象である可能性が高い)\n\n## まだ確認できていないこと\n- この手のメタ的な言及(誤検知の実例を説明する文章)を最初から誤検知させない、もっと良い書き方の型があるか\n",
         "tags": [
-          "scheduler",
-          "cost-control",
-          "deployment",
-          "node"
+          "claude-code",
+          "セキュリティ",
+          "ドキュメント"
         ],
         "projects": [
-          "kabu-simurator-app"
+          "knowledge-base"
         ],
-        "date": "2026-08-25",
-        "days_old": 0,
+        "date": "2026-08-24",
+        "days_old": 4,
         "stale": false,
-        "problem_summary": "「起動直後は判断材料が無いので、1回だけ即時取得してからN分おきのループに入る」という設計のスケジューラー(Web検索を伴うAIによるニュース要約、既定24時間に1回)を実装してい…",
-        "solution_summary": "原因は、開発中に何度も`git push`→Railway再デプロイ(SIGTERM再起動)を行っており、そのたびに「起動直後の即時取得」が無条件で発火していたため。スケジューラー…",
-        "observed_count": 1,
+        "problem_summary": "機密情報スキャンの誤検知(プレースホルダーメールアドレス等)について「こう直した」と説明する文章の中に、直す前の実例(`@`付きのメールアドレス)をそのまま引用すると、その説明文自…",
+        "solution_summary": "機密情報の誤検知について書く時は、問題のパターンを説明する際も実際に検知されるフォーマットそのものを書かない(「メールアドレス形式の文字列」のように抽象化するか、区切り記号を意図的…",
+        "observed_count": 4,
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
         "source": null,
         "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-25-sse-connections-block-graceful-sigterm-shutdown.md",
-        "title": "Node/ExpressでSSE(Server-Sent Events)を使うと、繋ぎっぱなしの接続が`server.c",
-        "content": "# [候補] Node/ExpressでSSE(Server-Sent Events)を使うと、繋ぎっぱなしの接続が`server.close()`の完了を妨げる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [node, express, sse, graceful-shutdown, railway]\ndate: 2026-08-25\n\n## 何が起きたか\n価格更新をポーリングからSSEのプッシュ配信に変更した。既存のSIGTERMハンドラは`server.close(callback)`でコールバックが呼ばれるのを待ってから`process.exit(0)`する作りだったが、SSEクライアントが接続したままの状態で再デプロイ(SIGTERM)すると、正常終了が完了しなくなる懸念があった。\n\n## わかったこと・今の対応\n`server.close()`は「新規接続の受付を止め、既存のアクティブな接続がすべて自然に終了してから」コールバックを呼ぶ。SSEは意図的に接続を張りっぱなしにする仕組みのため、クライアントが自分から切断しない限り`server.close()`は永久に完了しない。これを放置すると、SIGTERM後10秒のタイムアウトで強制`exit(1)`になり、正常終了ではなく異常終了として扱われてしまう。対応として、SSEルート側で接続中の`Response`オブジェクトを`Set`で保持しておき、SIGTERMハンドラの先頭で`server.close()`を呼ぶ前に、保持している全レスポンスに対して明示的に`res.end()`を呼んで接続を閉じるようにした。これにより`server.close()`のコールバックがすぐ呼ばれるようになった。\n\n## 詳しい経緯\nSSE機能を実装する時点でこの問題を予見し、実装と同時に対策(`activeConnections`セットの追跡+`closeAllStreams()`のエクスポート+SIGTERMハンドラからの呼び出し)を組み込んだ。あわせて、切断競合(`req.on(\"close\")`と`res.on(\"error\")`の両方でクリーンアップを走らせる、`res.writableEnded`をチェックしてから`write`する)も入れて、瞬断時にプロセスがクラッシュしないようにした。ローカルで実際に取引を発火させてSSEでプッシュが届くこと、Railway本番でも同様に動くことを確認済み。\n\n## まだ確認できていないこと\n- WebSocketなど他の「繋ぎっぱなし」系プロトコルでも同じ対策(明示的な接続追跡+シャットダウン時のclose)が必要になるはずだが、実際にWebSocketで検証はしていない\n- 大量の同時SSE接続(数百〜数千)がある場合に、シャットダウン時の一斉`res.end()`がボトルネックにならないかは未検証(今回は個人利用規模のため実害なし)\n",
-        "tags": [
-          "node",
-          "express",
-          "sse",
-          "graceful-shutdown",
-          "railway"
-        ],
-        "projects": [
-          "kabu-simurator-app"
-        ],
-        "date": "2026-08-25",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "価格更新をポーリングからSSEのプッシュ配信に変更した。既存のSIGTERMハンドラは`server.close(callback)`でコールバックが呼ばれるのを待ってから`pro…",
-        "solution_summary": "`server.close()`は「新規接続の受付を止め、既存のアクティブな接続がすべて自然に終了してから」コールバックを呼ぶ。SSEは意図的に接続を張りっぱなしにする仕組みのため…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-25-recharts-candlestick-via-bar-range-plus-custom-shape.md",
-        "title": "Rechartsにローソク足チャート専用コンポーネントは無いが、`Bar`の`dataKey`に`[low, high]",
-        "content": "# [候補] Rechartsにローソク足チャート専用コンポーネントは無いが、`Bar`の`dataKey`に`[low, high]`配列+カスタム`shape`で自作できる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [recharts, react, data-viz, candlestick]\ndate: 2026-08-25\n\n## 何が起きたか\n株価チャートを折れ線グラフからローソク足(陽線/陰線、ヒゲ+実体)に変更したいという要望があった。Rechartsには`CandlestickChart`のような専用コンポーネントが存在しない。\n\n## わかったこと・今の対応\n`Bar`コンポーネントの`dataKey`に、各データ点の`[low, high]`という2要素配列を返すフィールド(例: `range: [c.low, c.high]`)を指定すると、Rechartsはその範囲を1本のバーとしてy軸方向にレイアウトしてくれる(いわゆる「レンジバー」のテクニック)。そのバーの`shape`プロップにカスタム描画コンポーネントを渡すと、`props`として渡ってくる`x, y, width, height`(=low〜highの範囲がマッピングされたピクセル座標)と`payload`(元のデータオブジェクト、`open`/`close`を含む)を使って、自前でヒゲ(中心の縦線)と実体(open〜closeの範囲を塗りつぶした矩形、`close >= open`で色分け)をSVGで描画できる。ピクセル変換は `y + height * (high - price) / (high - low)` という線形補間で、low/highの範囲内のどの価格でもyピクセル位置を計算できる。ツールチップも標準の`formatter`ではデータ配列(`[low, high]`)しか見えないため、`content`プロップにカスタムコンポーネントを渡し、`payload[0].payload`から元のOHLCオブジェクトを取り出して独自にO/H/L/Cを整形表示する必要がある。\n\n## 詳しい経緯\n公式ドキュメントに直接的な「candlestick」の例が無かったため、「範囲を表すBar」(`dataKey`が配列を返すケース)がどう扱われるかを起点に設計した。`high === low`(全く値動きがない日)のケースでゼロ除算が起きるため、その場合はヒゲだけの横線を描く分岐を別途入れている。ローカルでSVG内の`<rect>`要素の`fill`属性と`height`をJS経由で直接検証し、陽線/陰線で正しく色分けされた高さの異なる矩形が描画されていることを確認してから本番に反映した。\n\n## まだ確認できていないこと\n- 大量のローソク足(数百本以上)を表示した際のパフォーマンスは未検証(今回は90日分・約63本程度)\n- 出来高(volume)を別軸のバーとして下に重ねる一般的なローソク足チャートのレイアウトは未実装・未検証\n",
-        "tags": [
-          "recharts",
-          "react",
-          "data-viz",
-          "candlestick"
-        ],
-        "projects": [
-          "kabu-simurator-app"
-        ],
-        "date": "2026-08-25",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "株価チャートを折れ線グラフからローソク足(陽線/陰線、ヒゲ+実体)に変更したいという要望があった。Rechartsには`CandlestickChart`のような専用コンポーネント…",
-        "solution_summary": "`Bar`コンポーネントの`dataKey`に、各データ点の`[low, high]`という2要素配列を返すフィールド(例: `range: [c.low, c.high]`)を指…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
+        "promotion_ready": true
       },
       {
         "filename": "2026-08-25-promotion-cites-files-never-actually-created.md",
@@ -834,10 +788,91 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-25",
-        "days_old": 0,
+        "days_old": 3,
         "stale": false,
         "problem_summary": "確定ルール`rules/godot-optimization.md`が、根拠として事例ログ1件(ファイル名に2026-05・resodive・enemy-lagを含む)と昇格元の候…",
         "solution_summary": "過去のセッションで候補をルールに昇格させた際、AIが「もっともらしいファイル名」を参照として書いただけで、実際にそのファイル(事例ログや元候補)を作成し忘れていたと考えられる。対応…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-25-codex-cli-no-sessionend-hook.md",
+        "title": "Codex CLIには(2026年8月時点で)Claude CodeのSessionEndに相当するフックが無い",
+        "content": "# [候補] Codex CLIには(2026年8月時点で)Claude CodeのSessionEndに相当するフックが無い\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [codex, claude-code, hooks, 移植性]\ndate: 2026-08-25\n\n## 何が起きたか\nClaude Codeの知識ベース自動化(セッション終了時にAI自身が候補記録・HANDOFF更新・git pushまで行う仕組み)を、OpenAIのCodex CLIにも移植できるか調査した。Codexにも2026年に入って似た「フック」機能が追加されていたが、セッション終了のタイミングを捕まえる仕組み(Claude CodeのSessionEnd相当)が無いことが分かった。\n\n## わかったこと・今の対応\nCodexのフックにはSessionStart・UserPromptSubmit・PreToolUse・PostToolUse・Stopはあるが、Claude CodeのSessionEnd(`/clear`や終了時に自動発火し、AI自身に「会話を振り返って候補を書き出して」等の指示を出せるもの)に相当するものが無い(2026年8月時点、GitHub上でも追加要望がまだ未実装)。回避策として、セッション終了時の自動化は諦め、ユーザーが会話の最後に明示的に呼び出すSkill(Claude Codeの`/kb-sync`に相当)を用意する形にした。\n\n## 詳しい経緯\nCodexは2026年に入ってhooksエンジン(v0.114で初登場、v0.124で安定版)とSkills機能(SKILL.md、暗黙発動対応)を追加しており、読み込み側(セッション開始時にルールを自動で文脈に注入する、Skillを自動発動させる)はClaude Codeとほぼ同等のことができる。一方で書き込み側、特に「セッションが終わったタイミングを検知して、AI自身に振り返りタスクをやらせる」機能は無い。CodexのフックはJSON stdin/stdoutでテキストを注入する薄い仕組みで、Claude Codeの`\"type\": \"prompt\"`フックのように独立した1つのエージェントターン(ファイル書き込み・git操作を含む)を自動起動する設計ではない点も異なる。\n\n## まだ確認できていないこと\n- Codexの「Stop」イベントが本当に1ターンごとの停止なのか、セッション全体の終了に近いものなのか未検証(前者だと候補記録が毎ターン走ってしまい使えない)\n- Stopイベントのフック内から`codex exec \"プロンプト\"`のように再帰的にCodex自身を非対話呼び出しすることで、Claude Codeの`\"type\": \"prompt\"`フックに近いことができるかは未検証\n- Codex自体がまだこのマシンに導入されていないため、上記はすべてドキュメント調査に基づく机上の結論で実機未検証\n",
+        "tags": [
+          "codex",
+          "claude-code",
+          "hooks",
+          "移植性"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-25",
+        "days_old": 3,
+        "stale": false,
+        "problem_summary": "Claude Codeの知識ベース自動化(セッション終了時にAI自身が候補記録・HANDOFF更新・git pushまで行う仕組み)を、OpenAIのCodex CLIにも移植でき…",
+        "solution_summary": "CodexのフックにはSessionStart・UserPromptSubmit・PreToolUse・PostToolUse・Stopはあるが、Claude CodeのSessi…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-23-windows-python3-stub-broken.md",
+        "title": "Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける",
+        "content": "# [候補] Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける\n\nstatus: candidate\nobserved_count: 2\nobserved_in: [ai-dev-knowledge-system]\ntags: [windows, python, 環境構築]\ndate: 2026-08-23\n\n## 何が起きたか\nWindows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。\n\n## わかったこと・今の対応\n本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。\n\n## 詳しい経緯\nこのマシン(Windows + Git Bash環境)で `python3` を実行すると、\n実際のPythonではなく `C:\\Users\\owner\\AppData\\Local\\Microsoft\\WindowsApps\\python3.exe`\n(Microsoft Store の AppInstallerPythonRedirector.exe へのシンボリックリンク)が\n呼ばれてしまい、正常に動作しない(`print()`すら実行できず、意味不明な\n出力とexit code 49で終了する)。\n\n一方 `python`(3ではなく)コマンドも同じWindowsAppsのstubを指しているが、\n`py`ランチャーは正常に動作する。実体のPythonは\n`C:\\Users\\owner\\AppData\\Local\\Programs\\Python\\Python312\\python.exe` にあり、\nこれを直接PATHに通す(またはシムスクリプトを作る)ことで回避できる。\n\nシェルスクリプト(bashやhookコマンド)内で `python3` をハードコードしていると、\nこのマシン・この手のWindows環境では静かに失敗する、または不可解な出力になる\n点に注意。\n\n(2026-08-25、ai-dev-knowledge-systemで再確認: `python3 -c \"\"`の終了コードで\n実体を判定し、失敗時は`py -3`にフォールバックする`scripts/pyrun.sh`を実装し、\nknowledge-base内でpython3をハードコードしていた9箇所すべてに導入した。\n実際にこのラッパー経由で`http.server`等を起動できることを確認しており、\n`py -3`への統一が実用上十分な回避策であることが確認できた)\n\n## まだ確認できていないこと\n- 他のWindowsマシン/ユーザー環境でも同じスタブ配置になっているか未確認\n  (Microsoft Store版Pythonのインストール有無に依存する可能性)\n- `python3` を直接使わず `py -3` や絶対パス指定に統一するのが\n  一般的な回避策として十分か未検証\n\n## 昇格の条件\n別のプロジェクト、または別セッションでも同じ現象(`python3`がスタブに\n化けて動かない)が確認されたら rules/ に昇格する。\n",
+        "tags": [
+          "windows",
+          "python",
+          "環境構築"
+        ],
+        "projects": [
+          "ai-dev-knowledge-system"
+        ],
+        "date": "2026-08-23",
+        "days_old": 5,
+        "stale": false,
+        "problem_summary": "Windows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。",
+        "solution_summary": "本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。",
+        "observed_count": 2,
+        "endorsed": false,
+        "reference_count": 1,
+        "reference_recent": [
+          {
+            "date": "2026-08-25T00:04:49Z",
+            "verdict": "役立った",
+            "reason": "pyrun.shのpy-3フォールバック設計に活用"
+          }
+        ],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-24-skill-recognized-same-session-as-created.md",
+        "title": "同一会話中に作成したSkillも、その場で認識・発動することがある",
+        "content": "# [候補] 同一会話中に作成したSkillも、その場で認識・発動することがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, skill]\ndate: 2026-08-24\n\n## 何が起きたか\n`SKILL-PROMOTION-GUIDE.md`には「新しいClaude Codeセッションを開始して動作確認する(今の会話中に作ったSkillは、今の会話では認識されない)」と書かれていたが、実際に`~/.claude/skills/godot-code-gen/`を作成した直後、同じ会話内でSkill一覧に表示され、関連する相談を投げたところ明示指定なしで正しく自動発動した。\n\n## わかったこと・今の対応\n少なくとも今回の環境では、Skillの認識は「次回セッションを待つ必要がある」という従来の想定より早いタイミングで反映されることがある。ただし1回の観測に過ぎないため、常にそうなるのか、特定の条件(ファイル作成のタイミング、既存のSkillの有無など)に依存するのかは不明。Skillを追加した際は「新しいセッションでないと確認できない」と決めつけず、まず同一会話内で発動確認を試すのが早い。\n\n## 詳しい経緯\n`external-skill-imports/2026-08-24-godot-code-gen-external-skill.md`として外部Skillを試験導入した際、`~/.claude/skills/godot-code-gen/SKILL.md`をWriteツールで作成した直後のsystem-reminderに「godot-code-gen」がSkill一覧として表示された。半信半疑で同一会話内で関連する相談(GDScriptのステートマシン実装)を投げたところ、Skillツール経由で正しく発動し、内容も適切だった。\n\n## まだ確認できていないこと\n- 再現性(別のSkill作成時、別のタイミングでも同様に即時認識されるか)\n- `SKILL-PROMOTION-GUIDE.md`の記載がいつの時点の挙動を元にしているか、環境差なのかタイミング差なのか\n",
+        "tags": [
+          "claude-code",
+          "skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 4,
+        "stale": false,
+        "problem_summary": "`SKILL-PROMOTION-GUIDE.md`には「新しいClaude Codeセッションを開始して動作確認する(今の会話中に作ったSkillは、今の会話では認識されない)」…",
+        "solution_summary": "少なくとも今回の環境では、Skillの認識は「次回セッションを待つ必要がある」という従来の想定より早いタイミングで反映されることがある。ただし1回の観測に過ぎないため、常にそうなる…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
@@ -860,41 +895,10 @@ window.STATS_DATA = {
           "resodive"
         ],
         "date": "2026-08-25",
-        "days_old": 0,
+        "days_old": 3,
         "stale": false,
         "problem_summary": "Godot 4プロジェクトのUIレイアウト(アンカー計算)に不具合が疑われたため、`godot --headless --path <project> <scene.tscn> -…",
         "solution_summary": "`get_viewport().get_visible_rect().size`を直接printして確認したところ、`--headless`実行時のビューポートサイズは`(64.0…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 1,
-        "reference_recent": [
-          {
-            "date": "2026-08-25T08:07:53Z",
-            "verdict": "役立った",
-            "reason": "同上、GODOT_GOTCHAS.mdの1項目として活用した"
-          }
-        ],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-25-godot-gradient-new-retains-default-color-points.md",
-        "title": "Godot: `Gradient.new()`は既定の色点(黒→白、不透明)を持った状態で生成され、`set_color",
-        "content": "# [候補] Godot: `Gradient.new()`は既定の色点(黒→白、不透明)を持った状態で生成され、`set_color(0,...)`や`add_point()`だけでは消えない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [resodive]\ntags: [godot, gdscript, gradienttexture2d]\ndate: 2026-08-25\n\n## 何が起きたか\nGodot 4のGDScriptで、UI背景にほんのり淡い光の滲みを出す目的で`Gradient.new()`→`GradientTexture2D`(FILL_RADIAL)を動的に生成した。中心を明るく(低アルファの白)、外側を透明にするつもりで、`gradient.set_offset(0, 0.0); gradient.set_color(0, Color(1,1,1,peak_alpha))`で1点目を上書きし、`gradient.add_point(0.72, Color(1,1,1,0.0))`で2点目(透明)を追加した。実行してみると、意図した「淡い光の滲み」ではなく、テクスチャの外周が完全に不透明な白の矩形になってしまい、その上に重ねていた白文字のメニューが真っ白な背景に埋もれて読めなくなった。\n\n## わかったこと・今の対応\n`Gradient.new()`は空の状態では生成されず、**既定で2点(offset 0.0=黒・不透明、offset 1.0=白・不透明)を持った状態**で返ってくる。`set_offset(0,...)`/`set_color(0,...)`はインデックス0の点(既定では黒)を上書きするだけで、インデックス1の既定点(白・不透明)はそのまま残る。`add_point(0.72, 透明)`は3点目を\"追加\"するだけなので、結局「0.0→意図した色、0.72→透明、1.0→既定の白・不透明」という3点構成になり、0.72〜1.0の間で透明から不透明白へ戻ってしまう。\n対策: `gradient.offsets = PackedFloat32Array([...])` と `gradient.colors = PackedColorArray([...])` に、意図する点だけを配列で丸ごと代入する。これは既定点を含め点リスト全体を置き換えるため、既定点が残る余地がない。`set_color()`/`add_point()`の個別呼び出しではなく、常にこの配列一括代入を使うべき。\n\n## 詳しい経緯\n症状は「本来ほぼ見えないはずの装飾要素が、なぜか画面の広い範囲を覆う不透明な白矩形になり、しかもその境界線(テクスチャの矩形の縁)がくっきり見える」という形で現れた。ユーザーが実機のスクリーンショットを送ってくれたことで発覚し、コード上は一見正しく見える(1点目を明示的に上書きし、2点目を追加している)ため、コードレビューだけでは気づきにくいタイプのバグだった。同一セッション内で、背景のグロー用と画面端のビネット用の2箇所で同じパターンを使っており、両方に同じ不具合があった。修正後は配列一括代入に統一した。\n\n## まだ確認できていないこと\n- `Gradient.new()`の既定点の色が本当に常に「黒→白」なのか、Godotのバージョンによって異なる可能性があるかは未確認(4.6.2で確認した事実)\n- `Curve`や`GradientTexture1D`等、Godotの他の「点の集合」型リソースにも同様の既定値問題があるかは未確認\n",
-        "tags": [
-          "godot",
-          "gdscript",
-          "gradienttexture2d"
-        ],
-        "projects": [
-          "resodive"
-        ],
-        "date": "2026-08-25",
-        "days_old": 0,
-        "stale": false,
-        "problem_summary": "Godot 4のGDScriptで、UI背景にほんのり淡い光の滲みを出す目的で`Gradient.new()`→`GradientTexture2D`(FILL_RADIAL)を動…",
-        "solution_summary": "`Gradient.new()`は空の状態では生成されず、**既定で2点(offset 0.0=黒・不透明、offset 1.0=白・不透明)を持った状態**で返ってくる。`set…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 1,
@@ -922,7 +926,7 @@ window.STATS_DATA = {
           "resodive"
         ],
         "date": "2026-08-25",
-        "days_old": 0,
+        "days_old": 3,
         "stale": false,
         "problem_summary": "Godot 4のGDScriptで、コードから動的にUIを組み立てる際、「画面下端中央の1点」にメニュー項目群(VBoxContainer)を配置し、項目数に応じて自動で高さが決ま…",
         "solution_summary": "Controlは通常、アンカーがゼロサイズ(4隅とも同じ座標)でも、`custom_minimum_size`や(Containerなら)子要素から計算される最小サイズがあればそれ…",
@@ -952,7 +956,7 @@ window.STATS_DATA = {
           "resodive"
         ],
         "date": "2026-08-25",
-        "days_old": 0,
+        "days_old": 3,
         "stale": false,
         "problem_summary": "Godot 4のGDScriptで、アイコンを線画で描くカスタムControlに、頂点座標の固定リストを`const`で持たせようとした。 ```gdscript const HE…",
         "solution_summary": "`Color(r,g,b,a)`のような単純な組み込み型コンストラクタは`const`の初期化式として問題なく使えるが(このプロジェクトの既存コードでも多用されていた)、`Pack…",
@@ -971,48 +975,54 @@ window.STATS_DATA = {
         "promotion_ready": false
       },
       {
-        "filename": "2026-08-25-finnhub-free-tier-excludes-stock-candle.md",
-        "title": "Finnhub無料枠は`/quote`(現在値)は使えるが`/stock/candle`(過去足)は使えない",
-        "content": "# [候補] Finnhub無料枠は`/quote`(現在値)は使えるが`/stock/candle`(過去足)は使えない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [finance-api, finnhub, free-tier]\ndate: 2026-08-25\n\n## 何が起きたか\n株価シミュレーターでFinnhubを使い、現在値(`/quote`)と過去90日の日足(`/stock/candle`)の両方を取得する実装をしたところ、現在値は正常に取れるのにチャート用の過去足だけが常に502エラーになった。\n\n## わかったこと・今の対応\nバックエンドのエラーを直接curlで再現したところ、Finnhubから`{\"error\":\"You don't have access to this resource.\"}`が返っていた。`/quote`エンドポイントは無料枠で問題なく使えるのに対し、`/stock/candle`(過去の日足データ)は有料プラン専用になっている。無料枠だからといって「基本的な機能は一通り使える」と思い込まず、エンドポイントごとに個別に無料枠の対象かを確認する必要がある。今回はYahoo Finance Chart API(`query1.finance.yahoo.com/v8/finance/chart/{symbol}`、[別候補]参照)に過去足取得だけ切り替えて解決し、現在値取得は引き続きFinnhubのまま併用した。\n\n## 詳しい経緯\n最初はFinnhub単体で「現在値+過去足」を賄う設計だったが、フロントエンドのチャートが「価格データを取得中、または未取得です」のまま進まないことに気づき、バックエンドのエラーログとcurlでの直接検証で原因を切り分けた。Finnhubの料金体系は変更されることがあるため、この制限が今後も続くとは限らない。\n\n## まだ確認できていないこと\n- Finnhubの有料プランでは実際に`/stock/candle`が使えるようになるか(公式ドキュメント上はそう読めるが実際に契約して確認はしていない)\n- `/quote`以外の他のエンドポイント(例: 企業情報、決算カレンダー等)がそれぞれ無料枠の対象かどうかは未調査\n",
+        "filename": "2026-08-25-godot-gradient-new-retains-default-color-points.md",
+        "title": "Godot: `Gradient.new()`は既定の色点(黒→白、不透明)を持った状態で生成され、`set_color",
+        "content": "# [候補] Godot: `Gradient.new()`は既定の色点(黒→白、不透明)を持った状態で生成され、`set_color(0,...)`や`add_point()`だけでは消えない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [resodive]\ntags: [godot, gdscript, gradienttexture2d]\ndate: 2026-08-25\n\n## 何が起きたか\nGodot 4のGDScriptで、UI背景にほんのり淡い光の滲みを出す目的で`Gradient.new()`→`GradientTexture2D`(FILL_RADIAL)を動的に生成した。中心を明るく(低アルファの白)、外側を透明にするつもりで、`gradient.set_offset(0, 0.0); gradient.set_color(0, Color(1,1,1,peak_alpha))`で1点目を上書きし、`gradient.add_point(0.72, Color(1,1,1,0.0))`で2点目(透明)を追加した。実行してみると、意図した「淡い光の滲み」ではなく、テクスチャの外周が完全に不透明な白の矩形になってしまい、その上に重ねていた白文字のメニューが真っ白な背景に埋もれて読めなくなった。\n\n## わかったこと・今の対応\n`Gradient.new()`は空の状態では生成されず、**既定で2点(offset 0.0=黒・不透明、offset 1.0=白・不透明)を持った状態**で返ってくる。`set_offset(0,...)`/`set_color(0,...)`はインデックス0の点(既定では黒)を上書きするだけで、インデックス1の既定点(白・不透明)はそのまま残る。`add_point(0.72, 透明)`は3点目を\"追加\"するだけなので、結局「0.0→意図した色、0.72→透明、1.0→既定の白・不透明」という3点構成になり、0.72〜1.0の間で透明から不透明白へ戻ってしまう。\n対策: `gradient.offsets = PackedFloat32Array([...])` と `gradient.colors = PackedColorArray([...])` に、意図する点だけを配列で丸ごと代入する。これは既定点を含め点リスト全体を置き換えるため、既定点が残る余地がない。`set_color()`/`add_point()`の個別呼び出しではなく、常にこの配列一括代入を使うべき。\n\n## 詳しい経緯\n症状は「本来ほぼ見えないはずの装飾要素が、なぜか画面の広い範囲を覆う不透明な白矩形になり、しかもその境界線(テクスチャの矩形の縁)がくっきり見える」という形で現れた。ユーザーが実機のスクリーンショットを送ってくれたことで発覚し、コード上は一見正しく見える(1点目を明示的に上書きし、2点目を追加している)ため、コードレビューだけでは気づきにくいタイプのバグだった。同一セッション内で、背景のグロー用と画面端のビネット用の2箇所で同じパターンを使っており、両方に同じ不具合があった。修正後は配列一括代入に統一した。\n\n## まだ確認できていないこと\n- `Gradient.new()`の既定点の色が本当に常に「黒→白」なのか、Godotのバージョンによって異なる可能性があるかは未確認(4.6.2で確認した事実)\n- `Curve`や`GradientTexture1D`等、Godotの他の「点の集合」型リソースにも同様の既定値問題があるかは未確認\n",
         "tags": [
-          "finance-api",
-          "finnhub",
-          "free-tier"
+          "godot",
+          "gdscript",
+          "gradienttexture2d"
         ],
         "projects": [
-          "kabu-simurator-app"
+          "resodive"
         ],
         "date": "2026-08-25",
-        "days_old": 0,
+        "days_old": 3,
         "stale": false,
-        "problem_summary": "株価シミュレーターでFinnhubを使い、現在値(`/quote`)と過去90日の日足(`/stock/candle`)の両方を取得する実装をしたところ、現在値は正常に取れるのにチ…",
-        "solution_summary": "バックエンドのエラーを直接curlで再現したところ、Finnhubから`{\"error\":\"You don't have access to this resource.\"}`が返…",
+        "problem_summary": "Godot 4のGDScriptで、UI背景にほんのり淡い光の滲みを出す目的で`Gradient.new()`→`GradientTexture2D`(FILL_RADIAL)を動…",
+        "solution_summary": "`Gradient.new()`は空の状態では生成されず、**既定で2点(offset 0.0=黒・不透明、offset 1.0=白・不透明)を持った状態**で返ってくる。`set…",
         "observed_count": 1,
         "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
+        "reference_count": 1,
+        "reference_recent": [
+          {
+            "date": "2026-08-25T08:07:53Z",
+            "verdict": "役立った",
+            "reason": "同上、GODOT_GOTCHAS.mdの1項目として活用した"
+          }
+        ],
         "source": null,
         "source_url": null,
         "promotion_ready": false
       },
       {
-        "filename": "2026-08-25-codex-cli-no-sessionend-hook.md",
-        "title": "Codex CLIには(2026年8月時点で)Claude CodeのSessionEndに相当するフックが無い",
-        "content": "# [候補] Codex CLIには(2026年8月時点で)Claude CodeのSessionEndに相当するフックが無い\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [codex, claude-code, hooks, 移植性]\ndate: 2026-08-25\n\n## 何が起きたか\nClaude Codeの知識ベース自動化(セッション終了時にAI自身が候補記録・HANDOFF更新・git pushまで行う仕組み)を、OpenAIのCodex CLIにも移植できるか調査した。Codexにも2026年に入って似た「フック」機能が追加されていたが、セッション終了のタイミングを捕まえる仕組み(Claude CodeのSessionEnd相当)が無いことが分かった。\n\n## わかったこと・今の対応\nCodexのフックにはSessionStart・UserPromptSubmit・PreToolUse・PostToolUse・Stopはあるが、Claude CodeのSessionEnd(`/clear`や終了時に自動発火し、AI自身に「会話を振り返って候補を書き出して」等の指示を出せるもの)に相当するものが無い(2026年8月時点、GitHub上でも追加要望がまだ未実装)。回避策として、セッション終了時の自動化は諦め、ユーザーが会話の最後に明示的に呼び出すSkill(Claude Codeの`/kb-sync`に相当)を用意する形にした。\n\n## 詳しい経緯\nCodexは2026年に入ってhooksエンジン(v0.114で初登場、v0.124で安定版)とSkills機能(SKILL.md、暗黙発動対応)を追加しており、読み込み側(セッション開始時にルールを自動で文脈に注入する、Skillを自動発動させる)はClaude Codeとほぼ同等のことができる。一方で書き込み側、特に「セッションが終わったタイミングを検知して、AI自身に振り返りタスクをやらせる」機能は無い。CodexのフックはJSON stdin/stdoutでテキストを注入する薄い仕組みで、Claude Codeの`\"type\": \"prompt\"`フックのように独立した1つのエージェントターン(ファイル書き込み・git操作を含む)を自動起動する設計ではない点も異なる。\n\n## まだ確認できていないこと\n- Codexの「Stop」イベントが本当に1ターンごとの停止なのか、セッション全体の終了に近いものなのか未検証(前者だと候補記録が毎ターン走ってしまい使えない)\n- Stopイベントのフック内から`codex exec \"プロンプト\"`のように再帰的にCodex自身を非対話呼び出しすることで、Claude Codeの`\"type\": \"prompt\"`フックに近いことができるかは未検証\n- Codex自体がまだこのマシンに導入されていないため、上記はすべてドキュメント調査に基づく机上の結論で実機未検証\n",
+        "filename": "2026-08-25-anti-slop-guideline-can-itself-be-a-template.md",
+        "title": "「テンプレっぽくしないで」という指示やアンチテンプレのガイドラインがあっても、ダーク×ネオン発光×パネル系のUIに収束す",
+        "content": "# [候補] 「テンプレっぽくしないで」という指示やアンチテンプレのガイドラインがあっても、ダーク×ネオン発光×パネル系のUIに収束することがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [resodive]\ntags: [UI, デザイン, frontend-design, ゲーム開発]\ndate: 2026-08-25\n\n## 何が起きたか\nGodotゲームプロジェクトのメインメニュー/HUDデザインを依頼された。ユーザーは最初から明示的に「テンプレっぽい配色・レイアウトにせず、意図のある配色を」と指示しており、さらにプロジェクト内には既存の`UI_ANTI_SLOP_GUIDE.md`(「AIっぽい量産型デザイン」を避けるための明文化ルール集。6色パレット固定・角丸禁止・グラデーション禁止など)まで用意されていた。それでも1回目・2回目のモック——1回目はこの既存ガイドにほぼ忠実(ダークネイビー+シアン発光+面取りパネル)、2回目は実在ゲームの美術ディレクション記事まで調べて具体的に寄せた案——は、いずれもユーザーに「近未来的すぎる」「科学的すぎる」「既存デザインを引きずっているのが伝わる」と却下された。3回目、配色をほぼ白黒半透明のみに絞り彩度をシステムから排除し、テキスト表示も大幅に削る方向へ転換して初めて高評価を得た。\n\n## わかったこと・今の対応\n「テンプレっぽくしないで」という指示や、テンプレ回避を目的とした明文化ガイドラインの存在だけでは、生成物が実際にテンプレっぽくなることを防げない。今回のケースでは、ガイドライン自体が「ダーク背景+単一の発光アクセントカラー+角ばったパネル+走査線」という、それ自体がSFゲームUIとして非常によくある型に既に収束していた。実在ゲームの美術ディレクション記事を調べて具体的に寄せる(2回目)という「具体性を上げる」対策も、同じ構造(ダーク×アクセント色×パネル)を保ったままだったため不十分だった。今回実際にテンプレっぽさを破ったのは色や参考作品を変えることではなく、**構造そのものの軸を変えること**(有彩色をほぼゼロにする、パネル/枠線をやめて余白と細線のみにする、情報表示の主役をテキストからアイコン・形状に移す)だった。「テンプレを避けて」と言われた時は、パレットの色を変える・参考作品を変えるといった同一構造内の調整で満足せず、彩度・情報密度・要素の形状ボキャブラリー(パネルか罫線か、テキストかアイコンか)といった、より構造的な軸そのものを疑ってみる価値がある。\n\n## 詳しい経緯\nプロジェクトはFPSローグライク(精神世界へ「潜行」する設定)。既存の`UI_ANTI_SLOP_GUIDE.md`には「ダークネイビー背景+シアンアクセント+面取り(chamfered)パネル+コーナーブラケット+スキャンライン」という具体的なトークンが定義済みで、これは実装済みのHUDコード(`player.gd`, `chamfered_bar.gd`等)にも既に反映されていた。1回目のモックはこのガイドをほぼそのまま踏襲した。ユーザー反応は「近未来的すぎる」。2回目はBungie『Marathon』(2025年リブート)の実際のアートディレクター(Joseph Cross)によるインタビュー記事をWebSearch/WebFetchで調査し、「Graphic Realism」(限定的な配色・グラフィカルなデザイン言語・現実的なプロポーション、F1/MotoGPのリバリーやMirror's Edgeが参照元)という方向性に寄せて再構築した。それでも「科学的すぎる」「既存デザインを意識しているのが伝わる」と却下された。3回目で初めて、色を白〜グレーの半透明のみに絞り(有彩色は被弾時の警告色1色のみに限定)、パネルの箱・枠線・発光を撤去して罫線と余白のみにし、HP表示を棒グラフから心拍のような細い線に変える等、既存の視覚言語(パネル・発光・アクセントカラー)そのものを手放したところ「めちゃくちゃよくなった」という評価を得た。その後の追加フィードバックでも「文字を極力減らしてアイコン化してほしい」という、情報表現の主役をテキストからさらに別の軸(形状)へ移す方向の要求が続いた。\n\n## まだ確認できていないこと\n- この現象(「ガイドライン自体がテンプレ的な帰結に収束する」)が、UI/ゲームHUD以外のデザイン領域(Webデザイン、プレゼン資料等)でも同様に起きるか\n- 何回目の提案で構造的な軸の転換に気づけば効率的か(今回は3回目で成功したが、もっと早く「構造そのものを疑う」姿勢に切り替えられた可能性がある)\n- 「有彩色ゼロ+アイコン化」という今回たどり着いた解自体が、別のプロジェクト・別の世界観でも同様に評価されるかは未検証(このプロジェクト固有の「白い部屋・解離」的世界観と相性が良かった可能性があり、解自体を汎用ルール化するのは時期尚早)\n",
         "tags": [
-          "codex",
-          "claude-code",
-          "hooks",
-          "移植性"
+          "UI",
+          "デザイン",
+          "frontend-design",
+          "ゲーム開発"
         ],
         "projects": [
-          "knowledge-base"
+          "resodive"
         ],
         "date": "2026-08-25",
-        "days_old": 0,
+        "days_old": 3,
         "stale": false,
-        "problem_summary": "Claude Codeの知識ベース自動化(セッション終了時にAI自身が候補記録・HANDOFF更新・git pushまで行う仕組み)を、OpenAIのCodex CLIにも移植でき…",
-        "solution_summary": "CodexのフックにはSessionStart・UserPromptSubmit・PreToolUse・PostToolUse・Stopはあるが、Claude CodeのSessi…",
+        "problem_summary": "Godotゲームプロジェクトのメインメニュー/HUDデザインを依頼された。ユーザーは最初から明示的に「テンプレっぽい配色・レイアウトにせず、意図のある配色を」と指示しており、さらに…",
+        "solution_summary": "「テンプレっぽくしないで」という指示や、テンプレ回避を目的とした明文化ガイドラインの存在だけでは、生成物が実際にテンプレっぽくなることを防げない。今回のケースでは、ガイドライン自体…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
@@ -1034,7 +1044,7 @@ window.STATS_DATA = {
           "kabu-simurator-app"
         ],
         "date": "2026-08-25",
-        "days_old": 0,
+        "days_old": 3,
         "stale": false,
         "problem_summary": "アプリの動作確認中、同じブラウザタブを使い回しながら複数回の`preview_start`/`preview_stop`やコード修正・再起動を行っていた。ある時点で「AIに1回だけ…",
         "solution_summary": "`read_network_requests`や`read_console_messages`は、そのタブが開かれてから(あるいはツール自体が使われ始めてから)の全リクエスト/全ロ…",
@@ -1047,23 +1057,101 @@ window.STATS_DATA = {
         "promotion_ready": false
       },
       {
-        "filename": "2026-08-25-anti-slop-guideline-can-itself-be-a-template.md",
-        "title": "「テンプレっぽくしないで」という指示やアンチテンプレのガイドラインがあっても、ダーク×ネオン発光×パネル系のUIに収束す",
-        "content": "# [候補] 「テンプレっぽくしないで」という指示やアンチテンプレのガイドラインがあっても、ダーク×ネオン発光×パネル系のUIに収束することがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [resodive]\ntags: [UI, デザイン, frontend-design, ゲーム開発]\ndate: 2026-08-25\n\n## 何が起きたか\nGodotゲームプロジェクトのメインメニュー/HUDデザインを依頼された。ユーザーは最初から明示的に「テンプレっぽい配色・レイアウトにせず、意図のある配色を」と指示しており、さらにプロジェクト内には既存の`UI_ANTI_SLOP_GUIDE.md`(「AIっぽい量産型デザイン」を避けるための明文化ルール集。6色パレット固定・角丸禁止・グラデーション禁止など)まで用意されていた。それでも1回目・2回目のモック——1回目はこの既存ガイドにほぼ忠実(ダークネイビー+シアン発光+面取りパネル)、2回目は実在ゲームの美術ディレクション記事まで調べて具体的に寄せた案——は、いずれもユーザーに「近未来的すぎる」「科学的すぎる」「既存デザインを引きずっているのが伝わる」と却下された。3回目、配色をほぼ白黒半透明のみに絞り彩度をシステムから排除し、テキスト表示も大幅に削る方向へ転換して初めて高評価を得た。\n\n## わかったこと・今の対応\n「テンプレっぽくしないで」という指示や、テンプレ回避を目的とした明文化ガイドラインの存在だけでは、生成物が実際にテンプレっぽくなることを防げない。今回のケースでは、ガイドライン自体が「ダーク背景+単一の発光アクセントカラー+角ばったパネル+走査線」という、それ自体がSFゲームUIとして非常によくある型に既に収束していた。実在ゲームの美術ディレクション記事を調べて具体的に寄せる(2回目)という「具体性を上げる」対策も、同じ構造(ダーク×アクセント色×パネル)を保ったままだったため不十分だった。今回実際にテンプレっぽさを破ったのは色や参考作品を変えることではなく、**構造そのものの軸を変えること**(有彩色をほぼゼロにする、パネル/枠線をやめて余白と細線のみにする、情報表示の主役をテキストからアイコン・形状に移す)だった。「テンプレを避けて」と言われた時は、パレットの色を変える・参考作品を変えるといった同一構造内の調整で満足せず、彩度・情報密度・要素の形状ボキャブラリー(パネルか罫線か、テキストかアイコンか)といった、より構造的な軸そのものを疑ってみる価値がある。\n\n## 詳しい経緯\nプロジェクトはFPSローグライク(精神世界へ「潜行」する設定)。既存の`UI_ANTI_SLOP_GUIDE.md`には「ダークネイビー背景+シアンアクセント+面取り(chamfered)パネル+コーナーブラケット+スキャンライン」という具体的なトークンが定義済みで、これは実装済みのHUDコード(`player.gd`, `chamfered_bar.gd`等)にも既に反映されていた。1回目のモックはこのガイドをほぼそのまま踏襲した。ユーザー反応は「近未来的すぎる」。2回目はBungie『Marathon』(2025年リブート)の実際のアートディレクター(Joseph Cross)によるインタビュー記事をWebSearch/WebFetchで調査し、「Graphic Realism」(限定的な配色・グラフィカルなデザイン言語・現実的なプロポーション、F1/MotoGPのリバリーやMirror's Edgeが参照元)という方向性に寄せて再構築した。それでも「科学的すぎる」「既存デザインを意識しているのが伝わる」と却下された。3回目で初めて、色を白〜グレーの半透明のみに絞り(有彩色は被弾時の警告色1色のみに限定)、パネルの箱・枠線・発光を撤去して罫線と余白のみにし、HP表示を棒グラフから心拍のような細い線に変える等、既存の視覚言語(パネル・発光・アクセントカラー)そのものを手放したところ「めちゃくちゃよくなった」という評価を得た。その後の追加フィードバックでも「文字を極力減らしてアイコン化してほしい」という、情報表現の主役をテキストからさらに別の軸(形状)へ移す方向の要求が続いた。\n\n## まだ確認できていないこと\n- この現象(「ガイドライン自体がテンプレ的な帰結に収束する」)が、UI/ゲームHUD以外のデザイン領域(Webデザイン、プレゼン資料等)でも同様に起きるか\n- 何回目の提案で構造的な軸の転換に気づけば効率的か(今回は3回目で成功したが、もっと早く「構造そのものを疑う」姿勢に切り替えられた可能性がある)\n- 「有彩色ゼロ+アイコン化」という今回たどり着いた解自体が、別のプロジェクト・別の世界観でも同様に評価されるかは未検証(このプロジェクト固有の「白い部屋・解離」的世界観と相性が良かった可能性があり、解自体を汎用ルール化するのは時期尚早)\n",
+        "filename": "2026-08-25-recharts-candlestick-via-bar-range-plus-custom-shape.md",
+        "title": "Rechartsにローソク足チャート専用コンポーネントは無いが、`Bar`の`dataKey`に`[low, high]",
+        "content": "# [候補] Rechartsにローソク足チャート専用コンポーネントは無いが、`Bar`の`dataKey`に`[low, high]`配列+カスタム`shape`で自作できる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [recharts, react, data-viz, candlestick]\ndate: 2026-08-25\n\n## 何が起きたか\n株価チャートを折れ線グラフからローソク足(陽線/陰線、ヒゲ+実体)に変更したいという要望があった。Rechartsには`CandlestickChart`のような専用コンポーネントが存在しない。\n\n## わかったこと・今の対応\n`Bar`コンポーネントの`dataKey`に、各データ点の`[low, high]`という2要素配列を返すフィールド(例: `range: [c.low, c.high]`)を指定すると、Rechartsはその範囲を1本のバーとしてy軸方向にレイアウトしてくれる(いわゆる「レンジバー」のテクニック)。そのバーの`shape`プロップにカスタム描画コンポーネントを渡すと、`props`として渡ってくる`x, y, width, height`(=low〜highの範囲がマッピングされたピクセル座標)と`payload`(元のデータオブジェクト、`open`/`close`を含む)を使って、自前でヒゲ(中心の縦線)と実体(open〜closeの範囲を塗りつぶした矩形、`close >= open`で色分け)をSVGで描画できる。ピクセル変換は `y + height * (high - price) / (high - low)` という線形補間で、low/highの範囲内のどの価格でもyピクセル位置を計算できる。ツールチップも標準の`formatter`ではデータ配列(`[low, high]`)しか見えないため、`content`プロップにカスタムコンポーネントを渡し、`payload[0].payload`から元のOHLCオブジェクトを取り出して独自にO/H/L/Cを整形表示する必要がある。\n\n## 詳しい経緯\n公式ドキュメントに直接的な「candlestick」の例が無かったため、「範囲を表すBar」(`dataKey`が配列を返すケース)がどう扱われるかを起点に設計した。`high === low`(全く値動きがない日)のケースでゼロ除算が起きるため、その場合はヒゲだけの横線を描く分岐を別途入れている。ローカルでSVG内の`<rect>`要素の`fill`属性と`height`をJS経由で直接検証し、陽線/陰線で正しく色分けされた高さの異なる矩形が描画されていることを確認してから本番に反映した。\n\n## まだ確認できていないこと\n- 大量のローソク足(数百本以上)を表示した際のパフォーマンスは未検証(今回は90日分・約63本程度)\n- 出来高(volume)を別軸のバーとして下に重ねる一般的なローソク足チャートのレイアウトは未実装・未検証\n",
         "tags": [
-          "UI",
-          "デザイン",
-          "frontend-design",
-          "ゲーム開発"
+          "recharts",
+          "react",
+          "data-viz",
+          "candlestick"
         ],
         "projects": [
-          "resodive"
+          "kabu-simurator-app"
         ],
         "date": "2026-08-25",
-        "days_old": 0,
+        "days_old": 3,
         "stale": false,
-        "problem_summary": "Godotゲームプロジェクトのメインメニュー/HUDデザインを依頼された。ユーザーは最初から明示的に「テンプレっぽい配色・レイアウトにせず、意図のある配色を」と指示しており、さらに…",
-        "solution_summary": "「テンプレっぽくしないで」という指示や、テンプレ回避を目的とした明文化ガイドラインの存在だけでは、生成物が実際にテンプレっぽくなることを防げない。今回のケースでは、ガイドライン自体…",
+        "problem_summary": "株価チャートを折れ線グラフからローソク足(陽線/陰線、ヒゲ+実体)に変更したいという要望があった。Rechartsには`CandlestickChart`のような専用コンポーネント…",
+        "solution_summary": "`Bar`コンポーネントの`dataKey`に、各データ点の`[low, high]`という2要素配列を返すフィールド(例: `range: [c.low, c.high]`)を指…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-25-unconditional-startup-fetch-plus-frequent-redeploys-multiplies-scheduled-api-calls.md",
+        "title": "「起動時に1回だけ即時実行」するスケジューラーは、頻繁な再デプロイと組み合わさると意図した間隔より高頻度にAPIを呼んで",
+        "content": "# [候補] 「起動時に1回だけ即時実行」するスケジューラーは、頻繁な再デプロイと組み合わさると意図した間隔より高頻度にAPIを呼んでしまう\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [scheduler, cost-control, deployment, node]\ndate: 2026-08-25\n\n## 何が起きたか\n「起動直後は判断材料が無いので、1回だけ即時取得してからN分おきのループに入る」という設計のスケジューラー(Web検索を伴うAIによるニュース要約、既定24時間に1回)を実装していた。ユーザーから「呼び出し回数が体感で多い」という指摘を受けて調査したところ、意図通りに24時間に1回しか呼ばれていないはずが、実際にはもっと頻繁にAI呼び出しが発生していた。\n\n## わかったこと・今の対応\n原因は、開発中に何度も`git push`→Railway再デプロイ(SIGTERM再起動)を行っており、そのたびに「起動直後の即時取得」が無条件で発火していたため。スケジューラーの間隔設定自体(24時間)は正しかったが、「起動時に1回」という無条件の即時実行ロジックが、通常運用では滅多に発生しない「再起動」というイベントと結びついていることを見落としていた。対応として、起動時にDB上の既存キャッシュの生成時刻を確認し、設定した間隔内(24時間以内)ならその即時取得をスキップし、代わりに`最終取得時刻`の状態をDBの値で復元するようにした。ローカルで実際にサーバーを2回連続起動し、2回目でAPI呼び出しがスキップされること(ステータスAPIの`lastAttemptAt`が再起動時刻ではなく元の取得時刻のまま変わらないこと)を確認し、本番デプロイ後も同様に再取得が起きていないことを確認した。\n\n## 詳しい経緯\n本番の`/api/scheduler-status`相当のエンドポイントで実際の`lastAttemptAt`を見比べ、想定より新しい値になっていることから「起動のたびに再取得している」という仮説を立てて実装を確認した。この日は機能追加のため複数回デプロイしており、通常の運用頻度(1日1回程度のデプロイ)であれば気づきにくいレベルの余分な呼び出しだったが、開発が活発な時期には無視できない差になっていた。\n\n## まだ確認できていないこと\n- 同様の「起動時に1回だけ即時実行」パターンが他の間隔(価格ポーリング5分おき等、コストの低い処理)にも残っているが、そちらはコストが無視できるレベルのため対応不要と判断した。より高コストな処理を追加する際は同じ落とし穴に注意する必要がある\n- キャッシュの生成時刻をDBではなくメモリ上だけで持っている構成(再起動でメモリが必ず消える構成)の場合は、この「DBの既存キャッシュを見てスキップする」対策自体が使えないため、別の対策(例: 起動時刻を外部に永続化する)が必要になる\n",
+        "tags": [
+          "scheduler",
+          "cost-control",
+          "deployment",
+          "node"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "date": "2026-08-25",
+        "days_old": 3,
+        "stale": false,
+        "problem_summary": "「起動直後は判断材料が無いので、1回だけ即時取得してからN分おきのループに入る」という設計のスケジューラー(Web検索を伴うAIによるニュース要約、既定24時間に1回)を実装してい…",
+        "solution_summary": "原因は、開発中に何度も`git push`→Railway再デプロイ(SIGTERM再起動)を行っており、そのたびに「起動直後の即時取得」が無条件で発火していたため。スケジューラー…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-25-sse-connections-block-graceful-sigterm-shutdown.md",
+        "title": "Node/ExpressでSSE(Server-Sent Events)を使うと、繋ぎっぱなしの接続が`server.c",
+        "content": "# [候補] Node/ExpressでSSE(Server-Sent Events)を使うと、繋ぎっぱなしの接続が`server.close()`の完了を妨げる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [node, express, sse, graceful-shutdown, railway]\ndate: 2026-08-25\n\n## 何が起きたか\n価格更新をポーリングからSSEのプッシュ配信に変更した。既存のSIGTERMハンドラは`server.close(callback)`でコールバックが呼ばれるのを待ってから`process.exit(0)`する作りだったが、SSEクライアントが接続したままの状態で再デプロイ(SIGTERM)すると、正常終了が完了しなくなる懸念があった。\n\n## わかったこと・今の対応\n`server.close()`は「新規接続の受付を止め、既存のアクティブな接続がすべて自然に終了してから」コールバックを呼ぶ。SSEは意図的に接続を張りっぱなしにする仕組みのため、クライアントが自分から切断しない限り`server.close()`は永久に完了しない。これを放置すると、SIGTERM後10秒のタイムアウトで強制`exit(1)`になり、正常終了ではなく異常終了として扱われてしまう。対応として、SSEルート側で接続中の`Response`オブジェクトを`Set`で保持しておき、SIGTERMハンドラの先頭で`server.close()`を呼ぶ前に、保持している全レスポンスに対して明示的に`res.end()`を呼んで接続を閉じるようにした。これにより`server.close()`のコールバックがすぐ呼ばれるようになった。\n\n## 詳しい経緯\nSSE機能を実装する時点でこの問題を予見し、実装と同時に対策(`activeConnections`セットの追跡+`closeAllStreams()`のエクスポート+SIGTERMハンドラからの呼び出し)を組み込んだ。あわせて、切断競合(`req.on(\"close\")`と`res.on(\"error\")`の両方でクリーンアップを走らせる、`res.writableEnded`をチェックしてから`write`する)も入れて、瞬断時にプロセスがクラッシュしないようにした。ローカルで実際に取引を発火させてSSEでプッシュが届くこと、Railway本番でも同様に動くことを確認済み。\n\n## まだ確認できていないこと\n- WebSocketなど他の「繋ぎっぱなし」系プロトコルでも同じ対策(明示的な接続追跡+シャットダウン時のclose)が必要になるはずだが、実際にWebSocketで検証はしていない\n- 大量の同時SSE接続(数百〜数千)がある場合に、シャットダウン時の一斉`res.end()`がボトルネックにならないかは未検証(今回は個人利用規模のため実害なし)\n",
+        "tags": [
+          "node",
+          "express",
+          "sse",
+          "graceful-shutdown",
+          "railway"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "date": "2026-08-25",
+        "days_old": 3,
+        "stale": false,
+        "problem_summary": "価格更新をポーリングからSSEのプッシュ配信に変更した。既存のSIGTERMハンドラは`server.close(callback)`でコールバックが呼ばれるのを待ってから`pro…",
+        "solution_summary": "`server.close()`は「新規接続の受付を止め、既存のアクティブな接続がすべて自然に終了してから」コールバックを呼ぶ。SSEは意図的に接続を張りっぱなしにする仕組みのため…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-25-finnhub-free-tier-excludes-stock-candle.md",
+        "title": "Finnhub無料枠は`/quote`(現在値)は使えるが`/stock/candle`(過去足)は使えない",
+        "content": "# [候補] Finnhub無料枠は`/quote`(現在値)は使えるが`/stock/candle`(過去足)は使えない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [finance-api, finnhub, free-tier]\ndate: 2026-08-25\n\n## 何が起きたか\n株価シミュレーターでFinnhubを使い、現在値(`/quote`)と過去90日の日足(`/stock/candle`)の両方を取得する実装をしたところ、現在値は正常に取れるのにチャート用の過去足だけが常に502エラーになった。\n\n## わかったこと・今の対応\nバックエンドのエラーを直接curlで再現したところ、Finnhubから`{\"error\":\"You don't have access to this resource.\"}`が返っていた。`/quote`エンドポイントは無料枠で問題なく使えるのに対し、`/stock/candle`(過去の日足データ)は有料プラン専用になっている。無料枠だからといって「基本的な機能は一通り使える」と思い込まず、エンドポイントごとに個別に無料枠の対象かを確認する必要がある。今回はYahoo Finance Chart API(`query1.finance.yahoo.com/v8/finance/chart/{symbol}`、[別候補]参照)に過去足取得だけ切り替えて解決し、現在値取得は引き続きFinnhubのまま併用した。\n\n## 詳しい経緯\n最初はFinnhub単体で「現在値+過去足」を賄う設計だったが、フロントエンドのチャートが「価格データを取得中、または未取得です」のまま進まないことに気づき、バックエンドのエラーログとcurlでの直接検証で原因を切り分けた。Finnhubの料金体系は変更されることがあるため、この制限が今後も続くとは限らない。\n\n## まだ確認できていないこと\n- Finnhubの有料プランでは実際に`/stock/candle`が使えるようになるか(公式ドキュメント上はそう読めるが実際に契約して確認はしていない)\n- `/quote`以外の他のエンドポイント(例: 企業情報、決算カレンダー等)がそれぞれ無料枠の対象かどうかは未調査\n",
+        "tags": [
+          "finance-api",
+          "finnhub",
+          "free-tier"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "date": "2026-08-25",
+        "days_old": 3,
+        "stale": false,
+        "problem_summary": "株価シミュレーターでFinnhubを使い、現在値(`/quote`)と過去90日の日足(`/stock/candle`)の両方を取得する実装をしたところ、現在値は正常に取れるのにチ…",
+        "solution_summary": "バックエンドのエラーを直接curlで再現したところ、Finnhubから`{\"error\":\"You don't have access to this resource.\"}`が返…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
@@ -1086,7 +1174,7 @@ window.STATS_DATA = {
           "kabu-simurator-app"
         ],
         "date": "2026-08-24",
-        "days_old": 1,
+        "days_old": 4,
         "stale": false,
         "problem_summary": "既存のFinnhub無料枠は米国取引所限定で暗号資産(BTC-USD等)のリアルタイム気配値が取得できなかった。日次終値取得には既に非公式のYahoo Finance Chart…",
         "solution_summary": "`https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?range=1d&interval=1d` を叩くと、`cha…",
@@ -1094,86 +1182,6 @@ window.STATS_DATA = {
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-writing-about-secret-scan-false-positives-retriggers-them.md",
-        "title": "誤検知の「説明文」を書く行為自体が同じ誤検知を再発させる",
-        "content": "# [候補] 誤検知の「説明文」を書く行為自体が同じ誤検知を再発させる\n\nstatus: candidate\nobserved_count: 4\nobserved_in: [knowledge-base]\ntags: [claude-code, セキュリティ, ドキュメント]\ndate: 2026-08-24\nendorsed: false\n\n## 何が起きたか\n機密情報スキャンの誤検知(プレースホルダーメールアドレス等)について「こう直した」と説明する文章の中に、直す前の実例(`@`付きのメールアドレス)をそのまま引用すると、その説明文自体が新たに誤検知される。同じ日に2回(候補ファイル本文、および外部Skill導入ガイド本文)で発生した。\n\n## わかったこと・今の対応\n機密情報の誤検知について書く時は、問題のパターンを説明する際も実際に検知されるフォーマットそのものを書かない(「メールアドレス形式の文字列」のように抽象化するか、区切り記号を意図的に別の表記に置き換えて言及する)。\n\n## 詳しい経緯\n1回目: `ux-designer`導入時、候補ファイルの本文に「置換前後のメールアドレスの実例」をそのまま書いたところ、`docs/stats.json`等への埋め込みも含めてスキャナーが再検知した。2回目: 本件を教訓化した`EXTERNAL-SKILL-GUIDE.md`の中で、「実例をそのまま書かない」という注意書き自体に同じ実例を書いてしまい、再度検知された。3回目: この候補ファイルの初稿でも同様の実例を書いてしまい、三度検知された。いずれも実害はなく(pre-commitで正しく止まった)、都度抽象化した表現に書き換えて解消した。\n\n(2026-08-25、ai-dev-knowledge-systemで再確認: 機密情報スキャンではなく、新設した`scripts/validate_kb.py`のリンク切れチェッカーでも同じ現象が発生した。「壊れた参照ファイル名をそのまま説明文に書く」候補ファイルを作成したところ、その説明文自体がリンク切れとして検知された。この4回目は対象がsecret-scannerではなくlink-checkerだったため、この現象は特定のスキャナーに限らず「パターンマッチ型の検証ツール全般について、その誤検知/検知対象を実例入りで説明する文章を書くと、説明文自体が同じ検知に引っかかる」という、より一般的な現象である可能性が高い)\n\n## まだ確認できていないこと\n- この手のメタ的な言及(誤検知の実例を説明する文章)を最初から誤検知させない、もっと良い書き方の型があるか\n",
-        "tags": [
-          "claude-code",
-          "セキュリティ",
-          "ドキュメント"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 1,
-        "stale": false,
-        "problem_summary": "機密情報スキャンの誤検知(プレースホルダーメールアドレス等)について「こう直した」と説明する文章の中に、直す前の実例(`@`付きのメールアドレス)をそのまま引用すると、その説明文自…",
-        "solution_summary": "機密情報の誤検知について書く時は、問題のパターンを説明する際も実際に検知されるフォーマットそのものを書かない(「メールアドレス形式の文字列」のように抽象化するか、区切り記号を意図的…",
-        "observed_count": 4,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": true
-      },
-      {
-        "filename": "2026-08-24-skill-recognized-same-session-as-created.md",
-        "title": "同一会話中に作成したSkillも、その場で認識・発動することがある",
-        "content": "# [候補] 同一会話中に作成したSkillも、その場で認識・発動することがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, skill]\ndate: 2026-08-24\n\n## 何が起きたか\n`SKILL-PROMOTION-GUIDE.md`には「新しいClaude Codeセッションを開始して動作確認する(今の会話中に作ったSkillは、今の会話では認識されない)」と書かれていたが、実際に`~/.claude/skills/godot-code-gen/`を作成した直後、同じ会話内でSkill一覧に表示され、関連する相談を投げたところ明示指定なしで正しく自動発動した。\n\n## わかったこと・今の対応\n少なくとも今回の環境では、Skillの認識は「次回セッションを待つ必要がある」という従来の想定より早いタイミングで反映されることがある。ただし1回の観測に過ぎないため、常にそうなるのか、特定の条件(ファイル作成のタイミング、既存のSkillの有無など)に依存するのかは不明。Skillを追加した際は「新しいセッションでないと確認できない」と決めつけず、まず同一会話内で発動確認を試すのが早い。\n\n## 詳しい経緯\n`external-skill-imports/2026-08-24-godot-code-gen-external-skill.md`として外部Skillを試験導入した際、`~/.claude/skills/godot-code-gen/SKILL.md`をWriteツールで作成した直後のsystem-reminderに「godot-code-gen」がSkill一覧として表示された。半信半疑で同一会話内で関連する相談(GDScriptのステートマシン実装)を投げたところ、Skillツール経由で正しく発動し、内容も適切だった。\n\n## まだ確認できていないこと\n- 再現性(別のSkill作成時、別のタイミングでも同様に即時認識されるか)\n- `SKILL-PROMOTION-GUIDE.md`の記載がいつの時点の挙動を元にしているか、環境差なのかタイミング差なのか\n",
-        "tags": [
-          "claude-code",
-          "skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 1,
-        "stale": false,
-        "problem_summary": "`SKILL-PROMOTION-GUIDE.md`には「新しいClaude Codeセッションを開始して動作確認する(今の会話中に作ったSkillは、今の会話では認識されない)」…",
-        "solution_summary": "少なくとも今回の環境では、Skillの認識は「次回セッションを待つ必要がある」という従来の想定より早いタイミングで反映されることがある。ただし1回の観測に過ぎないため、常にそうなる…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-23-windows-python3-stub-broken.md",
-        "title": "Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける",
-        "content": "# [候補] Windows Git Bashでの`python3`コマンドはMicrosoft Storeスタブに化ける\n\nstatus: candidate\nobserved_count: 2\nobserved_in: [ai-dev-knowledge-system]\ntags: [windows, python, 環境構築]\ndate: 2026-08-23\n\n## 何が起きたか\nWindows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。\n\n## わかったこと・今の対応\n本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。\n\n## 詳しい経緯\nこのマシン(Windows + Git Bash環境)で `python3` を実行すると、\n実際のPythonではなく `C:\\Users\\owner\\AppData\\Local\\Microsoft\\WindowsApps\\python3.exe`\n(Microsoft Store の AppInstallerPythonRedirector.exe へのシンボリックリンク)が\n呼ばれてしまい、正常に動作しない(`print()`すら実行できず、意味不明な\n出力とexit code 49で終了する)。\n\n一方 `python`(3ではなく)コマンドも同じWindowsAppsのstubを指しているが、\n`py`ランチャーは正常に動作する。実体のPythonは\n`C:\\Users\\owner\\AppData\\Local\\Programs\\Python\\Python312\\python.exe` にあり、\nこれを直接PATHに通す(またはシムスクリプトを作る)ことで回避できる。\n\nシェルスクリプト(bashやhookコマンド)内で `python3` をハードコードしていると、\nこのマシン・この手のWindows環境では静かに失敗する、または不可解な出力になる\n点に注意。\n\n(2026-08-25、ai-dev-knowledge-systemで再確認: `python3 -c \"\"`の終了コードで\n実体を判定し、失敗時は`py -3`にフォールバックする`scripts/pyrun.sh`を実装し、\nknowledge-base内でpython3をハードコードしていた9箇所すべてに導入した。\n実際にこのラッパー経由で`http.server`等を起動できることを確認しており、\n`py -3`への統一が実用上十分な回避策であることが確認できた)\n\n## まだ確認できていないこと\n- 他のWindowsマシン/ユーザー環境でも同じスタブ配置になっているか未確認\n  (Microsoft Store版Pythonのインストール有無に依存する可能性)\n- `python3` を直接使わず `py -3` や絶対パス指定に統一するのが\n  一般的な回避策として十分か未検証\n\n## 昇格の条件\n別のプロジェクト、または別セッションでも同じ現象(`python3`がスタブに\n化けて動かない)が確認されたら rules/ に昇格する。\n",
-        "tags": [
-          "windows",
-          "python",
-          "環境構築"
-        ],
-        "projects": [
-          "ai-dev-knowledge-system"
-        ],
-        "date": "2026-08-23",
-        "days_old": 2,
-        "stale": false,
-        "problem_summary": "Windows(Git Bash)で`python3`と入力すると、本物のPythonではなく壊れたMicrosoft Storeの案内役が呼ばれてしまい、エラーで止まる。",
-        "solution_summary": "本物のPythonは別の場所(`Python312`フォルダ)にあるので、そこにPATHを通すか、`python3`という名前のコピーを作ることで回避できる。",
-        "observed_count": 2,
-        "endorsed": false,
-        "reference_count": 1,
-        "reference_recent": [
-          {
-            "date": "2026-08-25T00:04:49Z",
-            "verdict": "役立った",
-            "reason": "pyrun.shのpy-3フォールバック設計に活用"
-          }
-        ],
         "source": null,
         "source_url": null,
         "promotion_ready": false
@@ -1191,138 +1199,10 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 1,
+        "days_old": 4,
         "stale": false,
         "problem_summary": "同じ会話内で以前は`~/Downloads`配下のファイルを問題なく読み書きできていたのに、セッション再開(resume)後に`ls ~/Downloads`が`Operation…",
         "solution_summary": "macOSのプライバシー保護機能(TCC、Downloadsフォルダへのアクセスはアプリ単位で許可が必要)が、セッション再開で生成された新しいプロセスにはまだ許可されていないためと…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-browser-tool-coordinate-click-can-silently-miss.md",
-        "title": "ブラウザ操作ツールでの座標クリックは、要素がずれてサイレントに外れることがある",
-        "content": "# [候補] ブラウザ操作ツールでの座標クリックは、要素がずれてサイレントに外れることがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, テスト, ブラウザ自動化]\ndate: 2026-08-24\n\n## 何が起きたか\nUI動作確認のため、スクリーンショットを見て座標を指定してクリックしたところ、意図した要素とは別の行がクリックされ続けた。エラーは出ず、スクリーンショットも一見更新されているように見えたため、しばらく気づかなかった。\n\n## わかったこと・今の対応\n`read_page`で要素の参照ID(ref)を取得し、座標ではなく`ref`を指定してクリックする方式に切り替えたところ確実になった。座標クリックは、レイアウトのわずかな差やスクリーンショットの縮小表示・タイミングのズレで簡単に外れるため、UIの自動確認では基本的に`ref`ベースのクリックを使い、座標クリックは最終手段にする方がよい。挙動を確定させたい場合は、クリック後にアプリ側のJS状態(今回は`route`という変数)を直接読んで検証すると誤クリックにすぐ気づける。\n\n## 詳しい経緯\ndocs/index.htmlのUI刷新確認で、サイドバーの「概要」行をスクリーンショット上の座標(65, 108)でクリックしたが、何度やっても「Skill一覧」など別の行がアクティブになった。スクリーンショットのピクセルサイズ(800px幅)と実ビューポート(1400px幅)のスケール差や、直前の画面状態によって行の実際のy座標が変わっていたことが原因と推測される。`read_page`が返す`ref_N`を使ったクリックに切り替えたところ、一度も外れなくなった。\n\n## まだ確認できていないこと\n- 座標クリックが具体的にどの計算(スケール変換・タイミング)で外れていたのかは未特定。\n- モバイルエミュレーション(タッチ座標)でも同じ問題が起きるかは未確認。\n",
-        "tags": [
-          "claude-code",
-          "テスト",
-          "ブラウザ自動化"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 1,
-        "stale": false,
-        "problem_summary": "UI動作確認のため、スクリーンショットを見て座標を指定してクリックしたところ、意図した要素とは別の行がクリックされ続けた。エラーは出ず、スクリーンショットも一見更新されているように…",
-        "solution_summary": "`read_page`で要素の参照ID(ref)を取得し、座標ではなく`ref`を指定してクリックする方式に切り替えたところ確実になった。座標クリックは、レイアウトのわずかな差やス…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-media-query-override-order-loses-to-later-base-rule.md",
-        "title": "同じ詳細度なら、`@media`内のルールでも後にある通常ルールに負ける",
-        "content": "# [候補] 同じ詳細度なら、`@media`内のルールでも後にある通常ルールに負ける\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [css, frontend, デザイン]\ndate: 2026-08-24\n\n## 何が起きたか\nモバイル用に`@media (max-width: 860px){ .foo{ margin-top: 28px } }`を書いたのに、実際のブラウザでは適用されず、無関係に見えるはずの`margin-top: auto`のままだった。\n\n## わかったこと・今の対応\n原因はCSSの記述順。同じ詳細度(セレクタの強さ)のルールは、`@media`の中かどうかに関係なく「あとに書かれた方」が勝つ。今回は`.foo{ margin-top: 28px }`をメディアクエリ付きでファイル前半に書き、`.foo{ margin-top: auto }`という基本スタイルをファイル後半(コンポーネントごとのスタイル定義の中)に書いていたため、条件が一致していても後発の基本スタイルに上書きされていた。対応は、メディアクエリでの上書きを、対象の基本スタイル定義の直後に移動すること。\n\n## 詳しい経緯\nmacOSダッシュボードのレスポンシブ対応で、`docs/index.html`のサイドバーフッターに `margin-top: auto`(常時、フッターを下端に固定)を指定しつつ、モバイル幅ではフッターを内容のすぐ下に置きたく`margin-top: 28px`を別のメディアクエリブロックに書いた。ブラウザの`getComputedStyle`で確認したところ`margin-top`が`auto`のままで、原因調査のため実際の計算値を出力させて初めて「後勝ち」の挙動に気づいた。ファイル全体を、レイアウト全般のメディアクエリ(ファイル冒頭)→コンポーネントごとのスタイル(ファイル後半)という構成にしていたことが根本原因。\n\n## まだ確認できていないこと\n- CSSファイルを「コンポーネントごとにまとめて書く」設計にしていれば最初から起きなかった問題なので、大規模なCSSでも同じ落とし穴に繰り返しハマりやすいかは未確認。\n- CSS内蔵のカスケードレイヤー(`@layer`)を使えば構造的に回避できるが、今回は使っていない。\n",
-        "tags": [
-          "css",
-          "frontend",
-          "デザイン"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 1,
-        "stale": false,
-        "problem_summary": "モバイル用に`@media (max-width: 860px){ .foo{ margin-top: 28px } }`を書いたのに、実際のブラウザでは適用されず、無関係に見える…",
-        "solution_summary": "原因はCSSの記述順。同じ詳細度(セレクタの強さ)のルールは、`@media`の中かどうかに関係なく「あとに書かれた方」が勝つ。今回は`.foo{ margin-top: 28px…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-dst-aware-market-hours-without-timezone-library.md",
-        "title": "`Intl.DateTimeFormat`だけで夏時間対応の「次の取引時間開始時刻」を、外部タイムゾーンライブラリ無しに",
-        "content": "# [候補] `Intl.DateTimeFormat`だけで夏時間対応の「次の取引時間開始時刻」を、外部タイムゾーンライブラリ無しに計算する\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [timezone, dst, javascript, intl-api]\ndate: 2026-08-24\n\n## 何が起きたか\n米国株式市場(NYSE, 9:30-16:00 America/New_York)の開場・閉場判定と「次に市場が開く時刻」の計算を、`date-fns-tz`や`luxon`のような依存を増やさずに実装する必要があった。夏時間(EDT, UTC-4)と冬時間(EST, UTC-5)を跨ぐため、単純な固定オフセット計算では誤差が出る。\n\n## わかったこと・今の対応\nNode標準の`Intl.DateTimeFormat(\"en-US\", { timeZone: \"America/New_York\", ... }).formatToParts(date)`は、任意のUTC時刻をそのタイムゾーンでの表示に変換できる(=そのタイムゾーンが現在夏時間か冬時間かをOS/ICUのタイムゾーンデータベースが自動判定してくれる)。これを利用し、「ET 9:30に相当するUTC時刻」を求める際は、まずEDT想定(UTC 13:30)で仮のDateを作り、それを`formatToParts`で再度ET表示に変換して「9:30になっているか」を確認する。なっていなければEST想定(UTC 14:30)を採用する、という”仮定→往復変換で検証”の手順で、夏時間/冬時間のどちらかをコード中に一切ハードコードせずに正しい方を選べる。祝日判定は別途必要(このアプリでは未実装のままTODOとして残した)。\n\n## 詳しい経緯\n市場が閉まっている理由(市場時間外/週末/祝日)をユーザーに正確に説明する必要があり、「次に市場が開くまであと何時間何分か」という具体的な数値をUIに表示する要件から実装した。標準テストとして「平日の開場前後」「金曜夜→月曜への週末スキップ」「冬時間(EST)のケース」を含む複数シナリオをNode単体スクリプトで検証してから本実装に組み込んだ。\n\n## まだ確認できていないこと\n- 他のタイムゾーン(日本の東証、欧州市場等)でも同じ「仮定→往復変換」パターンがそのまま使えるか(ロジック上は汎用的なはずだが、実際に他市場向けに適用した実績はまだない)\n- 祝日カレンダーとの組み合わせ方(NYSE休場日リストを外部データとして持つのがよいか、祝日計算ライブラリを別途入れるべきか)は未検討のまま\n",
-        "tags": [
-          "timezone",
-          "dst",
-          "javascript",
-          "intl-api"
-        ],
-        "projects": [
-          "kabu-simurator-app"
-        ],
-        "date": "2026-08-24",
-        "days_old": 1,
-        "stale": false,
-        "problem_summary": "米国株式市場(NYSE, 9:30-16:00 America/New_York)の開場・閉場判定と「次に市場が開く時刻」の計算を、`date-fns-tz`や`luxon`のよう…",
-        "solution_summary": "Node標準の`Intl.DateTimeFormat(\"en-US\", { timeZone: \"America/New_York\", ... }).formatToParts(…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-css-element-class-selector-silently-beats-utility-class.md",
-        "title": "`.table td { color: ... }` のような要素+クラスのCSSセレクタが、`.positive`/`",
-        "content": "# [候補] `.table td { color: ... }` のような要素+クラスのCSSセレクタが、`.positive`/`.negative` 等の単一クラスの色指定を詳細度で静かに上書きする\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [css, specificity, css-modules, frontend]\ndate: 2026-08-24\n\n## 何が起きたか\n株価アプリで「上昇=緑、下降=赤」の色分けクラス(`.positive`/`.negative`/`.buyTag`/`.sellTag`)をテーブルのセルに適用していたが、実際のブラウザでは常に白色(`--color-text`のデフォルト値)で表示され、色分けが一切機能していなかった。見た目には正しいクラス名がDOMに付与されており、CSS自体の記述ミスも一見なさそうに見えた。\n\n## わかったこと・今の対応\n共通スタイル側の `.table td { color: var(--color-text); }`(要素セレクタ`td` + クラスセレクタ`.table`の組み合わせ、詳細度 0,1,1)が、`.positive`(詳細度 0,1,0)より詳細度で勝っていたため、後から読み込まれる/されないに関わらず常に`.positive`側の`color`指定を上書きしていた。`getComputedStyle()`で該当要素の実際の色を確認したことで発覚。修正は`.table td`側の`color`宣言を削除するだけ(`--color-text`は`:root`からの継承でどのみち同じ値になるため、削除しても見た目に副作用がない)。\n\n## 詳しい経緯\nユーザーから「全体的に白黒で見づらい」という漠然とした報告を受けたが、実際には配色設計自体は間違っておらず、この詳細度バグにより意図した色が一度も描画されていなかったことが根本原因だった。「色が薄い/地味」という主観的な報告を鵜呑みにして配色のトーン調整だけで対応していたら、根本原因を見逃していた可能性が高い。\n\n## まだ確認できていないこと\n- CSS Modules環境([xxx].module.css)以外(Tailwind等のユーティリティファースト環境)でも同種の「共通コンポーネントの要素セレクタが個別ユーティリティクラスを上書きする」問題が起きやすいかは未検証。ただしCSS詳細度のルール自体はどの環境でも同じなので、テーブルやリストのような「共通ラッパーコンポーネント内で個別に色をつけたいセル」がある設計では一般的に注意が必要と考えられる。\n",
-        "tags": [
-          "css",
-          "specificity",
-          "css-modules",
-          "frontend"
-        ],
-        "projects": [
-          "kabu-simurator-app"
-        ],
-        "date": "2026-08-24",
-        "days_old": 1,
-        "stale": false,
-        "problem_summary": "株価アプリで「上昇=緑、下降=赤」の色分けクラス(`.positive`/`.negative`/`.buyTag`/`.sellTag`)をテーブルのセルに適用していたが、実際の…",
-        "solution_summary": "共通スタイル側の `.table td { color: var(--color-text); }`(要素セレクタ`td` + クラスセレクタ`.table`の組み合わせ、詳細度…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-24-npm-start-script-masks-clean-sigterm-shutdown.md",
-        "title": "`npm run start` でラップしたNode常駐プロセスは、アプリ側のSIGTERM正常終了とは別にnpm自身が",
-        "content": "# [候補] `npm run start` でラップしたNode常駐プロセスは、アプリ側のSIGTERM正常終了とは別にnpm自身がSIGTERMをエラーとしてログ出力し、PaaSの「クラッシュ」判定を誤爆させる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [node, deployment, railway, process-management]\ndate: 2026-08-24\n\n## 何が起きたか\nRailway上のExpressサーバーで、`process.on(\"SIGTERM\", ...)` によるgraceful shutdown(サーバーclose→DB close→`process.exit(0)`)を実装したにもかかわらず、再デプロイのたびにRailwayが「Deployment crashed」通知を出し続けた。\n\n## わかったこと・今の対応\n実際のDeploy Logsを確認すると、アプリ自身のシャットダウンログは正常に出ている一方で、`npm error signal SIGTERM` という行が別途出力されていた。原因は起動コマンドが `npm run start:server`(内部で `tsx server/index.ts` を呼ぶ)になっており、npm自身がSIGTERMを受け取った際に、子プロセス(tsx/Node)の終了とは無関係に「エラーとして」ログを出す仕様だったため。Railwayの起動コマンドを `npm run start:server` から `node_modules/.bin/tsx server/index.ts`(npmを介さず直接バイナリを起動)に変更したところ、`npm error signal SIGTERM` の行は完全に消え、アプリ側の正常終了ログのみが残るようになった。ただし、Railwayの「Deployment crashed」通知自体は、実際のexit codeやログ内容に関係なく「デプロイが置き換えられたこと」を示す汎用ラベルであることも別途確認しており、通知自体は消えない(無害と判断して無視する運用にした)。\n\n## 詳しい経緯\n最適化監査の一環でSIGTERMハンドラを追加した後、手動でRedeployをトリガーして新旧コマンドそれぞれのDeploy Logsを直接比較することで、npm起因のエラー出力だと特定した。Railwayのダッシュボード設定変更(Settings → Deploy → Custom Start Command)は「CI/CDパイプラインの変更」に該当するため、変更前にユーザーへ明示的に確認を取ってから実施した。\n\n## まだ確認できていないこと\n- Railway以外のPaaS(Render、Fly.io等)でも同様に「Deployment crashed」的な通知が誤爆するか未確認\n- `npm run start` ではなく `npm start`(package.jsonのstartスクリプト)でも同じ現象が起きるか未確認(おそらく同じnpm実装なので起きると推測されるが未検証)\n",
-        "tags": [
-          "node",
-          "deployment",
-          "railway",
-          "process-management"
-        ],
-        "projects": [
-          "kabu-simurator-app"
-        ],
-        "date": "2026-08-24",
-        "days_old": 1,
-        "stale": false,
-        "problem_summary": "Railway上のExpressサーバーで、`process.on(\"SIGTERM\", ...)` によるgraceful shutdown(サーバーclose→DB close…",
-        "solution_summary": "実際のDeploy Logsを確認すると、アプリ自身のシャットダウンログは正常に出ている一方で、`npm error signal SIGTERM` という行が別途出力されていた。…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
@@ -1345,10 +1225,138 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 1,
+        "days_old": 4,
         "stale": false,
         "problem_summary": "`gh auth login`をClaude Codeのチャット上(コードブロックのRunボタン経由)で実行してもらったところ、ユーザーは完了したつもりでも`gh auth sta…",
         "solution_summary": "Macの通常のターミナル(Terminal.appなど)で直接`gh auth login`を実行し直してもらったところ、ブラウザでの認可まできちんと完了し、`gh auth st…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-24-media-query-override-order-loses-to-later-base-rule.md",
+        "title": "同じ詳細度なら、`@media`内のルールでも後にある通常ルールに負ける",
+        "content": "# [候補] 同じ詳細度なら、`@media`内のルールでも後にある通常ルールに負ける\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [css, frontend, デザイン]\ndate: 2026-08-24\n\n## 何が起きたか\nモバイル用に`@media (max-width: 860px){ .foo{ margin-top: 28px } }`を書いたのに、実際のブラウザでは適用されず、無関係に見えるはずの`margin-top: auto`のままだった。\n\n## わかったこと・今の対応\n原因はCSSの記述順。同じ詳細度(セレクタの強さ)のルールは、`@media`の中かどうかに関係なく「あとに書かれた方」が勝つ。今回は`.foo{ margin-top: 28px }`をメディアクエリ付きでファイル前半に書き、`.foo{ margin-top: auto }`という基本スタイルをファイル後半(コンポーネントごとのスタイル定義の中)に書いていたため、条件が一致していても後発の基本スタイルに上書きされていた。対応は、メディアクエリでの上書きを、対象の基本スタイル定義の直後に移動すること。\n\n## 詳しい経緯\nmacOSダッシュボードのレスポンシブ対応で、`docs/index.html`のサイドバーフッターに `margin-top: auto`(常時、フッターを下端に固定)を指定しつつ、モバイル幅ではフッターを内容のすぐ下に置きたく`margin-top: 28px`を別のメディアクエリブロックに書いた。ブラウザの`getComputedStyle`で確認したところ`margin-top`が`auto`のままで、原因調査のため実際の計算値を出力させて初めて「後勝ち」の挙動に気づいた。ファイル全体を、レイアウト全般のメディアクエリ(ファイル冒頭)→コンポーネントごとのスタイル(ファイル後半)という構成にしていたことが根本原因。\n\n## まだ確認できていないこと\n- CSSファイルを「コンポーネントごとにまとめて書く」設計にしていれば最初から起きなかった問題なので、大規模なCSSでも同じ落とし穴に繰り返しハマりやすいかは未確認。\n- CSS内蔵のカスケードレイヤー(`@layer`)を使えば構造的に回避できるが、今回は使っていない。\n",
+        "tags": [
+          "css",
+          "frontend",
+          "デザイン"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 4,
+        "stale": false,
+        "problem_summary": "モバイル用に`@media (max-width: 860px){ .foo{ margin-top: 28px } }`を書いたのに、実際のブラウザでは適用されず、無関係に見える…",
+        "solution_summary": "原因はCSSの記述順。同じ詳細度(セレクタの強さ)のルールは、`@media`の中かどうかに関係なく「あとに書かれた方」が勝つ。今回は`.foo{ margin-top: 28px…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-24-npm-start-script-masks-clean-sigterm-shutdown.md",
+        "title": "`npm run start` でラップしたNode常駐プロセスは、アプリ側のSIGTERM正常終了とは別にnpm自身が",
+        "content": "# [候補] `npm run start` でラップしたNode常駐プロセスは、アプリ側のSIGTERM正常終了とは別にnpm自身がSIGTERMをエラーとしてログ出力し、PaaSの「クラッシュ」判定を誤爆させる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [node, deployment, railway, process-management]\ndate: 2026-08-24\n\n## 何が起きたか\nRailway上のExpressサーバーで、`process.on(\"SIGTERM\", ...)` によるgraceful shutdown(サーバーclose→DB close→`process.exit(0)`)を実装したにもかかわらず、再デプロイのたびにRailwayが「Deployment crashed」通知を出し続けた。\n\n## わかったこと・今の対応\n実際のDeploy Logsを確認すると、アプリ自身のシャットダウンログは正常に出ている一方で、`npm error signal SIGTERM` という行が別途出力されていた。原因は起動コマンドが `npm run start:server`(内部で `tsx server/index.ts` を呼ぶ)になっており、npm自身がSIGTERMを受け取った際に、子プロセス(tsx/Node)の終了とは無関係に「エラーとして」ログを出す仕様だったため。Railwayの起動コマンドを `npm run start:server` から `node_modules/.bin/tsx server/index.ts`(npmを介さず直接バイナリを起動)に変更したところ、`npm error signal SIGTERM` の行は完全に消え、アプリ側の正常終了ログのみが残るようになった。ただし、Railwayの「Deployment crashed」通知自体は、実際のexit codeやログ内容に関係なく「デプロイが置き換えられたこと」を示す汎用ラベルであることも別途確認しており、通知自体は消えない(無害と判断して無視する運用にした)。\n\n## 詳しい経緯\n最適化監査の一環でSIGTERMハンドラを追加した後、手動でRedeployをトリガーして新旧コマンドそれぞれのDeploy Logsを直接比較することで、npm起因のエラー出力だと特定した。Railwayのダッシュボード設定変更(Settings → Deploy → Custom Start Command)は「CI/CDパイプラインの変更」に該当するため、変更前にユーザーへ明示的に確認を取ってから実施した。\n\n## まだ確認できていないこと\n- Railway以外のPaaS(Render、Fly.io等)でも同様に「Deployment crashed」的な通知が誤爆するか未確認\n- `npm run start` ではなく `npm start`(package.jsonのstartスクリプト)でも同じ現象が起きるか未確認(おそらく同じnpm実装なので起きると推測されるが未検証)\n",
+        "tags": [
+          "node",
+          "deployment",
+          "railway",
+          "process-management"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "date": "2026-08-24",
+        "days_old": 4,
+        "stale": false,
+        "problem_summary": "Railway上のExpressサーバーで、`process.on(\"SIGTERM\", ...)` によるgraceful shutdown(サーバーclose→DB close…",
+        "solution_summary": "実際のDeploy Logsを確認すると、アプリ自身のシャットダウンログは正常に出ている一方で、`npm error signal SIGTERM` という行が別途出力されていた。…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-24-css-element-class-selector-silently-beats-utility-class.md",
+        "title": "`.table td { color: ... }` のような要素+クラスのCSSセレクタが、`.positive`/`",
+        "content": "# [候補] `.table td { color: ... }` のような要素+クラスのCSSセレクタが、`.positive`/`.negative` 等の単一クラスの色指定を詳細度で静かに上書きする\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [css, specificity, css-modules, frontend]\ndate: 2026-08-24\n\n## 何が起きたか\n株価アプリで「上昇=緑、下降=赤」の色分けクラス(`.positive`/`.negative`/`.buyTag`/`.sellTag`)をテーブルのセルに適用していたが、実際のブラウザでは常に白色(`--color-text`のデフォルト値)で表示され、色分けが一切機能していなかった。見た目には正しいクラス名がDOMに付与されており、CSS自体の記述ミスも一見なさそうに見えた。\n\n## わかったこと・今の対応\n共通スタイル側の `.table td { color: var(--color-text); }`(要素セレクタ`td` + クラスセレクタ`.table`の組み合わせ、詳細度 0,1,1)が、`.positive`(詳細度 0,1,0)より詳細度で勝っていたため、後から読み込まれる/されないに関わらず常に`.positive`側の`color`指定を上書きしていた。`getComputedStyle()`で該当要素の実際の色を確認したことで発覚。修正は`.table td`側の`color`宣言を削除するだけ(`--color-text`は`:root`からの継承でどのみち同じ値になるため、削除しても見た目に副作用がない)。\n\n## 詳しい経緯\nユーザーから「全体的に白黒で見づらい」という漠然とした報告を受けたが、実際には配色設計自体は間違っておらず、この詳細度バグにより意図した色が一度も描画されていなかったことが根本原因だった。「色が薄い/地味」という主観的な報告を鵜呑みにして配色のトーン調整だけで対応していたら、根本原因を見逃していた可能性が高い。\n\n## まだ確認できていないこと\n- CSS Modules環境([xxx].module.css)以外(Tailwind等のユーティリティファースト環境)でも同種の「共通コンポーネントの要素セレクタが個別ユーティリティクラスを上書きする」問題が起きやすいかは未検証。ただしCSS詳細度のルール自体はどの環境でも同じなので、テーブルやリストのような「共通ラッパーコンポーネント内で個別に色をつけたいセル」がある設計では一般的に注意が必要と考えられる。\n",
+        "tags": [
+          "css",
+          "specificity",
+          "css-modules",
+          "frontend"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "date": "2026-08-24",
+        "days_old": 4,
+        "stale": false,
+        "problem_summary": "株価アプリで「上昇=緑、下降=赤」の色分けクラス(`.positive`/`.negative`/`.buyTag`/`.sellTag`)をテーブルのセルに適用していたが、実際の…",
+        "solution_summary": "共通スタイル側の `.table td { color: var(--color-text); }`(要素セレクタ`td` + クラスセレクタ`.table`の組み合わせ、詳細度…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-24-dst-aware-market-hours-without-timezone-library.md",
+        "title": "`Intl.DateTimeFormat`だけで夏時間対応の「次の取引時間開始時刻」を、外部タイムゾーンライブラリ無しに",
+        "content": "# [候補] `Intl.DateTimeFormat`だけで夏時間対応の「次の取引時間開始時刻」を、外部タイムゾーンライブラリ無しに計算する\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [kabu-simurator-app]\ntags: [timezone, dst, javascript, intl-api]\ndate: 2026-08-24\n\n## 何が起きたか\n米国株式市場(NYSE, 9:30-16:00 America/New_York)の開場・閉場判定と「次に市場が開く時刻」の計算を、`date-fns-tz`や`luxon`のような依存を増やさずに実装する必要があった。夏時間(EDT, UTC-4)と冬時間(EST, UTC-5)を跨ぐため、単純な固定オフセット計算では誤差が出る。\n\n## わかったこと・今の対応\nNode標準の`Intl.DateTimeFormat(\"en-US\", { timeZone: \"America/New_York\", ... }).formatToParts(date)`は、任意のUTC時刻をそのタイムゾーンでの表示に変換できる(=そのタイムゾーンが現在夏時間か冬時間かをOS/ICUのタイムゾーンデータベースが自動判定してくれる)。これを利用し、「ET 9:30に相当するUTC時刻」を求める際は、まずEDT想定(UTC 13:30)で仮のDateを作り、それを`formatToParts`で再度ET表示に変換して「9:30になっているか」を確認する。なっていなければEST想定(UTC 14:30)を採用する、という”仮定→往復変換で検証”の手順で、夏時間/冬時間のどちらかをコード中に一切ハードコードせずに正しい方を選べる。祝日判定は別途必要(このアプリでは未実装のままTODOとして残した)。\n\n## 詳しい経緯\n市場が閉まっている理由(市場時間外/週末/祝日)をユーザーに正確に説明する必要があり、「次に市場が開くまであと何時間何分か」という具体的な数値をUIに表示する要件から実装した。標準テストとして「平日の開場前後」「金曜夜→月曜への週末スキップ」「冬時間(EST)のケース」を含む複数シナリオをNode単体スクリプトで検証してから本実装に組み込んだ。\n\n## まだ確認できていないこと\n- 他のタイムゾーン(日本の東証、欧州市場等)でも同じ「仮定→往復変換」パターンがそのまま使えるか(ロジック上は汎用的なはずだが、実際に他市場向けに適用した実績はまだない)\n- 祝日カレンダーとの組み合わせ方(NYSE休場日リストを外部データとして持つのがよいか、祝日計算ライブラリを別途入れるべきか)は未検討のまま\n",
+        "tags": [
+          "timezone",
+          "dst",
+          "javascript",
+          "intl-api"
+        ],
+        "projects": [
+          "kabu-simurator-app"
+        ],
+        "date": "2026-08-24",
+        "days_old": 4,
+        "stale": false,
+        "problem_summary": "米国株式市場(NYSE, 9:30-16:00 America/New_York)の開場・閉場判定と「次に市場が開く時刻」の計算を、`date-fns-tz`や`luxon`のよう…",
+        "solution_summary": "Node標準の`Intl.DateTimeFormat(\"en-US\", { timeZone: \"America/New_York\", ... }).formatToParts(…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-24-browser-tool-coordinate-click-can-silently-miss.md",
+        "title": "ブラウザ操作ツールでの座標クリックは、要素がずれてサイレントに外れることがある",
+        "content": "# [候補] ブラウザ操作ツールでの座標クリックは、要素がずれてサイレントに外れることがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, テスト, ブラウザ自動化]\ndate: 2026-08-24\n\n## 何が起きたか\nUI動作確認のため、スクリーンショットを見て座標を指定してクリックしたところ、意図した要素とは別の行がクリックされ続けた。エラーは出ず、スクリーンショットも一見更新されているように見えたため、しばらく気づかなかった。\n\n## わかったこと・今の対応\n`read_page`で要素の参照ID(ref)を取得し、座標ではなく`ref`を指定してクリックする方式に切り替えたところ確実になった。座標クリックは、レイアウトのわずかな差やスクリーンショットの縮小表示・タイミングのズレで簡単に外れるため、UIの自動確認では基本的に`ref`ベースのクリックを使い、座標クリックは最終手段にする方がよい。挙動を確定させたい場合は、クリック後にアプリ側のJS状態(今回は`route`という変数)を直接読んで検証すると誤クリックにすぐ気づける。\n\n## 詳しい経緯\ndocs/index.htmlのUI刷新確認で、サイドバーの「概要」行をスクリーンショット上の座標(65, 108)でクリックしたが、何度やっても「Skill一覧」など別の行がアクティブになった。スクリーンショットのピクセルサイズ(800px幅)と実ビューポート(1400px幅)のスケール差や、直前の画面状態によって行の実際のy座標が変わっていたことが原因と推測される。`read_page`が返す`ref_N`を使ったクリックに切り替えたところ、一度も外れなくなった。\n\n## まだ確認できていないこと\n- 座標クリックが具体的にどの計算(スケール変換・タイミング)で外れていたのかは未特定。\n- モバイルエミュレーション(タッチ座標)でも同じ問題が起きるかは未確認。\n",
+        "tags": [
+          "claude-code",
+          "テスト",
+          "ブラウザ自動化"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 4,
+        "stale": false,
+        "problem_summary": "UI動作確認のため、スクリーンショットを見て座標を指定してクリックしたところ、意図した要素とは別の行がクリックされ続けた。エラーは出ず、スクリーンショットも一見更新されているように…",
+        "solution_summary": "`read_page`で要素の参照ID(ref)を取得し、座標ではなく`ref`を指定してクリックする方式に切り替えたところ確実になった。座標クリックは、レイアウトのわずかな差やス…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
@@ -1370,7 +1378,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 1,
+        "days_old": 4,
         "stale": false,
         "problem_summary": "Claude Codeに`~/.claude/settings.json`(hooksの設定ファイル)を新規作成・編集させようとすると、BashツールでもWriteツールでも、au…",
         "solution_summary": "ツールを変えても同じ理由で拒否されるため、回避策ではなく仕様と考えられる。内容をファイルに書き出し、ユーザー本人に自分のターミナルで`cp`させることで設置できた。他の`~/.cl…",
@@ -1383,72 +1391,21 @@ window.STATS_DATA = {
         "promotion_ready": false
       },
       {
-        "filename": "2026-08-example-candidate.md",
-        "title": "AudioStreamPlayerのバス切り替えタイミング",
-        "content": "# [候補] AudioStreamPlayerのバス切り替えタイミング\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [DEPTH//]\ntags: [godot, オーディオ, ゲーム開発]\ndate: 2026-08-20\n\n## 何が起きたか\nシーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。\n\n## わかったこと・今の対応\nシーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。\n\n## まだ確認できていないこと\n- Polypulseの時にあった「OGG/PhaseLoopMusicの音切れ」と同一原因か未確認\n- 他のプロジェクトでも再現するか未確認\n\n## 昇格の条件\n別のプロジェクトでも同じ現象が確認されたら rules/ に昇格し、\nincidents/ に詳細ログを残す。\n",
+        "filename": "2026-08-23-claude-code-exit-not-always-available.md",
+        "title": "Claude Codeの`/exit`コマンドは環境によっては使えないことがある",
+        "content": "# [候補] Claude Codeの`/exit`コマンドは環境によっては使えないことがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, hooks]\ndate: 2026-08-23\n\n## 何が起きたか\n「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available in this environment」と表示され、使えなかった。\n\n## わかったこと・今の対応\n`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案内として`/exit`だけを教えるのは不十分で、使えるか事前に確認するか、代替手段(このプロジェクトでは独自に作った`/kb-sync`コマンド)も併せて用意しておくべき。\n\n## 詳しい経緯\nこのユーザーはClaude Codeを、通常のターミナルCLIではなく何らかのラッパーアプリ/独自環境(ツール名に`mcp__ccd_*`のようなプレフィックスが付くカスタムMCPサーバー群が存在する環境)経由で使っている。そのため、標準的なCLIでは動くはずの`/exit`スラッシュコマンドが、この環境では未実装扱いになっていた。一方で、`~/.claude/commands/`に置いた独自のカスタムスラッシュコマンド(`/kb-sync`)は、この環境でも直接タイプするだけで(新しいセッションを待たずに)問題なく認識・実行できた。つまり「ビルトインのスラッシュコマンドが環境によって使えないことがある」一方で「ユーザー定義のカスタムコマンドは同じセッション内でも比較的すぐに使えるようになる」という非対称性がある。\n\n## まだ確認できていないこと\n- どの具体的な環境(VS Code拡張機能・デスクトップアプリ・Web版・サードパーティのラッパーなど)で`/exit`が使えない/使えるのかの一覧は未確認\n- カスタムコマンドが「同じセッション内で作成後すぐ使える」のが常に保証された挙動か、たまたま今回は動いただけなのかは未確認\n",
         "tags": [
-          "godot",
-          "オーディオ",
-          "ゲーム開発"
+          "claude-code",
+          "hooks"
         ],
         "projects": [
-          "DEPTH//"
+          "knowledge-base"
         ],
-        "date": "2026-08-20",
+        "date": "2026-08-23",
         "days_old": 5,
         "stale": false,
-        "problem_summary": "シーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。",
-        "solution_summary": "シーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-23-torch-dll-winerror1114-background-thread.md",
-        "title": "Windows+PyTorchで「重い処理をバックグラウンドスレッドで初めて呼ぶ」設計はDLL初期化エラー(WinErr",
-        "content": "# [候補] Windows+PyTorchで「重い処理をバックグラウンドスレッドで初めて呼ぶ」設計はDLL初期化エラー(WinError 1114)の温床になりうる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [windows, pytorch, threading, dll]\ndate: 2026-08-23\n\n## 何が起きたか\nWindows上でtorch(easyocrが内部で使用)を初めてimportする処理を、メインスレッドではなく新しく作ったバックグラウンドスレッド(監視ループ用のスレッド)の中で行う設計にしたところ、`OSError: [WinError 1114] DLL初期化ルーチンの実行に失敗しました(c10.dll)`が発生した。\n\n## わかったこと・今の対応\n原因は完全には確定できなかった(意図的な再現実験ではエラー自体を再現できなかった)。ただし「torchのようなネイティブDLLを持つライブラリの初回importを、メインスレッド以外の、生成されたばかりのスレッドで行う」設計自体がWindowsで不安定さの原因になりうるという一般的な事例と矛盾しない状況だった。対応として、重い処理を呼ぶ前に、アプリ起動時・ワーカースレッド起動前のメインスレッドで対象ライブラリを同期的に一度だけ初期化する「warmup」関数を用意し、必ずそこで初回importを済ませてから他のスレッドを起動するようにした。原因を確定できなくても、初期化コストを1回に集約できる副次効果もあり実施する価値がある。\n\n## 詳しい経緯\nプロジェクトでは、カメラ映像を継続的にポーリングする常時監視ループを`threading.Thread`で新規スレッドとして起動し、そのスレッドの中で初めて重い認識処理(内部で`import easyocr`→`import torch`)を呼び出す設計にしていた。それまでの実行経路(Flaskのリクエストスレッド等)では既にeasyocr/torchの初期化を経験済みだったが、この監視スレッドの経路だけは新規に追加されたものであり、かつ実機性能試験でも(監視対象の画面が一度も検知条件を満たさなかったため)この重い処理の経路自体を一度も実際に通していなかった。\n\nその状態でユーザーが実際にこの経路を初めて通したところ、`c10.dll`のDLL初期化失敗(`WinError 1114`)が発生した。以前、同種のエラーが「複数のPythonプロセスの一時的な競合」として説明されたことがあったが、その時点ではこの「新規バックグラウンドスレッドでの初回import」という状況自体が存在しなかったため、同じ説明が今回にも当てはまるかは不明だった。\n\n原因調査として、(a)単純にバックグラウンドスレッドで`import torch`するだけの再現スクリプト、(b)`cv2.VideoCapture(CAP_DSHOW)`でカメラを開いて数フレーム読んだ後、同じスレッドで`easyocr.Reader()`を初期化する、より実際の構成に近い再現スクリプト、の両方を試したが、いずれもエラーを再現できなかった。Windowsのローダーロック絡みの問題は本質的にタイミング依存で、他プロセスの状態・ドライバ・アンチウイルスのスキャン等の外的要因に敏感なことが多いため、「再現できなかった=原因ではない」とは言い切れない。\n\nそのため、原因を確定させることよりも、「初回importの発生スレッドを常にメインスレッドに固定する」という、副作用がなく実利のある対策を先に実施する判断をした。具体的には、ライブラリのシングルトン初期化関数(`get_reader()`相当)を、ワーカースレッドを起動する処理(`start()`相当)の中で、スレッド生成の直前にメインスレッド側で同期的に呼び出す形にした。これにより2回目以降のimportはPythonの`sys.modules`キャッシュを参照するだけになり、ワーカースレッド側でのネイティブDLLロードが原理的に発生しなくなる。\n\n## まだ確認できていないこと\n- この対策で実際にWinError 1114が再発しなくなったかどうかは、エラーが実際に発生していた本番同等の状況(このプロジェクトでは実機カメラでゲーム画面を継続的に映した状態)でまだ検証できていない\n- 「バックグラウンドスレッドでの初回import」が本当に必要十分な発生条件なのか、他の要因(同時に起動していた別プロセスの有無等)が絡んでいたのかは切り分けられていない\n- 他のネイティブDLL依存ライブラリ(torch以外の重い機械学習ライブラリ等)でも同様の現象が起きるかは未検証\n\n## 昇格の条件\n別のプロジェクトでも「Windows環境でtorch等のネイティブDLL依存ライブラリを、新規スレッドで初めてimportした際にDLL初期化エラーが起きた」事例が確認されたら rules/ に昇格する。\n",
-        "tags": [
-          "windows",
-          "pytorch",
-          "threading",
-          "dll"
-        ],
-        "projects": [
-          "pokemon-champions-BattleAI"
-        ],
-        "date": "2026-08-23",
-        "days_old": 2,
-        "stale": false,
-        "problem_summary": "Windows上でtorch(easyocrが内部で使用)を初めてimportする処理を、メインスレッドではなく新しく作ったバックグラウンドスレッド(監視ループ用のスレッド)の中で…",
-        "solution_summary": "原因は完全には確定できなかった(意図的な再現実験ではエラー自体を再現できなかった)。ただし「torchのようなネイティブDLLを持つライブラリの初回importを、メインスレッド以…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": null,
-        "source_url": null,
-        "promotion_ready": false
-      },
-      {
-        "filename": "2026-08-23-small-crop-color-sampling-alignment-sensitivity.md",
-        "title": "小さいクロップ窓での代表色抽出は数px のズレで背景色に汚染される",
-        "content": "# [候補] 小さいクロップ窓での代表色抽出は数px のズレで背景色に汚染される\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [画像処理, 座標校正]\ndate: 2026-08-23\n\n## 何が起きたか\n小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。\n\n## わかったこと・今の対応\n切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。\n\n## 詳しい経緯\nゲーム画面のUIバッジ(性別アイコン等、40x30px程度の小さい円)から\n「中間輝度の画素だけを残して中央値を取る」方式で代表色を抽出する処理を、\n別レイアウトの画面向けに新しい座標で再校正していたところ、目分量で\n決めた座標(本来のアイコン位置から左に約12px、上下にも数px分の余分な\nマージンを含む窓)では、既知で女性のはずのアイコンが軒並み「男性」と\n誤判定される現象が起きた。\n\n原因を調べたところ、窓が実際のアイコン位置からズレていたことで、\n背景色(カードの紫グラデーション)の割合がアイコン自体の画素数を\n上回り、中央値の計算結果が背景色にほぼ支配されていた(背景の紫が\nたまたま「男性=青系」の参照色に近い色味だったため、誤判定として\n現れた)。窓を実測(10px刻みの目盛りを焼き込んだ拡大画像で目視確認)\nした正確な範囲に絞り込んだところ解消した。\n\n大きい領域(100px角以上等)であれば数px のズレは全体に対する割合が\n小さく吸収されるが、40x30px程度の小さいバッジ/アイコンを対象にした\n色抽出・テンプレートマッチングでは、同じ数px のズレが致命的な誤判定を\n生む。小さい対象への座標校正は「だいたい合っている」では不十分で、\n実測ベースでピクセル単位まで詰める必要がある。\n\n## まだ確認できていないこと\n- 「小さい対象では座標ズレの影響が非線形に大きくなる」という一般化が、\n  色抽出以外の手法(テンプレートマッチング等)にも同程度に当てはまるか\n  は定量的には未検証(テンプレートマッチングは窓が多少広くても内部で\n  スケール探索するため、色抽出ほど脆弱ではない可能性がある)\n- 対象サイズと許容ズレ量の関係(例: 対象の何%以内のズレなら安全か)を\n  定量化した基準は未確立\n\n## 昇格の条件\n別のプロジェクトでも「小さいUI要素の色/特徴抽出が数pxの座標ズレで\n破綻する」ケースが確認されたら rules/ に昇格する。\n",
-        "tags": [
-          "画像処理",
-          "座標校正"
-        ],
-        "projects": [
-          "pokemon-champions-BattleAI"
-        ],
-        "date": "2026-08-23",
-        "days_old": 2,
-        "stale": false,
-        "problem_summary": "小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。",
-        "solution_summary": "切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。",
+        "problem_summary": "「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available…",
+        "solution_summary": "`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
@@ -1469,7 +1426,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-23",
-        "days_old": 2,
+        "days_old": 5,
         "stale": false,
         "problem_summary": "SessionEndフックに複数のhook(会話内容をAIに判断させて文章を書く「prompt」タイプを含む)を並べていたが、どのhookにも`timeout`を指定していなかった…",
         "solution_summary": "SessionEndフックだけは特別に、`timeout`を指定しない場合「複数のhook全部合わせてわずか1.5秒」しか実行時間が無い(他のイベントでは`command`が600…",
@@ -1493,7 +1450,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-23",
-        "days_old": 2,
+        "days_old": 5,
         "stale": false,
         "problem_summary": "Claude CodeのSessionEndフックに`matcher: \"clear\"`とだけ書いていたら、ユーザーが`/clear`と入力した時にしか動かなかった。ターミナルを閉…",
         "solution_summary": "`matcher`に`\"clear|prompt_input_exit\"`のようにパイプ区切りで複数の終了理由を書けば、両方のタイミングで発動するようになる。`matcher`は配…",
@@ -1506,21 +1463,23 @@ window.STATS_DATA = {
         "promotion_ready": false
       },
       {
-        "filename": "2026-08-23-easyocr-small-kana-confusion-not-fixable-by-preprocessing.md",
-        "title": "EasyOCRの小さい仮名(ゃ/や等)混同は前処理では直らない",
-        "content": "# [候補] EasyOCRの小さい仮名(ゃ/や等)混同は前処理では直らない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [OCR, 画像処理]\ndate: 2026-08-23\n\n## 何が起きたか\nEasyOCRで、小さい「ゃ」「や」のような拗音の仮名を、大きい仮名と読み間違える。\n\n## わかったこと・今の対応\n画質を上げても二値化(白黒に変換する処理)を変えても直らなかった。前処理では直せない、モデル自体の限界の可能性が高い。他のOCRエンジンを試すか、辞書で後から補正する方法はまだ試せていない。\n\n## 詳しい経緯\nEasyOCR(`[\"ja\",\"en\"]`)でゲーム画面のニックネームテキスト(通常フォント、\n装飾なし)を読ませたところ、「かあちゃん」が「かあちやん」に、\n「マスカーニャ」が「マスカーニヤ」になるなど、拗音を表す小さい仮名\n(ゃ/や、ャ/ヤ)を大きい仮名と混同する誤読が発生した。\n\n二値化+複数閾値探索(`ocr_best_of_thresholds`)、アップスケール2〜5倍を\n一通り試したが、いずれも改善しなかった(誤読結果は同じ「や/ヤ」の\nまま、信頼度だけが0.99台まで上がった=モデルは高い自信を持って\n間違えている)。このことから、この種の誤読は画質・二値化・解像度の\n問題ではなく、EasyOCRの認識モデル自体が小さい仮名と大きい仮名の\nサイズ差(字形はほぼ同じで大きさだけが違う)を安定して区別できない\nという、モデルレベルの限界である可能性が高いと判断した。\n\n前処理をいくら工夫しても直らないタイプの誤読がある、という切り分けの\n基準として: 複数の閾値・複数の拡大率を試しても常に「同じ」誤読結果に\n高信頼度で収束する場合、それは画質側の問題ではなくモデルの限界を\n疑うべき。\n\n## まだ確認できていないこと\n- PaddleOCR/Tesseract等、別のOCRエンジンであれば小さい仮名を正しく\n  区別できるかは未検証(このプロジェクトではEasyOCR以外を実機比較して\n  いない)\n- 小さい仮名が含まれる単語をあらかじめ辞書(既知のニックネーム/技名\n  リスト等)と照合して補正する、という後処理的な回避策の有効性は\n  未検証\n\n## 昇格の条件\n別のプロジェクトでもEasyOCRの小さい仮名混同が確認され、かつ前処理では\n直らないことが再確認されたら rules/ に昇格する。\n",
+        "filename": "2026-08-23-torch-dll-winerror1114-background-thread.md",
+        "title": "Windows+PyTorchで「重い処理をバックグラウンドスレッドで初めて呼ぶ」設計はDLL初期化エラー(WinErr",
+        "content": "# [候補] Windows+PyTorchで「重い処理をバックグラウンドスレッドで初めて呼ぶ」設計はDLL初期化エラー(WinError 1114)の温床になりうる\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [windows, pytorch, threading, dll]\ndate: 2026-08-23\n\n## 何が起きたか\nWindows上でtorch(easyocrが内部で使用)を初めてimportする処理を、メインスレッドではなく新しく作ったバックグラウンドスレッド(監視ループ用のスレッド)の中で行う設計にしたところ、`OSError: [WinError 1114] DLL初期化ルーチンの実行に失敗しました(c10.dll)`が発生した。\n\n## わかったこと・今の対応\n原因は完全には確定できなかった(意図的な再現実験ではエラー自体を再現できなかった)。ただし「torchのようなネイティブDLLを持つライブラリの初回importを、メインスレッド以外の、生成されたばかりのスレッドで行う」設計自体がWindowsで不安定さの原因になりうるという一般的な事例と矛盾しない状況だった。対応として、重い処理を呼ぶ前に、アプリ起動時・ワーカースレッド起動前のメインスレッドで対象ライブラリを同期的に一度だけ初期化する「warmup」関数を用意し、必ずそこで初回importを済ませてから他のスレッドを起動するようにした。原因を確定できなくても、初期化コストを1回に集約できる副次効果もあり実施する価値がある。\n\n## 詳しい経緯\nプロジェクトでは、カメラ映像を継続的にポーリングする常時監視ループを`threading.Thread`で新規スレッドとして起動し、そのスレッドの中で初めて重い認識処理(内部で`import easyocr`→`import torch`)を呼び出す設計にしていた。それまでの実行経路(Flaskのリクエストスレッド等)では既にeasyocr/torchの初期化を経験済みだったが、この監視スレッドの経路だけは新規に追加されたものであり、かつ実機性能試験でも(監視対象の画面が一度も検知条件を満たさなかったため)この重い処理の経路自体を一度も実際に通していなかった。\n\nその状態でユーザーが実際にこの経路を初めて通したところ、`c10.dll`のDLL初期化失敗(`WinError 1114`)が発生した。以前、同種のエラーが「複数のPythonプロセスの一時的な競合」として説明されたことがあったが、その時点ではこの「新規バックグラウンドスレッドでの初回import」という状況自体が存在しなかったため、同じ説明が今回にも当てはまるかは不明だった。\n\n原因調査として、(a)単純にバックグラウンドスレッドで`import torch`するだけの再現スクリプト、(b)`cv2.VideoCapture(CAP_DSHOW)`でカメラを開いて数フレーム読んだ後、同じスレッドで`easyocr.Reader()`を初期化する、より実際の構成に近い再現スクリプト、の両方を試したが、いずれもエラーを再現できなかった。Windowsのローダーロック絡みの問題は本質的にタイミング依存で、他プロセスの状態・ドライバ・アンチウイルスのスキャン等の外的要因に敏感なことが多いため、「再現できなかった=原因ではない」とは言い切れない。\n\nそのため、原因を確定させることよりも、「初回importの発生スレッドを常にメインスレッドに固定する」という、副作用がなく実利のある対策を先に実施する判断をした。具体的には、ライブラリのシングルトン初期化関数(`get_reader()`相当)を、ワーカースレッドを起動する処理(`start()`相当)の中で、スレッド生成の直前にメインスレッド側で同期的に呼び出す形にした。これにより2回目以降のimportはPythonの`sys.modules`キャッシュを参照するだけになり、ワーカースレッド側でのネイティブDLLロードが原理的に発生しなくなる。\n\n## まだ確認できていないこと\n- この対策で実際にWinError 1114が再発しなくなったかどうかは、エラーが実際に発生していた本番同等の状況(このプロジェクトでは実機カメラでゲーム画面を継続的に映した状態)でまだ検証できていない\n- 「バックグラウンドスレッドでの初回import」が本当に必要十分な発生条件なのか、他の要因(同時に起動していた別プロセスの有無等)が絡んでいたのかは切り分けられていない\n- 他のネイティブDLL依存ライブラリ(torch以外の重い機械学習ライブラリ等)でも同様の現象が起きるかは未検証\n\n## 昇格の条件\n別のプロジェクトでも「Windows環境でtorch等のネイティブDLL依存ライブラリを、新規スレッドで初めてimportした際にDLL初期化エラーが起きた」事例が確認されたら rules/ に昇格する。\n",
         "tags": [
-          "OCR",
-          "画像処理"
+          "windows",
+          "pytorch",
+          "threading",
+          "dll"
         ],
         "projects": [
           "pokemon-champions-BattleAI"
         ],
         "date": "2026-08-23",
-        "days_old": 2,
+        "days_old": 5,
         "stale": false,
-        "problem_summary": "EasyOCRで、小さい「ゃ」「や」のような拗音の仮名を、大きい仮名と読み間違える。",
-        "solution_summary": "画質を上げても二値化(白黒に変換する処理)を変えても直らなかった。前処理では直せない、モデル自体の限界の可能性が高い。他のOCRエンジンを試すか、辞書で後から補正する方法はまだ試せ…",
+        "problem_summary": "Windows上でtorch(easyocrが内部で使用)を初めてimportする処理を、メインスレッドではなく新しく作ったバックグラウンドスレッド(監視ループ用のスレッド)の中で…",
+        "solution_summary": "原因は完全には確定できなかった(意図的な再現実験ではエラー自体を再現できなかった)。ただし「torchのようなネイティブDLLを持つライブラリの初回importを、メインスレッド以…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
@@ -1542,7 +1501,7 @@ window.STATS_DATA = {
           "pokemon-champions-BattleAI"
         ],
         "date": "2026-08-23",
-        "days_old": 2,
+        "days_old": 5,
         "stale": false,
         "problem_summary": "OpenCVの`TM_CCORR_NORMED`という比較方法を使うと、明るい画像は内容と無関係な場所にも高い一致スコアを出してしまう。",
         "solution_summary": "別の比較方法(`TM_CCOEFF_NORMED`)に切り替えると、既存の検証済みケースの精度が落ちてしまったため、今回は不採用。切り替えを検討する際は、既知の正解データで必ず事前…",
@@ -1555,21 +1514,70 @@ window.STATS_DATA = {
         "promotion_ready": false
       },
       {
-        "filename": "2026-08-23-claude-code-exit-not-always-available.md",
-        "title": "Claude Codeの`/exit`コマンドは環境によっては使えないことがある",
-        "content": "# [候補] Claude Codeの`/exit`コマンドは環境によっては使えないことがある\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [claude-code, hooks]\ndate: 2026-08-23\n\n## 何が起きたか\n「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available in this environment」と表示され、使えなかった。\n\n## わかったこと・今の対応\n`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案内として`/exit`だけを教えるのは不十分で、使えるか事前に確認するか、代替手段(このプロジェクトでは独自に作った`/kb-sync`コマンド)も併せて用意しておくべき。\n\n## 詳しい経緯\nこのユーザーはClaude Codeを、通常のターミナルCLIではなく何らかのラッパーアプリ/独自環境(ツール名に`mcp__ccd_*`のようなプレフィックスが付くカスタムMCPサーバー群が存在する環境)経由で使っている。そのため、標準的なCLIでは動くはずの`/exit`スラッシュコマンドが、この環境では未実装扱いになっていた。一方で、`~/.claude/commands/`に置いた独自のカスタムスラッシュコマンド(`/kb-sync`)は、この環境でも直接タイプするだけで(新しいセッションを待たずに)問題なく認識・実行できた。つまり「ビルトインのスラッシュコマンドが環境によって使えないことがある」一方で「ユーザー定義のカスタムコマンドは同じセッション内でも比較的すぐに使えるようになる」という非対称性がある。\n\n## まだ確認できていないこと\n- どの具体的な環境(VS Code拡張機能・デスクトップアプリ・Web版・サードパーティのラッパーなど)で`/exit`が使えない/使えるのかの一覧は未確認\n- カスタムコマンドが「同じセッション内で作成後すぐ使える」のが常に保証された挙動か、たまたま今回は動いただけなのかは未確認\n",
+        "filename": "2026-08-23-easyocr-small-kana-confusion-not-fixable-by-preprocessing.md",
+        "title": "EasyOCRの小さい仮名(ゃ/や等)混同は前処理では直らない",
+        "content": "# [候補] EasyOCRの小さい仮名(ゃ/や等)混同は前処理では直らない\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [OCR, 画像処理]\ndate: 2026-08-23\n\n## 何が起きたか\nEasyOCRで、小さい「ゃ」「や」のような拗音の仮名を、大きい仮名と読み間違える。\n\n## わかったこと・今の対応\n画質を上げても二値化(白黒に変換する処理)を変えても直らなかった。前処理では直せない、モデル自体の限界の可能性が高い。他のOCRエンジンを試すか、辞書で後から補正する方法はまだ試せていない。\n\n## 詳しい経緯\nEasyOCR(`[\"ja\",\"en\"]`)でゲーム画面のニックネームテキスト(通常フォント、\n装飾なし)を読ませたところ、「かあちゃん」が「かあちやん」に、\n「マスカーニャ」が「マスカーニヤ」になるなど、拗音を表す小さい仮名\n(ゃ/や、ャ/ヤ)を大きい仮名と混同する誤読が発生した。\n\n二値化+複数閾値探索(`ocr_best_of_thresholds`)、アップスケール2〜5倍を\n一通り試したが、いずれも改善しなかった(誤読結果は同じ「や/ヤ」の\nまま、信頼度だけが0.99台まで上がった=モデルは高い自信を持って\n間違えている)。このことから、この種の誤読は画質・二値化・解像度の\n問題ではなく、EasyOCRの認識モデル自体が小さい仮名と大きい仮名の\nサイズ差(字形はほぼ同じで大きさだけが違う)を安定して区別できない\nという、モデルレベルの限界である可能性が高いと判断した。\n\n前処理をいくら工夫しても直らないタイプの誤読がある、という切り分けの\n基準として: 複数の閾値・複数の拡大率を試しても常に「同じ」誤読結果に\n高信頼度で収束する場合、それは画質側の問題ではなくモデルの限界を\n疑うべき。\n\n## まだ確認できていないこと\n- PaddleOCR/Tesseract等、別のOCRエンジンであれば小さい仮名を正しく\n  区別できるかは未検証(このプロジェクトではEasyOCR以外を実機比較して\n  いない)\n- 小さい仮名が含まれる単語をあらかじめ辞書(既知のニックネーム/技名\n  リスト等)と照合して補正する、という後処理的な回避策の有効性は\n  未検証\n\n## 昇格の条件\n別のプロジェクトでもEasyOCRの小さい仮名混同が確認され、かつ前処理では\n直らないことが再確認されたら rules/ に昇格する。\n",
         "tags": [
-          "claude-code",
-          "hooks"
+          "OCR",
+          "画像処理"
         ],
         "projects": [
-          "knowledge-base"
+          "pokemon-champions-BattleAI"
         ],
         "date": "2026-08-23",
-        "days_old": 2,
+        "days_old": 5,
         "stale": false,
-        "problem_summary": "「セッションを安全に終わらせるには`/exit`と打つとよい」とユーザーに案内したが、実際にユーザーの環境で`/exit`と入力すると「/exit isn't available…",
-        "solution_summary": "`/exit`はすべてのClaude Code環境で必ず使えるコマンドではない(ラッパーアプリ経由など、環境によっては実装されていないことがある)。汎用的な「セッションを閉じる」案…",
+        "problem_summary": "EasyOCRで、小さい「ゃ」「や」のような拗音の仮名を、大きい仮名と読み間違える。",
+        "solution_summary": "画質を上げても二値化(白黒に変換する処理)を変えても直らなかった。前処理では直せない、モデル自体の限界の可能性が高い。他のOCRエンジンを試すか、辞書で後から補正する方法はまだ試せ…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-23-small-crop-color-sampling-alignment-sensitivity.md",
+        "title": "小さいクロップ窓での代表色抽出は数px のズレで背景色に汚染される",
+        "content": "# [候補] 小さいクロップ窓での代表色抽出は数px のズレで背景色に汚染される\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [pokemon-champions-BattleAI]\ntags: [画像処理, 座標校正]\ndate: 2026-08-23\n\n## 何が起きたか\n小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。\n\n## わかったこと・今の対応\n切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。\n\n## 詳しい経緯\nゲーム画面のUIバッジ(性別アイコン等、40x30px程度の小さい円)から\n「中間輝度の画素だけを残して中央値を取る」方式で代表色を抽出する処理を、\n別レイアウトの画面向けに新しい座標で再校正していたところ、目分量で\n決めた座標(本来のアイコン位置から左に約12px、上下にも数px分の余分な\nマージンを含む窓)では、既知で女性のはずのアイコンが軒並み「男性」と\n誤判定される現象が起きた。\n\n原因を調べたところ、窓が実際のアイコン位置からズレていたことで、\n背景色(カードの紫グラデーション)の割合がアイコン自体の画素数を\n上回り、中央値の計算結果が背景色にほぼ支配されていた(背景の紫が\nたまたま「男性=青系」の参照色に近い色味だったため、誤判定として\n現れた)。窓を実測(10px刻みの目盛りを焼き込んだ拡大画像で目視確認)\nした正確な範囲に絞り込んだところ解消した。\n\n大きい領域(100px角以上等)であれば数px のズレは全体に対する割合が\n小さく吸収されるが、40x30px程度の小さいバッジ/アイコンを対象にした\n色抽出・テンプレートマッチングでは、同じ数px のズレが致命的な誤判定を\n生む。小さい対象への座標校正は「だいたい合っている」では不十分で、\n実測ベースでピクセル単位まで詰める必要がある。\n\n## まだ確認できていないこと\n- 「小さい対象では座標ズレの影響が非線形に大きくなる」という一般化が、\n  色抽出以外の手法(テンプレートマッチング等)にも同程度に当てはまるか\n  は定量的には未検証(テンプレートマッチングは窓が多少広くても内部で\n  スケール探索するため、色抽出ほど脆弱ではない可能性がある)\n- 対象サイズと許容ズレ量の関係(例: 対象の何%以内のズレなら安全か)を\n  定量化した基準は未確立\n\n## 昇格の条件\n別のプロジェクトでも「小さいUI要素の色/特徴抽出が数pxの座標ズレで\n破綻する」ケースが確認されたら rules/ に昇格する。\n",
+        "tags": [
+          "画像処理",
+          "座標校正"
+        ],
+        "projects": [
+          "pokemon-champions-BattleAI"
+        ],
+        "date": "2026-08-23",
+        "days_old": 5,
+        "stale": false,
+        "problem_summary": "小さいアイコン(40×30px程度)から色を抽出するとき、切り取る位置が数pxずれているだけで、背景色に汚染されて誤判定が起きた。",
+        "solution_summary": "切り取る範囲を実測して正確な位置に直したら解消した。対象が小さいほど、数pxのズレが致命的になりやすい。",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-example-candidate.md",
+        "title": "AudioStreamPlayerのバス切り替えタイミング",
+        "content": "# [候補] AudioStreamPlayerのバス切り替えタイミング\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [DEPTH//]\ntags: [godot, オーディオ, ゲーム開発]\ndate: 2026-08-20\n\n## 何が起きたか\nシーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。\n\n## わかったこと・今の対応\nシーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。\n\n## まだ確認できていないこと\n- Polypulseの時にあった「OGG/PhaseLoopMusicの音切れ」と同一原因か未確認\n- 他のプロジェクトでも再現するか未確認\n\n## 昇格の条件\n別のプロジェクトでも同じ現象が確認されたら rules/ に昇格し、\nincidents/ に詳細ログを残す。\n",
+        "tags": [
+          "godot",
+          "オーディオ",
+          "ゲーム開発"
+        ],
+        "projects": [
+          "DEPTH//"
+        ],
+        "date": "2026-08-20",
+        "days_old": 8,
+        "stale": false,
+        "problem_summary": "シーン切り替えの直前に音声のバス(出力先)を切り替えると、音が一瞬途切れることがある。",
+        "solution_summary": "シーン切り替えが終わってから切り替えれば発生しない。今のところこの回避策のみで、根本原因(別の現象「OGG/PhaseLoopMusicの音切れ」と同じ原因かどうか)は未確認。",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
@@ -1587,7 +1595,7 @@ window.STATS_DATA = {
         "tags": [],
         "projects": [],
         "date": "2026-06-15",
-        "days_old": 71,
+        "days_old": 74,
         "stale": false,
         "problem_summary": "雑魚敵を30体以上同時に倒すと、弾丸ノードが同時に150個近く発生し、 フレームレートが60→22まで落ちた。",
         "solution_summary": "MultiMeshInstance3D + 独自の当たり判定計算に置き換え、 150個発生時でも58fps以上を維持できるようになった。",
@@ -1601,48 +1609,22 @@ window.STATS_DATA = {
     ],
     "external_skill_imports": [
       {
-        "filename": "2026-08-24-ux-designer-external-skill.md",
-        "title": "外部Skill `ux-designer` を試験導入(Godot以外の一般UI/UX設計向け)",
-        "content": "# [候補] 外部Skill `ux-designer` を試験導入(Godot以外の一般UI/UX設計向け)\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [UI, UX, デザイン, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/szilu/ux-designer-skill\n\n## 何が起きたか\n「`godot-ui-control`・`game-feel`はゲーム専用で、一般的なUI/デザイン作業には使えないのでは」という指摘を受け、ゲームに限らない一般的なUX/UI設計のSkillを探し、`szilu/ux-designer-skill`(アクセシビリティ・フォーム・多言語対応・AI UI・データ可視化等を網羅する24本の参照ファイル付きSkill)を`~/.claude/skills/ux-designer/`として試験導入した。\n\n## わかったこと・今の対応\nMITライセンス、フロントマター完備で修正不要だった。機密情報スキャンで`references/`内のプレースホルダーメールアドレス(「user［アットマーク］example.com」等、フォーム入力例)が6ファイル・14箇所で誤検知された。引き継ぎメモが事前に警告していた事象そのもの。`@`記号を`(at)`に置換する表記に直して解消した(意味は保持)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。ただし今回は`~/Downloads`への読み取りアクセスがこのセッションから拒否される事象が発生し(macOSのプライバシー保護によるものと推測、詳細は別候補`2026-08-24-downloads-folder-access-denied-mid-session.md`参照)、`~/Documents/original-game/`配下に再取得してもらって回避した。既存の`godot-ui-control`・`game-feel`とは「ゲーム特化」対「汎用UI/UX」という住み分けになり、内容として矛盾しない。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のUI設計・レビュー作業での有用性\n- `godot-ui-control`と両方に該当する場面(Godot上のUI)でどちらが優先的に発動するか、あるいは両方発動して補い合うか\n",
+        "filename": "2026-08-24-game-ai-external-skill.md",
+        "title": "外部Skill `game-ai`を試験導入",
+        "content": "# [候補] 外部Skill `game-ai`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [ゲーム開発, AI設計, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\nRESODIVE・DEPTH//とも「敵」が中心的な要素であることから、`awesome-gamedev-agent-skills`リポジトリの`game-ai`(discipline系、エンジン非依存)Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。有限状態機械・ビヘイビアツリー・操舵行動(steering)・A*経路探索の使い分けをまとめたもの。\n\n## わかったこと・今の対応\nこれまでの4件(godot-audio/physics/signals-groups/3d-essentials)は`skills/godot/`配下だったが、今回は`skills/disciplines/`配下のエンジン非依存Skill。フロントマター完備・参照ファイル2件(`behavior-trees.md`・`pathfinding.md`、SKILL.md本文が指す2件とも一致)。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンス。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザーが既に`git clone`済みの同リポジトリから取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱2つの参照ファイルも目視確認(コードスニペットのみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/game-ai/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n",
         "tags": [
-          "UI",
-          "UX",
-          "デザイン",
-          "external-skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 1,
-        "stale": false,
-        "problem_summary": "「`godot-ui-control`・`game-feel`はゲーム専用で、一般的なUI/デザイン作業には使えないのでは」という指摘を受け、ゲームに限らない一般的なUX/UI設計…",
-        "solution_summary": "MITライセンス、フロントマター完備で修正不要だった。機密情報スキャンで`references/`内のプレースホルダーメールアドレス(「user［アットマーク］example.co…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": "external",
-        "source_url": "https://github.com/szilu/ux-designer-skill"
-      },
-      {
-        "filename": "2026-08-24-godot-ui-control-external-skill.md",
-        "title": "外部Skill `godot-ui-control` を試験導入",
-        "content": "# [候補] 外部Skill `godot-ui-control` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, UI, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`のUI・デザイン向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`godot-ui-control`(Control/Containerでのレスポンシブレイアウト、Themeでのスタイリング、フォーカスナビゲーション)を`~/.claude/skills/godot-ui-control/`として試験導入した。\n\n## わかったこと・今の対応\n`game-feel`と同様、元のSKILL.mdは最初からフロントマターが揃っており修正不要だった。`references/layout-and-theming.md`もあわせて配置。機密情報スキャンはクリーン。「WEBベースならまだまとも、ゲームに組み込むと酷い」という元の課題感に対し、このSkillは`game-feel`と組み合わせて使う想定(引き継ぎメモの指摘通り)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。Godot 4.7のControl/Containerノードの設計知識に特化しており、`godot-optimization`・`godot-code-gen`・`game-feel`のいずれとも話題が重複しない。SKILL.md内で`game-ui-ux`・`godot-animation`・`godot-signals-groups`・`input-systems`など、同じ元リポジトリの未導入の他Skillへの言及がある(`game-feel`と同様の留意点)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のUI実装作業(RESODIVE等)での有用性、特にゲーム内UIの見た目改善に実際に効くか\n",
-        "tags": [
-          "godot",
           "ゲーム開発",
-          "UI",
+          "AI設計",
           "external-skill"
         ],
         "projects": [
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 1,
+        "days_old": 4,
         "stale": false,
-        "problem_summary": "`外部Skill導入_引き継ぎ.md`のUI・デザイン向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`godot-ui-control`(…",
-        "solution_summary": "`game-feel`と同様、元のSKILL.mdは最初からフロントマターが揃っており修正不要だった。`references/layout-and-theming.md`もあわせて…",
+        "problem_summary": "RESODIVE・DEPTH//とも「敵」が中心的な要素であることから、`awesome-gamedev-agent-skills`リポジトリの`game-ai`(discipli…",
+        "solution_summary": "これまでの4件(godot-audio/physics/signals-groups/3d-essentials)は`skills/godot/`配下だったが、今回は`skills…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
@@ -1651,30 +1633,28 @@ window.STATS_DATA = {
         "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills"
       },
       {
-        "filename": "2026-08-24-godot-testing-deploy-external-skill.md",
-        "title": "外部Skill `godot-testing-deploy`(元名`godot`)を試験導入",
-        "content": "# [候補] 外部Skill `godot-testing-deploy`(元名`godot`)を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, テスト, CI/CD, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/Randroids-Dojo/Godot-Claude-Skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`の次点候補、`Randroids-Dojo/Godot-Claude-Skills`(GdUnit4テスト・PlayGodotによるE2E自動化・エクスポート・CI/CD・Vercel等へのデプロイ)を`~/.claude/skills/godot-testing-deploy/`として試験導入した。\n\n## わかったこと・今の対応\nこれまでの3件と異なり、4本のPythonスクリプト(`run_tests.py`/`parse_results.py`/`validate_project.py`/`export_build.py`)が同梱されていたため、実行可能コードとして通常より丁寧にレビューした。内容はいずれも`subprocess`でGodot CLIを呼び出すだけの素直な実装で、ネットワーク通信・`eval`/`exec`・難読化・認証情報の収集など不審な処理は見当たらなかった。機密情報スキャンもフォルダ全体でクリーン。\n\n元のfrontmatterは`name: godot`という汎用的すぎる名前だったため、`godot-testing-deploy`にリネームして配置した(内容は変更なし)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。PlayGodot部分は`Randroids-Dojo/godot`のカスタムフォーク(automationブランチ)をソースからビルドする必要があり、GdUnit4テスト単体より導入コストが高い(このリポジトリが引き継ぎメモで「次点」扱いだった理由と合致)。既存の4件のSkillとは話題が重複しない(実装ではなくテスト・ビルド・デプロイが対象)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際にGdUnit4やPlayGodotをRESODIVE等に導入して使う場面での有用性(現時点では設置のみ)\n- PlayGodot用カスタムGodotフォークのビルドは未実施(重量級の追加セットアップが必要なため、GdUnit4部分から先に試すのが現実的)\n",
+        "filename": "2026-08-24-godot-3d-essentials-external-skill.md",
+        "title": "外部Skill `godot-3d-essentials`を試験導入",
+        "content": "# [候補] 外部Skill `godot-3d-essentials`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, 3D, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n既存の`godot-optimization`ルールがMultiMeshInstance3D前提であることから、RESODIVE・DEPTH//とも3D前提のプロジェクトだと分かっていたが、3D特有(カメラ・ライティング・環境/ポストプロセス・GridMap)の知見がまだ手薄だったため、`awesome-gamedev-agent-skills`リポジトリの`godot-3d-essentials`Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。\n\n## わかったこと・今の対応\n`godot-audio`・`godot-physics`・`godot-signals-groups`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンス。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザーが既に`git clone`済みの同リポジトリから取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱`references/scene-and-environment.md`も目視確認(コードスニペットのみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/godot-3d-essentials/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n",
         "tags": [
           "godot",
-          "ゲーム開発",
-          "テスト",
-          "CI/CD",
+          "3D",
           "external-skill"
         ],
         "projects": [
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 1,
+        "days_old": 4,
         "stale": false,
-        "problem_summary": "`外部Skill導入_引き継ぎ.md`の次点候補、`Randroids-Dojo/Godot-Claude-Skills`(GdUnit4テスト・PlayGodotによるE2E自動…",
-        "solution_summary": "これまでの3件と異なり、4本のPythonスクリプト(`run_tests.py`/`parse_results.py`/`validate_project.py`/`export…",
+        "problem_summary": "既存の`godot-optimization`ルールがMultiMeshInstance3D前提であることから、RESODIVE・DEPTH//とも3D前提のプロジェクトだと分かっ…",
+        "solution_summary": "`godot-audio`・`godot-physics`・`godot-signals-groups`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
         "source": "external",
-        "source_url": "https://github.com/Randroids-Dojo/Godot-Claude-Skills"
+        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills"
       },
       {
         "filename": "2026-08-24-godot-signals-groups-external-skill.md",
@@ -1689,7 +1669,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 1,
+        "days_old": 4,
         "stale": false,
         "problem_summary": "シグナル(イベント駆動)はGodot開発の土台になる基礎分野として、`awesome-gamedev-agent-skills`リポジトリの`godot-signals-group…",
         "solution_summary": "`godot-audio`・`godot-physics`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題…",
@@ -1713,7 +1693,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 1,
+        "days_old": 4,
         "stale": false,
         "problem_summary": "RESODIVE・DEPTH//とも敵や弾丸の大量発生・衝突が絡む設計で、既存の`godot-optimization`(MultiMeshInstance3D)と相性が良い分野と…",
         "solution_summary": "`godot-audio`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセ…",
@@ -1723,30 +1703,6 @@ window.STATS_DATA = {
         "reference_recent": [],
         "source": "external",
         "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills"
-      },
-      {
-        "filename": "2026-08-24-godot-code-gen-external-skill.md",
-        "title": "外部Skill `godot-code-gen` を試験導入",
-        "content": "# [候補] 外部Skill `godot-code-gen` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/alexmeckes/godot-claude-skills\n\n## 何が起きたか\n外部Skillマーケットプレイス由来のGDScript生成支援Skill(`godot-claude-skills`リポジトリの`godot-code-gen`)を、`~/.claude/skills/godot-code-gen/`として試験導入した。\n\n## わかったこと・今の対応\n元のSKILL.mdにはこのシステムが要求するフロントマター(`name`/`description`)が無かったため、既存Skillの慣習(強めのトリガー表現)に合わせて追加した。機密情報スキャンには引っかからないことを確認済み(`godot-code-gen/SKILL.md`単体をスキャンし異常なし)。設置直後の同一会話内で「プレイヤーキャラクターの待機・歩行・ジャンプのステートマシン」という自然な相談を投げたところ、明示指定なしで正しく自動発動し、実用的な実装例を生成できた(2026-08-24)。RESODIVEでの実作業での有用性はまだ未検証。\n\n## 詳しい経緯\n`外部Skill導入_引き継ぎ.md`の推奨に従い、まず1件のみを試験導入する方針とした。取得はユーザー自身が`git clone`で実行している(Claude Codeは外部リポジトリのダウンロードを自ら実行しない設計のため)。内容はGodot 4.xのGDScript構文(型ヒント・アノテーション・シグナル・ステートマシン・Resourceパターン・Tween等)のベストプラクティス集で、既存の`godot-optimization`(大量インスタンス最適化)とは話題が異なり衝突しない。ただし`CharacterBody2D/3D`移動のサンプルコード自体には「50体以上の量産時はMultiMeshInstance3Dを検討」という`godot-optimization`側の知見は含まれていないため、両方のSkillを踏まえた判断が必要な場面があることは留意点として残る。\n\n設置直後の発動テストでは、`SKILL-PROMOTION-GUIDE.md`に記載の「同一会話中に作ったSkillはその会話では認識されない」という制約は再現しなかった(むしろ設置直後から利用可能だった)。環境やタイミングによって挙動が変わる可能性があるため、今後Skillを追加する際は都度確認すること。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。実際に使ってみて役立った場合は、他の気づきと同じ通常フロー(このファイルへの再観測記録、または`/kb-endorse`)で昇格を検討する。\n\n## まだ確認できていないこと\n- RESODIVEでの実作業での有用性(発動確認自体はknowledge-baseのセッション内で完了)\n",
-        "tags": [
-          "godot",
-          "ゲーム開発",
-          "external-skill"
-        ],
-        "projects": [
-          "knowledge-base"
-        ],
-        "date": "2026-08-24",
-        "days_old": 1,
-        "stale": false,
-        "problem_summary": "外部Skillマーケットプレイス由来のGDScript生成支援Skill(`godot-claude-skills`リポジトリの`godot-code-gen`)を、`~/.cla…",
-        "solution_summary": "元のSKILL.mdにはこのシステムが要求するフロントマター(`name`/`description`)が無かったため、既存Skillの慣習(強めのトリガー表現)に合わせて追加した…",
-        "observed_count": 1,
-        "endorsed": false,
-        "reference_count": 0,
-        "reference_recent": [],
-        "source": "external",
-        "source_url": "https://github.com/alexmeckes/godot-claude-skills"
       },
       {
         "filename": "2026-08-24-godot-audio-external-skill.md",
@@ -1761,7 +1717,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 1,
+        "days_old": 4,
         "stale": false,
         "problem_summary": "DEPTH//で実際に発生した「シーン切り替え時の音声バス切り替えで音が途切れる」という既存の候補(`2026-08-example-candidate.md`)に関連する分野とし…",
         "solution_summary": "`godot-testing-deploy`等と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apa…",
@@ -1773,9 +1729,34 @@ window.STATS_DATA = {
         "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills"
       },
       {
-        "filename": "2026-08-24-godot-animation-external-skill.md",
-        "title": "外部Skill `godot-animation` を試験導入",
-        "content": "# [候補] 外部Skill `godot-animation` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`の次点候補、`awesome-gamedev-agent-skills`リポジトリの`godot-animation`(AnimationPlayer/AnimationTree/Tweenの使い分け)を`~/.claude/skills/godot-animation/`として試験導入した。`game-feel`・`godot-ui-control`と同じリポジトリから取得済みだったため、追加のcloneは不要だった。\n\n## わかったこと・今の対応\n`game-feel`・`godot-ui-control`と同様、フロントマター完備・機密情報スキャンともクリーン。`references/animation-tree-and-tween.md`をあわせて配置。既存の`godot-optimization`・`godot-code-gen`・`game-feel`・`godot-ui-control`のいずれとも話題が重複しない(アニメーション実装そのものに特化)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行済みの`awesome-gamedev-agent-skills`から。SKILL.md内で`godot-2d-movement`・`godot-3d-essentials`・`game-ai`など、同リポジトリの未導入の他Skillへの言及がある(`game-feel`・`godot-ui-control`と同様の留意点)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のアニメーション実装作業(RESODIVE等)での有用性\n",
+        "filename": "2026-08-24-ux-designer-external-skill.md",
+        "title": "外部Skill `ux-designer` を試験導入(Godot以外の一般UI/UX設計向け)",
+        "content": "# [候補] 外部Skill `ux-designer` を試験導入(Godot以外の一般UI/UX設計向け)\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [UI, UX, デザイン, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/szilu/ux-designer-skill\n\n## 何が起きたか\n「`godot-ui-control`・`game-feel`はゲーム専用で、一般的なUI/デザイン作業には使えないのでは」という指摘を受け、ゲームに限らない一般的なUX/UI設計のSkillを探し、`szilu/ux-designer-skill`(アクセシビリティ・フォーム・多言語対応・AI UI・データ可視化等を網羅する24本の参照ファイル付きSkill)を`~/.claude/skills/ux-designer/`として試験導入した。\n\n## わかったこと・今の対応\nMITライセンス、フロントマター完備で修正不要だった。機密情報スキャンで`references/`内のプレースホルダーメールアドレス(「user［アットマーク］example.com」等、フォーム入力例)が6ファイル・14箇所で誤検知された。引き継ぎメモが事前に警告していた事象そのもの。`@`記号を`(at)`に置換する表記に直して解消した(意味は保持)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。ただし今回は`~/Downloads`への読み取りアクセスがこのセッションから拒否される事象が発生し(macOSのプライバシー保護によるものと推測、詳細は別候補`2026-08-24-downloads-folder-access-denied-mid-session.md`参照)、`~/Documents/original-game/`配下に再取得してもらって回避した。既存の`godot-ui-control`・`game-feel`とは「ゲーム特化」対「汎用UI/UX」という住み分けになり、内容として矛盾しない。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のUI設計・レビュー作業での有用性\n- `godot-ui-control`と両方に該当する場面(Godot上のUI)でどちらが優先的に発動するか、あるいは両方発動して補い合うか\n",
+        "tags": [
+          "UI",
+          "UX",
+          "デザイン",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 4,
+        "stale": false,
+        "problem_summary": "「`godot-ui-control`・`game-feel`はゲーム専用で、一般的なUI/デザイン作業には使えないのでは」という指摘を受け、ゲームに限らない一般的なUX/UI設計…",
+        "solution_summary": "MITライセンス、フロントマター完備で修正不要だった。機密情報スキャンで`references/`内のプレースホルダーメールアドレス(「user［アットマーク］example.co…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/szilu/ux-designer-skill"
+      },
+      {
+        "filename": "2026-08-24-godot-code-gen-external-skill.md",
+        "title": "外部Skill `godot-code-gen` を試験導入",
+        "content": "# [候補] 外部Skill `godot-code-gen` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/alexmeckes/godot-claude-skills\n\n## 何が起きたか\n外部Skillマーケットプレイス由来のGDScript生成支援Skill(`godot-claude-skills`リポジトリの`godot-code-gen`)を、`~/.claude/skills/godot-code-gen/`として試験導入した。\n\n## わかったこと・今の対応\n元のSKILL.mdにはこのシステムが要求するフロントマター(`name`/`description`)が無かったため、既存Skillの慣習(強めのトリガー表現)に合わせて追加した。機密情報スキャンには引っかからないことを確認済み(`godot-code-gen/SKILL.md`単体をスキャンし異常なし)。設置直後の同一会話内で「プレイヤーキャラクターの待機・歩行・ジャンプのステートマシン」という自然な相談を投げたところ、明示指定なしで正しく自動発動し、実用的な実装例を生成できた(2026-08-24)。RESODIVEでの実作業での有用性はまだ未検証。\n\n## 詳しい経緯\n`外部Skill導入_引き継ぎ.md`の推奨に従い、まず1件のみを試験導入する方針とした。取得はユーザー自身が`git clone`で実行している(Claude Codeは外部リポジトリのダウンロードを自ら実行しない設計のため)。内容はGodot 4.xのGDScript構文(型ヒント・アノテーション・シグナル・ステートマシン・Resourceパターン・Tween等)のベストプラクティス集で、既存の`godot-optimization`(大量インスタンス最適化)とは話題が異なり衝突しない。ただし`CharacterBody2D/3D`移動のサンプルコード自体には「50体以上の量産時はMultiMeshInstance3Dを検討」という`godot-optimization`側の知見は含まれていないため、両方のSkillを踏まえた判断が必要な場面があることは留意点として残る。\n\n設置直後の発動テストでは、`SKILL-PROMOTION-GUIDE.md`に記載の「同一会話中に作ったSkillはその会話では認識されない」という制約は再現しなかった(むしろ設置直後から利用可能だった)。環境やタイミングによって挙動が変わる可能性があるため、今後Skillを追加する際は都度確認すること。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。実際に使ってみて役立った場合は、他の気づきと同じ通常フロー(このファイルへの再観測記録、または`/kb-endorse`)で昇格を検討する。\n\n## まだ確認できていないこと\n- RESODIVEでの実作業での有用性(発動確認自体はknowledge-baseのセッション内で完了)\n",
         "tags": [
           "godot",
           "ゲーム開発",
@@ -1785,34 +1766,61 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 1,
+        "days_old": 4,
         "stale": false,
-        "problem_summary": "`外部Skill導入_引き継ぎ.md`の次点候補、`awesome-gamedev-agent-skills`リポジトリの`godot-animation`(AnimationPl…",
-        "solution_summary": "`game-feel`・`godot-ui-control`と同様、フロントマター完備・機密情報スキャンともクリーン。`references/animation-tree-and-…",
+        "problem_summary": "外部Skillマーケットプレイス由来のGDScript生成支援Skill(`godot-claude-skills`リポジトリの`godot-code-gen`)を、`~/.cla…",
+        "solution_summary": "元のSKILL.mdにはこのシステムが要求するフロントマター(`name`/`description`)が無かったため、既存Skillの慣習(強めのトリガー表現)に合わせて追加した…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
         "reference_recent": [],
         "source": "external",
-        "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills"
+        "source_url": "https://github.com/alexmeckes/godot-claude-skills"
       },
       {
-        "filename": "2026-08-24-godot-3d-essentials-external-skill.md",
-        "title": "外部Skill `godot-3d-essentials`を試験導入",
-        "content": "# [候補] 外部Skill `godot-3d-essentials`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, 3D, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n既存の`godot-optimization`ルールがMultiMeshInstance3D前提であることから、RESODIVE・DEPTH//とも3D前提のプロジェクトだと分かっていたが、3D特有(カメラ・ライティング・環境/ポストプロセス・GridMap)の知見がまだ手薄だったため、`awesome-gamedev-agent-skills`リポジトリの`godot-3d-essentials`Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。\n\n## わかったこと・今の対応\n`godot-audio`・`godot-physics`・`godot-signals-groups`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな構成。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンス。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザーが既に`git clone`済みの同リポジトリから取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱`references/scene-and-environment.md`も目視確認(コードスニペットのみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/godot-3d-essentials/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n",
+        "filename": "2026-08-24-godot-testing-deploy-external-skill.md",
+        "title": "外部Skill `godot-testing-deploy`(元名`godot`)を試験導入",
+        "content": "# [候補] 外部Skill `godot-testing-deploy`(元名`godot`)を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, テスト, CI/CD, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/Randroids-Dojo/Godot-Claude-Skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`の次点候補、`Randroids-Dojo/Godot-Claude-Skills`(GdUnit4テスト・PlayGodotによるE2E自動化・エクスポート・CI/CD・Vercel等へのデプロイ)を`~/.claude/skills/godot-testing-deploy/`として試験導入した。\n\n## わかったこと・今の対応\nこれまでの3件と異なり、4本のPythonスクリプト(`run_tests.py`/`parse_results.py`/`validate_project.py`/`export_build.py`)が同梱されていたため、実行可能コードとして通常より丁寧にレビューした。内容はいずれも`subprocess`でGodot CLIを呼び出すだけの素直な実装で、ネットワーク通信・`eval`/`exec`・難読化・認証情報の収集など不審な処理は見当たらなかった。機密情報スキャンもフォルダ全体でクリーン。\n\n元のfrontmatterは`name: godot`という汎用的すぎる名前だったため、`godot-testing-deploy`にリネームして配置した(内容は変更なし)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。PlayGodot部分は`Randroids-Dojo/godot`のカスタムフォーク(automationブランチ)をソースからビルドする必要があり、GdUnit4テスト単体より導入コストが高い(このリポジトリが引き継ぎメモで「次点」扱いだった理由と合致)。既存の4件のSkillとは話題が重複しない(実装ではなくテスト・ビルド・デプロイが対象)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際にGdUnit4やPlayGodotをRESODIVE等に導入して使う場面での有用性(現時点では設置のみ)\n- PlayGodot用カスタムGodotフォークのビルドは未実施(重量級の追加セットアップが必要なため、GdUnit4部分から先に試すのが現実的)\n",
         "tags": [
           "godot",
-          "3D",
+          "ゲーム開発",
+          "テスト",
+          "CI/CD",
           "external-skill"
         ],
         "projects": [
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 1,
+        "days_old": 4,
         "stale": false,
-        "problem_summary": "既存の`godot-optimization`ルールがMultiMeshInstance3D前提であることから、RESODIVE・DEPTH//とも3D前提のプロジェクトだと分かっ…",
-        "solution_summary": "`godot-audio`・`godot-physics`・`godot-signals-groups`と同じリポジトリ由来で、フロントマター完備・参照ファイル1件のみのシンプルな…",
+        "problem_summary": "`外部Skill導入_引き継ぎ.md`の次点候補、`Randroids-Dojo/Godot-Claude-Skills`(GdUnit4テスト・PlayGodotによるE2E自動…",
+        "solution_summary": "これまでの3件と異なり、4本のPythonスクリプト(`run_tests.py`/`parse_results.py`/`validate_project.py`/`export…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": "external",
+        "source_url": "https://github.com/Randroids-Dojo/Godot-Claude-Skills"
+      },
+      {
+        "filename": "2026-08-24-godot-ui-control-external-skill.md",
+        "title": "外部Skill `godot-ui-control` を試験導入",
+        "content": "# [候補] 外部Skill `godot-ui-control` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, UI, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`のUI・デザイン向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`godot-ui-control`(Control/Containerでのレスポンシブレイアウト、Themeでのスタイリング、フォーカスナビゲーション)を`~/.claude/skills/godot-ui-control/`として試験導入した。\n\n## わかったこと・今の対応\n`game-feel`と同様、元のSKILL.mdは最初からフロントマターが揃っており修正不要だった。`references/layout-and-theming.md`もあわせて配置。機密情報スキャンはクリーン。「WEBベースならまだまとも、ゲームに組み込むと酷い」という元の課題感に対し、このSkillは`game-feel`と組み合わせて使う想定(引き継ぎメモの指摘通り)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行。Godot 4.7のControl/Containerノードの設計知識に特化しており、`godot-optimization`・`godot-code-gen`・`game-feel`のいずれとも話題が重複しない。SKILL.md内で`game-ui-ux`・`godot-animation`・`godot-signals-groups`・`input-systems`など、同じ元リポジトリの未導入の他Skillへの言及がある(`game-feel`と同様の留意点)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のUI実装作業(RESODIVE等)での有用性、特にゲーム内UIの見た目改善に実際に効くか\n",
+        "tags": [
+          "godot",
+          "ゲーム開発",
+          "UI",
+          "external-skill"
+        ],
+        "projects": [
+          "knowledge-base"
+        ],
+        "date": "2026-08-24",
+        "days_old": 4,
+        "stale": false,
+        "problem_summary": "`外部Skill導入_引き継ぎ.md`のUI・デザイン向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`godot-ui-control`(…",
+        "solution_summary": "`game-feel`と同様、元のSKILL.mdは最初からフロントマターが揃っており修正不要だった。`references/layout-and-theming.md`もあわせて…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
@@ -1833,7 +1841,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 1,
+        "days_old": 4,
         "stale": false,
         "problem_summary": "`外部Skill導入_引き継ぎ.md`のUI・game feel向け推奨に従い、`awesome-gamedev-agent-skills`リポジトリの`game-feel`(画面…",
         "solution_summary": "元のSKILL.mdは`godot-code-gen`と異なり、最初から`name`/`description`のフロントマターが揃っており、そのまま配置できた(修正不要)。`re…",
@@ -1845,22 +1853,22 @@ window.STATS_DATA = {
         "source_url": "https://github.com/gamedev-skills/awesome-gamedev-agent-skills"
       },
       {
-        "filename": "2026-08-24-game-ai-external-skill.md",
-        "title": "外部Skill `game-ai`を試験導入",
-        "content": "# [候補] 外部Skill `game-ai`を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [ゲーム開発, AI設計, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\nRESODIVE・DEPTH//とも「敵」が中心的な要素であることから、`awesome-gamedev-agent-skills`リポジトリの`game-ai`(discipline系、エンジン非依存)Skillを`EXTERNAL-SKILL-GUIDE.md`の手順に沿って試験導入した。有限状態機械・ビヘイビアツリー・操舵行動(steering)・A*経路探索の使い分けをまとめたもの。\n\n## わかったこと・今の対応\nこれまでの4件(godot-audio/physics/signals-groups/3d-essentials)は`skills/godot/`配下だったが、今回は`skills/disciplines/`配下のエンジン非依存Skill。フロントマター完備・参照ファイル2件(`behavior-trees.md`・`pathfinding.md`、SKILL.md本文が指す2件とも一致)。機密情報スキャンも設置元・設置先とも問題なし。Apache-2.0ライセンス。\n\n## 詳しい経緯\n`EXTERNAL-SKILL-GUIDE.md`の手順1〜4を実施: (1)スコープ判定→単純なSkill構成で対象内、(2)ユーザーが既に`git clone`済みの同リポジトリから取得、(3)`SKILL.md`内容確認・`scan_secrets.py`実行(問題なし)・同梱2つの参照ファイルも目視確認(コードスニペットのみ、ネットワーク通信やeval等は無し)、(4)`~/.claude/skills/game-ai/`に配置し再スキャン。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のGodot開発作業での有用性(まだ発動確認前)\n",
+        "filename": "2026-08-24-godot-animation-external-skill.md",
+        "title": "外部Skill `godot-animation` を試験導入",
+        "content": "# [候補] 外部Skill `godot-animation` を試験導入\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [knowledge-base]\ntags: [godot, ゲーム開発, external-skill]\ndate: 2026-08-24\nsource: external\nsource_url: https://github.com/gamedev-skills/awesome-gamedev-agent-skills\n\n## 何が起きたか\n`外部Skill導入_引き継ぎ.md`の次点候補、`awesome-gamedev-agent-skills`リポジトリの`godot-animation`(AnimationPlayer/AnimationTree/Tweenの使い分け)を`~/.claude/skills/godot-animation/`として試験導入した。`game-feel`・`godot-ui-control`と同じリポジトリから取得済みだったため、追加のcloneは不要だった。\n\n## わかったこと・今の対応\n`game-feel`・`godot-ui-control`と同様、フロントマター完備・機密情報スキャンともクリーン。`references/animation-tree-and-tween.md`をあわせて配置。既存の`godot-optimization`・`godot-code-gen`・`game-feel`・`godot-ui-control`のいずれとも話題が重複しない(アニメーション実装そのものに特化)。\n\n## 詳しい経緯\n取得はユーザー自身が`git clone`で実行済みの`awesome-gamedev-agent-skills`から。SKILL.md内で`godot-2d-movement`・`godot-3d-essentials`・`game-ai`など、同リポジトリの未導入の他Skillへの言及がある(`game-feel`・`godot-ui-control`と同様の留意点)。\n\nこのファイルは通常の「2プロジェクトで確認→人が昇格判断」というゲートを迂回して直接Skill化されている点に注意。\n\n## まだ確認できていないこと\n- 実際のアニメーション実装作業(RESODIVE等)での有用性\n",
         "tags": [
+          "godot",
           "ゲーム開発",
-          "AI設計",
           "external-skill"
         ],
         "projects": [
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 1,
+        "days_old": 4,
         "stale": false,
-        "problem_summary": "RESODIVE・DEPTH//とも「敵」が中心的な要素であることから、`awesome-gamedev-agent-skills`リポジトリの`game-ai`(discipli…",
-        "solution_summary": "これまでの4件(godot-audio/physics/signals-groups/3d-essentials)は`skills/godot/`配下だったが、今回は`skills…",
+        "problem_summary": "`外部Skill導入_引き継ぎ.md`の次点候補、`awesome-gamedev-agent-skills`リポジトリの`godot-animation`(AnimationPl…",
+        "solution_summary": "`game-feel`・`godot-ui-control`と同様、フロントマター完備・機密情報スキャンともクリーン。`references/animation-tree-and-…",
         "observed_count": 1,
         "endorsed": false,
         "reference_count": 0,
@@ -1881,7 +1889,7 @@ window.STATS_DATA = {
           "knowledge-base"
         ],
         "date": "2026-08-24",
-        "days_old": 1,
+        "days_old": 4,
         "stale": false,
         "problem_summary": "`ux-designer`と同じ動機(Godot以外の一般UI/デザイン向け知見)で、Anthropic公式のclaude-codeリポジトリに同梱されている`frontend-d…",
         "solution_summary": "これまでの5件と異なり、**ライセンスがMITなどのオープンソースではなく「All rights reserved」**(claude-codeリポジトリ全体がAnthropic…",
@@ -1903,16 +1911,24 @@ window.STATS_DATA = {
       "name": "frontend-design",
       "description": "Guidance for distinctive, intentional visual design when building new UI or reshaping an existing one. Helps with aesthetic direction, typography, and making choices that don't read as templated defaults.",
       "linked_to_rule": false,
-      "usage_count": 0,
-      "effectiveness_summary": {},
-      "effectiveness_recent": []
+      "usage_count": 2,
+      "effectiveness_summary": {
+        "有効": 1
+      },
+      "effectiveness_recent": [
+        {
+          "date": "2026-08-24T14:47:19Z",
+          "verdict": "有効",
+          "reason": "TradingView風という指定済みの方向性に対し、配色・タイポグラフィ・レイアウトのトークン設計を体系的に行う指針として機能し、実装後にユーザーから見た目自体への否定的指摘は出なかった(指摘は別のバグ・機能要望のみ)"
+        }
+      ]
     },
     {
       "folder_name": "game-ai",
       "name": "game-ai",
       "description": ">",
       "linked_to_rule": false,
-      "usage_count": 0,
+      "usage_count": 1,
       "effectiveness_summary": {},
       "effectiveness_recent": []
     },
@@ -1930,7 +1946,7 @@ window.STATS_DATA = {
       "name": "godot-3d-essentials",
       "description": ">",
       "linked_to_rule": false,
-      "usage_count": 0,
+      "usage_count": 1,
       "effectiveness_summary": {},
       "effectiveness_recent": []
     },
@@ -1948,7 +1964,7 @@ window.STATS_DATA = {
       "name": "godot-audio",
       "description": ">",
       "linked_to_rule": false,
-      "usage_count": 0,
+      "usage_count": 1,
       "effectiveness_summary": {},
       "effectiveness_recent": []
     },
@@ -1957,24 +1973,16 @@ window.STATS_DATA = {
       "name": "godot-code-gen",
       "description": "Godot 4.xでGDScriptコードを書く・生成する相談を受けたら必ず使うこと。型ヒント、@export/@onready等のアノテーション、シグナルの宣言・発行・接続、CharacterBody2D/3D移動、ステートマシン、Resourceパターン、Autoload/シングルトン、await/非同期処理、Tween、シーンのインスタンス化、入力処理など、GDScript 4.x特有の書き方・構文・ベストプラクティスに関する質問全般で参照する。「Godot 3から4に上げたら動かなくなった」「yieldがない」「connectの書き方が変わった」といった移行時のハマりどころの相談でも必ず参照する。",
       "linked_to_rule": false,
-      "usage_count": 1,
-      "effectiveness_summary": {
-        "有効": 1
-      },
-      "effectiveness_recent": [
-        {
-          "date": "2026-08-24T09:39:43Z",
-          "verdict": "有効",
-          "reason": "発動テスト成功、実装例も妥当"
-        }
-      ]
+      "usage_count": 0,
+      "effectiveness_summary": {},
+      "effectiveness_recent": []
     },
     {
       "folder_name": "godot-optimization",
       "name": "godot-optimization",
       "description": "Godot 4でのゲーム開発中、敵・弾丸・アイテムなど見た目が同じオブジェクトを大量に生成する設計や実装を相談されたら必ず使うこと。個別のNode(CharacterBody3D等)で大量インスタンスを扱おうとしている相談、パフォーマンス低下(フレームレート低下・カクつき)の相談、大量スポーン・弾幕システムの実装、MultiMeshInstance3Dに関する質問では特に必ず参照する。「敵が大量に出る」「弾がたくさん飛ぶ」「同じメッシュを何百個も並べる」といった話が出たら発動すること。",
       "linked_to_rule": true,
-      "usage_count": 0,
+      "usage_count": 1,
       "effectiveness_summary": {},
       "effectiveness_recent": []
     },
@@ -1983,7 +1991,7 @@ window.STATS_DATA = {
       "name": "godot-physics",
       "description": ">",
       "linked_to_rule": false,
-      "usage_count": 0,
+      "usage_count": 1,
       "effectiveness_summary": {},
       "effectiveness_recent": []
     },
@@ -1992,7 +2000,7 @@ window.STATS_DATA = {
       "name": "godot-signals-groups",
       "description": ">",
       "linked_to_rule": false,
-      "usage_count": 0,
+      "usage_count": 1,
       "effectiveness_summary": {},
       "effectiveness_recent": []
     },
@@ -2011,6 +2019,15 @@ window.STATS_DATA = {
       "description": ">",
       "linked_to_rule": false,
       "usage_count": 0,
+      "effectiveness_summary": {},
+      "effectiveness_recent": []
+    },
+    {
+      "folder_name": "ui-design-resources",
+      "name": "ui-design-resources",
+      "description": "Webフロントエンド(React/Next.js/Tailwind/HTML+CSS等)のUIを実装・改善するときは必ず使うこと。「画面を作って」「このUIをかっこよくして」「ダサいから直して」「ボタン/モーダル/フォーム/カード/ダッシュボードを作って」「アニメーションを付けたい」「アイコンを入れて」「レイアウトが崩れる」「見た目を整えて」といった依頼で必ず発動する。厳選したUIコンポーネント配布サイトからの部品調達、design tokens(色・余白・タイポグラフィ・角丸・モーション)の一本化、アイコンのライセンス確認、実装後のデザインシステム観点セルフレビューまでを、フェーズごとの手順として定義している。既存画面のリファインやCSSの見た目調整の相談でも参照すること。",
+      "linked_to_rule": false,
+      "usage_count": 1,
       "effectiveness_summary": {},
       "effectiveness_recent": []
     },
