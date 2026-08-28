@@ -1,12 +1,12 @@
 {
-  "generated_at": "2026-08-28T13:39:10Z",
+  "generated_at": "2026-08-28T16:10:14Z",
   "rules": {
     "count": 1,
     "chars": 780
   },
   "candidates": {
-    "count": 38,
-    "chars": 51630
+    "count": 42,
+    "chars": 56999
   },
   "incidents": {
     "count": 1,
@@ -20,7 +20,7 @@
     "count": 12,
     "chars": 13663
   },
-  "total_chars": 66572,
+  "total_chars": 71941,
   "history": [
     {
       "date": "2026-08-23T00:58:47Z",
@@ -557,6 +557,14 @@
       "candidates_count": 38,
       "incidents_count": 1,
       "total_chars": 66572
+    },
+    {
+      "date": "2026-08-28T16:10:14Z",
+      "summary": "[候補] GDScript: 比較式の右辺に`[...] as Array[T]`を書くと「Invalid cast. Canno / [候補] Godot: スポーン関数が`add_child.call_deferred`だと、直後にシーンツリーを走査するテストは ほか2件",
+      "rules_count": 1,
+      "candidates_count": 42,
+      "incidents_count": 1,
+      "total_chars": 71941
     }
   ],
   "items": {
@@ -594,6 +602,105 @@
       }
     ],
     "candidates": [
+      {
+        "filename": "2026-08-29-random-ids-must-fit-json-double-53bit.md",
+        "title": "乱数ベースの永続ID(int)は、JSON保存・通信を挟むなら53bit以内に収める(倍精度doubleで正確に往復でき",
+        "content": "# [候補] 乱数ベースの永続ID(int)は、JSON保存・通信を挟むなら53bit以内に収める(倍精度doubleで正確に往復できる範囲に設計する)\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [dotgameinisie]\ntags: [serialization, json, game-dev]\ndate: 2026-08-29\n\n## 何が起きたか\n\nアイテムの永続個体ID(instance_id)を導入する際、「袋・装備・倉庫・地面・セーブ(JSON)・ネットワーク通信のすべてで同じIDを使う」仕様にした。IDは衝突回避のため乱数合成のintにしたかったが、GodotのJSONは数値をdoubleとして扱うため、64bit intをそのまま使うと保存→ロードでIDが化ける(下位bitが落ちる)恐れがあった。\n\n## わかったこと・今の対応\n\nIDの採番を最初から**53bit未満に収まる構成**で設計した(乱数30bit + マイクロ秒下位10bit + 連番10bit + 識別用の1bit = 51bit)。\n\n```gdscript\nstatic func new_instance_id() -> int:\n    _uid_serial += 1\n    return ((randi() & 0x3FFFFFFF) << 20) | ((Time.get_ticks_usec() & 0x3FF) << 10) \\\n        | (_uid_serial & 0x3FF) | (1 << 50)\n```\n\n倍精度doubleは整数を2^53まで正確に表現できるので、この範囲ならJSON.stringify→parse_stringの往復でも、ネットワークのDictionaryペイロードでもIDが変化しない。実際にセーブ往復・通信往復でID集合が完全一致することをテストで確認した(ITEM_UID_TEST)。\n\n一般則: 「一意なID」を作るとき、経路のどこかにJSON・JavaScript・doubleベースのシリアライズが挟まるなら、**64bitフルの乱数IDは最初から使わない**。53bit制約は言語をまたいで頻出する(JSの`Number.MAX_SAFE_INTEGER`と同じ話)。後からIDが化けると「複製・消失」として現れ、原因がシリアライズ層だと気づきにくい。\n\n## 詳しい経緯\n\n灰灯の迷宮のBU13で、アイテム操作を「要求→ホスト検証→確定→全peer反映」のtransactionへ統一する際に導入。曖昧照合(テンプレートID+レア度一致)を廃止して個体ID一致に置き換えるため、IDが1bitでも化けると装備の複製/消失に直結する。設計時点で53bit制約を織り込んだため、実装後の往復テスト(生成300個の一意性・to_net往復・セーブ往復・操作400手の保存則)は一発で通った。\n\n## まだ確認できていないこと\n\n- 51bit中の乱数実効量(30bit+時刻10bit)での実運用衝突率の長期観測(理論上は端末2台×数千個で実用上問題ない見積り)\n- Godot以外のエンジン/言語のJSON実装でint64をそのまま保持するものとの相互運用(今回は同一エンジン間のみ)\n",
+        "tags": [
+          "serialization",
+          "json",
+          "game-dev"
+        ],
+        "projects": [
+          "dotgameinisie"
+        ],
+        "date": "2026-08-29",
+        "days_old": -1,
+        "stale": false,
+        "problem_summary": "アイテムの永続個体ID(instance_id)を導入する際、「袋・装備・倉庫・地面・セーブ(JSON)・ネットワーク通信のすべてで同じIDを使う」仕様にした。IDは衝突回避のため…",
+        "solution_summary": "IDの採番を最初から**53bit未満に収まる構成**で設計した(乱数30bit + マイクロ秒下位10bit + 連番10bit + 識別用の1bit = 51bit)。 ```…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-29-godot-synthetic-joypad-events-invisible-to-input-polling.md",
+        "title": "Godot: `parse_input_event`で合成したパッド入力は`Input.get_connected_jo",
+        "content": "# [候補] Godot: `parse_input_event`で合成したパッド入力は`Input.get_connected_joypads()`系のポーリングに映らない──「パッド操作か」の判定は`_input()`でイベント種別を記録する\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [dotgameinisie]\ntags: [godot, input, testing]\ndate: 2026-08-29\n\n## 何が起きたか\n\nインベントリUIで「同じ決定ボタンでも、パッド(A)なら『持つ』、キーボード(Enter)なら『装備』」と挙動を分けるため、最初は次のポーリングで判定していた:\n\n```gdscript\nfor device in Input.get_connected_joypads():\n    if Input.is_joy_button_pressed(device, JOY_BUTTON_A):\n        return true\n```\n\n実パッドでは動くが、自動テストから`Input.parse_input_event(InputEventJoypadButton...)`で合成イベントを流しても、物理パッドが接続されていないと`get_connected_joypads()`が空のままなのでパッド判定が常にfalseになり、この機能を実入力で自動テストできなかった。\n\n## わかったこと・今の対応\n\n判定を「デバイスのポーリング」から「**直前に届いた入力イベントの種別の記録**」へ変えた。UIコントロールがイベントを消費する前に必ず通る`_input()`で記録する:\n\n```gdscript\nvar _last_input_pad := false\n\nfunc _input(event: InputEvent) -> void:\n    if event is InputEventJoypadButton or event is InputEventJoypadMotion:\n        _last_input_pad = true\n    elif event is InputEventKey or event is InputEventMouseButton:\n        _last_input_pad = false\n```\n\nこれなら実パッドでも合成イベントでも同じ経路で判定でき、`parse_input_event`ベースの自動テスト(PAD_CARRY_TEST)がそのまま通る。フォーカス中のButtonがA(ui_accept)を消費しても、`_input()`は消費前に全イベントを見られるため取りこぼさない(`_unhandled_input`だと消費後なので不可)。\n\n副次の教訓: ポーリングでの実装は「実機がないと自動テストできない」を招きやすい。入力元の識別はイベント駆動で持つ方がテスタブル。\n\n## 詳しい経緯\n\nBU13でパッドのドラッグ代替(A2回=持つ→Aで置く)を実装した際、実JoypadButtonイベントの回帰テストを書こうとして判明。さらにこのテストが「空の倉庫グリッドは全スロットdisabled+FOCUS_NONEで、パッドでは最初の1個を置く先が存在しない」という実UIバグまで検出した(運搬中だけ空きスロットをフォーカス可能な受け皿にして解決)。合成イベントで自動化できたからこそ見つかったバグ。\n\n## まだ確認できていないこと\n\n- `InputEventJoypadMotion`(スティック)だけで操作している間の判定粒度(今回はボタン中心で十分だった)\n- 複数入力デバイスを同時に使う環境(パッド+マウス併用)での切り替わりの体感\n",
+        "tags": [
+          "godot",
+          "input",
+          "testing"
+        ],
+        "projects": [
+          "dotgameinisie"
+        ],
+        "date": "2026-08-29",
+        "days_old": -1,
+        "stale": false,
+        "problem_summary": "インベントリUIで「同じ決定ボタンでも、パッド(A)なら『持つ』、キーボード(Enter)なら『装備』」と挙動を分けるため、最初は次のポーリングで判定していた: ```gdscri…",
+        "solution_summary": "判定を「デバイスのポーリング」から「**直前に届いた入力イベントの種別の記録**」へ変えた。UIコントロールがイベントを消費する前に必ず通る`_input()`で記録する: ```…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-29-gdscript-typed-array-cast-in-comparison-parse-error.md",
+        "title": "GDScript: 比較式の右辺に`[...] as Array[T]`を書くと「Invalid cast. Canno",
+        "content": "# [候補] GDScript: 比較式の右辺に`[...] as Array[T]`を書くと「Invalid cast. Cannot convert from \"bool\"」のパースエラーになる(castを変数へ出す)\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [dotgameinisie]\ntags: [godot, gdscript]\ndate: 2026-08-29\n\n## 何が起きたか\n\nテストコードで「関数の戻り値が特定の型付き配列と等しいか」を1行で書いた:\n\n```gdscript\nif ClassData.unlocked_classes() != [&\"kenei\", &\"yugeki\"] as Array[StringName]:\n```\n\nこれがパースエラー `Parse Error: Invalid cast. Cannot convert from \"bool\" to \"Array[StringName]\".` でスクリプト自体が読み込めなくなった(実行時エラーではなくロード失敗)。\n\n## わかったこと・今の対応\n\nGDScriptでは`as`の優先順位が比較演算子(`!=`)より低く、`(a != [...]) as Array[StringName]`と解釈される。比較結果のboolを型付き配列へキャストしようとするため「boolからArray[StringName]へ変換できない」というエラーになる。\n\n対応は、キャストを式の中に書かずに変数へ出すか、そもそも配列同値比較をやめて要素検査にする:\n\n```gdscript\nvar expected: Array[StringName] = [&\"kenei\", &\"yugeki\"]\nif ClassData.unlocked_classes() != expected:\n```\n\n(今回は`size()`と`has()`での検査に書き換えた。)\n\nパースエラーなのでそのスクリプトを読み込むテストランナーごと失敗し、エラーメッセージが「boolからのキャスト」と表示されるため、比較演算子との優先順位問題だと気づきにくい。\n\n## 詳しい経緯\n\nBU13のclass_shield_test.gdで職業の初期解放リストを検証しようとして発生。`--headless --script`実行時に`Failed to load script ... Parse error`となり、行番号からこの1行を特定。括弧で`(… as Array[StringName])`と囲んでも読みにくいだけなので、変数へ出す形へ統一した。\n\n## まだ確認できていないこと\n\n- Godot 4.6以外での挙動(演算子優先順位は言語仕様なので同じはずだが未確認)\n- `is`にも同様の優先順位の罠があるか\n",
+        "tags": [
+          "godot",
+          "gdscript"
+        ],
+        "projects": [
+          "dotgameinisie"
+        ],
+        "date": "2026-08-29",
+        "days_old": -1,
+        "stale": false,
+        "problem_summary": "テストコードで「関数の戻り値が特定の型付き配列と等しいか」を1行で書いた: ```gdscript if ClassData.unlocked_classes() != [&\"ke…",
+        "solution_summary": "GDScriptでは`as`の優先順位が比較演算子(`!=`)より低く、`(a != [...]) as Array[StringName]`と解釈される。比較結果のboolを型付…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
+      {
+        "filename": "2026-08-29-godot-deferred-add-child-races-immediate-test-assertions.md",
+        "title": "Godot: スポーン関数が`add_child.call_deferred`だと、直後にシーンツリーを走査するテストは",
+        "content": "# [候補] Godot: スポーン関数が`add_child.call_deferred`だと、直後にシーンツリーを走査するテストは何も見つけられない(2フレーム待つ)\n\nstatus: candidate\nobserved_count: 1\nobserved_in: [dotgameinisie]\ntags: [godot, gdscript, testing]\ndate: 2026-08-29\n\n## 何が起きたか\n\nボス撃破報酬が「確定でユニーク装備のPickupを床に出す」ことを検証するSceneTreeテストで、報酬付与関数を同期呼び出しした直後に`$Actors`の子ノードを走査してPickupを探したところ、実装は正しいのに「ユニークが出ていない」と誤検知して失敗した。\n\n## わかったこと・今の対応\n\nゲーム側のスポーン関数(`_spawn_pickup`)は物理コールバック中のツリー変更エラーを避けるために`$Actors.add_child.call_deferred(pickup)`でノードを追加しており、呼び出しフレーム内ではまだ子ノードになっていない。テスト側で`await process_frame`を2回挟んでから走査するように変更したら安定して通った。\n\n一般則として、Godotのゲームコードは物理処理との競合回避のためにスポーンを`call_deferred`にしていることが多く、**「スポーンを呼ぶ→即座にget_children()/グループ走査で存在確認」というテストは書いてはいけない**。スポーン系のアサーションの前には最低1〜2フレームのawaitを置く(遅延が二段(deferred→deferred)の可能性も考えて2フレームが安全)。\n\n## 詳しい経緯\n\nBU13の第二章テスト(chapter2_test.gd)で章ボス報酬を検証した際に発生。エラーメッセージは「章踏破の確定ユニークが出ていない」で、報酬ロジック自体を疑って読み直したが問題がなく、スポーン関数の定義まで遡って`add_child.call_deferred`に気づいた。同プロジェクトでは敵の動的スポーン配布も「フレーム末に確定値を送るため遅延」という設計があり、スポーン直後の状態を同期的に観測できない箇所が複数ある。\n\n## まだ確認できていないこと\n\n- `await process_frame`1回で常に十分か(今回は2回で運用。deferred呼び出しのネスト段数に依存する可能性)\n- `physics_frame`側で待つべきケースとの使い分け\n",
+        "tags": [
+          "godot",
+          "gdscript",
+          "testing"
+        ],
+        "projects": [
+          "dotgameinisie"
+        ],
+        "date": "2026-08-29",
+        "days_old": -1,
+        "stale": false,
+        "problem_summary": "ボス撃破報酬が「確定でユニーク装備のPickupを床に出す」ことを検証するSceneTreeテストで、報酬付与関数を同期呼び出しした直後に`$Actors`の子ノードを走査してPi…",
+        "solution_summary": "ゲーム側のスポーン関数(`_spawn_pickup`)は物理コールバック中のツリー変更エラーを避けるために`$Actors.add_child.call_deferred(pic…",
+        "observed_count": 1,
+        "endorsed": false,
+        "reference_count": 0,
+        "reference_recent": [],
+        "source": null,
+        "source_url": null,
+        "promotion_ready": false
+      },
       {
         "filename": "2026-08-25-godot-script-mode-autoload-not-yet-registered.md",
         "title": "Godot: `--script`実行のSceneTreeエントリスクリプトから、autoloadを参照するスクリプトを",
