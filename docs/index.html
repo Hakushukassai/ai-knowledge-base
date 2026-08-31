@@ -489,7 +489,7 @@
   </div>
 </main>
 
-<script src="stats-data.js?v=20260828161014"></script>
+<script src="stats-data.js?v=20260831062214"></script>
 <script>
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g, ch => ({
@@ -857,15 +857,20 @@ function renderOverview(container){
 
   const grid = document.createElement('div');
   grid.className = 'stat-grid';
-  [['rules','ルール(確定)'], ['candidates','候補'], ['incidents','事例ログ']].forEach(([cat, label]) => {
+  const cards = [
+    {value: statsData.rules.count, label: 'ルール(確定)', color: CAT_COLOR.rules, section: 'rules'},
+    {value: statsData.candidates.count, label: '整理待ち候補', color: CAT_COLOR.candidates, section: 'candidates'},
+    {value: (statsData.usage || {}).reference_total || 0, label: '参照実績', color: CAT_COLOR.incidents, section: 'history'},
+  ];
+  cards.forEach(({value, label, color, section}) => {
     const card = document.createElement('button');
     card.type = 'button';
     card.className = 'stat-card';
     card.innerHTML = `
-      <div class="stat-num">${statsData[cat].count}</div>
-      <div class="stat-label"><span class="row-dot" style="width:6px;height:6px;border-radius:50%;background:${CAT_COLOR[cat]};display:inline-block;"></span>${escapeHtml(label)}</div>
+      <div class="stat-num">${value}</div>
+      <div class="stat-label"><span class="row-dot" style="width:6px;height:6px;border-radius:50%;background:${color};display:inline-block;"></span>${escapeHtml(label)}</div>
     `;
-    card.onclick = () => goSection(cat);
+    card.onclick = () => goSection(section);
     grid.appendChild(card);
   });
   container.appendChild(grid);
@@ -893,17 +898,16 @@ function renderHelp(container){
     <h3>全体の流れ</h3>
     <div class="help-flow">
       <span class="flow-step">作業する</span><span class="flow-arrow">→</span>
-      <span class="flow-step">候補に自動記録</span><span class="flow-arrow">→</span>
-      <span class="flow-step">別プロジェクトでも確認</span><span class="flow-arrow">→</span>
-      <span class="flow-step">昇格提案</span><span class="flow-arrow">→</span>
-      <span class="flow-step">手動でルールに昇格</span><span class="flow-arrow">→</span>
-      <span class="flow-step">Skill化</span>
+      <span class="flow-step">KBで検索</span><span class="flow-arrow">→</span>
+      <span class="flow-step">必要な時だけ記録</span><span class="flow-arrow">→</span>
+      <span class="flow-step">定期的に整理</span><span class="flow-arrow">→</span>
+      <span class="flow-step">明示的に同期</span>
     </div>
     <p>候補→ルールへの昇格は意図的に自動化していません。以下のいずれかの証拠が揃った候補が昇格提案の対象になり、最終判断は必ず人が行います。</p>
     <ul>
       <li>異なる2つ以上のプロジェクトで同じ発見が観測された(<code>observed_in</code>)</li>
       <li>同じプロジェクト内で3回以上繰り返し観測された(<code>observed_count</code>)</li>
-      <li><code>/kb-endorse</code> で人が既に内容を確認済み(<code>endorsed</code>)</li>
+      <li>人が内容を確認済みとして承認した(<code>endorsed</code>)</li>
     </ul>
     <p style="margin-top:8px">「別プロジェクトでの偶然の一致」だけに頼らないことで、Claude Code自体についての気づきのように、そもそも他分野のプロジェクトでは再現しにくい発見も育てられるようにしています。</p>
   `;
@@ -926,14 +930,14 @@ function renderHelp(container){
   const block3 = document.createElement('div');
   block3.className = 'help-block';
   block3.innerHTML = `
-    <h3>コマンド一覧</h3>
+    <h3>AIへの依頼例</h3>
     <ul>
-      <li><code>/kb-sync</code> — 会話を終わらせずに、今すぐ知識ベースへの記録とGitHubへのpushを実行する</li>
-      <li><code>/kb-endorse</code> — 話題にしている候補を、内容を確認した上で「人が確認済み」にする(昇格条件の一つ)</li>
-      <li><code>/exit</code> — セッションを終了する(自動でHANDOFF生成・記録・pushまで行われる)</li>
-      <li><code>/clear</code> — 会話をリセットして終了する(pushまでの流れは<code>/exit</code>と同じ)</li>
+      <li><code>KBで過去の類似問題を探して</code> — 関連度の高い記録だけを読む</li>
+      <li><code>今の発見をKBに記録して</code> — 重複確認後、候補へ記録する</li>
+      <li><code>KBを整理して</code> — 昇格・検証・整理対象を確認する</li>
+      <li><code>KBをGitHubに同期して</code> — 検証後にcommit・pushする</li>
     </ul>
-    <p style="margin-top:10px">新しいパソコンでのセットアップは <code>bash ~/knowledge-base/claude-config/install.sh</code> を実行 → <code>gh auth login</code> の2ステップです。詳細は <a class="gh-link" href="${GITHUB_REPO_URL}/blob/master/claude-config/SETUP.md" target="_blank" rel="noopener">SETUP.md ↗</a></p>
+    <p style="margin-top:10px">会話終了時の自動記録・自動pushはありません。新しいパソコンでは <code>bash ~/knowledge-base/claude-config/install.sh</code> を実行します。詳細は <a class="gh-link" href="${GITHUB_REPO_URL}/blob/master/claude-config/SETUP.md" target="_blank" rel="noopener">SETUP.md ↗</a></p>
     <p style="margin-top:6px">外部Skillを追加する時の安全な手順は <a class="gh-link" href="${GITHUB_REPO_URL}/blob/master/EXTERNAL-SKILL-GUIDE.md" target="_blank" rel="noopener">EXTERNAL-SKILL-GUIDE.md ↗</a></p>
   `;
   container.appendChild(block3);
@@ -961,7 +965,7 @@ function renderHelp(container){
     <ul>
       <li>月1回: <code>PRIVACY-CHECKLIST.md</code> に沿って機密情報が紛れていないか確認</li>
       <li>月1回(同じタイミングで): 候補を一通り眺めて昇格できそうなものがないか検討。「昇格条件クリア」バッジが付いているものは特に優先</li>
-      <li><code>SYNC-CONFLICT.md</code> が出たら: 複数PC間の自動pushが競合しているので手動で解決</li>
+      <li>同期時にコンフリクトが出たら: AIに内容を確認させ、勝手に片側を捨てずに解決</li>
       <li>統合の提案が出たら: 同じ発見を指す候補が複数ファイルに分かれているので、内容を1つにまとめて片方を削除する</li>
     </ul>
   `;
@@ -970,10 +974,10 @@ function renderHelp(container){
   const block6 = document.createElement('div');
   block6.className = 'help-block';
   block6.innerHTML = `
-    <h3>アーカイブされにくい候補</h3>
-    <p>候補は90日動きがないと自動でアーカイブされますが、以下のいずれかに当てはまるものは対象外になります(使われている・確認済みのものを優先的に残す仕組み)。</p>
+    <h3>整理で優先して残す候補</h3>
+    <p>古い候補を整理する時は、次の証拠があるものを優先して残します。アーカイブは人が確認してから行います。</p>
     <ul>
-      <li>人が確認済み(<code>/kb-endorse</code>)</li>
+      <li>人が確認済み(<code>endorsed</code>)</li>
       <li>2回以上観測されている</li>
       <li>2プロジェクト以上で観測されている</li>
       <li>直近90日以内に、後のセッションで参照・活用された実績がある</li>

@@ -1,6 +1,8 @@
 Thumbs.db
 .DS_Store
 *.tmp
+__pycache__/
+*.pyc
 .skill_usage.log
 .skill_effectiveness.log
 

@@ -15,8 +15,9 @@ import glob
 import os
 import re
 import sys
+from pathlib import Path
 
-KB_DIR = os.path.expanduser('~/knowledge-base')
+KB_DIR = os.environ.get('KB_DIR', str(Path(__file__).resolve().parents[1]))
 
 # カテゴリごとの必須フロントマターキー
 REQUIRED_FRONTMATTER = {

@@ -1,84 +1,65 @@
 # AI開発ナレッジベース
 
-複数のプロジェクト(Godotゲーム開発、画像処理、その他)をまたいで、
-AIとの作業で得た知見を「候補→確定ルール→Skill」の3段階で蓄積し、
-新しいセッションのたびに自動で読み込ませる仕組み。
+Claude Code と Codex が共通で使う、Markdown製の個人向け技術KBです。
+会話を終了しなくても、必要な時だけ「検索・記録・整理・同期」できます。
 
-## ディレクトリ構成
+## 使い方
 
+AIには自然な言葉で次のように依頼します。
+
+- `KBで過去の類似問題を探して`
+- `今の発見をKBに記録して`
+- `KBを整理して`
+- `KBをGitHubに同期して`
+
+記録と同期は分離されています。記録しただけではGitHubへpushされません。
+会話終了時の自動記録・自動pushも行いません。
+
+## 何が保存されるか
+
+| 場所 | 意味 | 信頼度 |
+|---|---|---|
+| `rules/` | 確認済みの再利用ルール | 高い |
+| `incidents/` | 実際の問題と解決の事例 | 中〜高 |
+| `candidates/` | まだ一般化・検証途中の発見 | 未確定 |
+| `external-skill-imports/` | 外部Skillの導入記録 | 個別確認 |
+
+`candidates/` は2プロジェクトでの観測、3回以上の観測、または人による確認の
+いずれかを満たすと整理対象になります。昇格は自動では行いません。
+
+## 構成
+
+- `agent-skills/`: Claude Code / Codex 共通のKB操作スキル
+- `scripts/kb_search.py`: 関連記録の検索
+- `scripts/kb_capture.py`: 重複確認付きの明示的な記録
+- `scripts/kb_review.py`: 整理候補の読み取り専用レポート
+- `scripts/validate_kb.py`: 構造・リンク検証
+- `scripts/generate_stats.sh`: `docs/` のダッシュボード更新
+- `claude-config/`: セットアップと既存Claude向けスキル
+
+## 初回セットアップ
+
+詳しくは `claude-config/SETUP.md` を参照してください。
+
+```bash
+git clone https://github.com/Hakushukassai/ai-knowledge-base.git ~/knowledge-base
+bash ~/knowledge-base/claude-config/install.sh
 ```
-knowledge-base/
-  rules/            確定ルール(2つ以上のプロジェクトで確認済み)
-  candidates/       候補(1回だけ観測された仮説。純粋な技術的発見のみ)
-  incidents/        事例ログ(具体的なトラブルの記録)
-  external-skill-imports/  外部Skillの試験導入記録(通常の昇格ゲートを迂回するため、candidates/とは別管理)
-  docs/             知識ベースを見るためのビジュアライザ(index.htmlをダブルクリック、またはGitHub Pagesで公開)
-  scripts/          docsの数字を更新するスクリプト
-  claude-config/    別のパソコンにセットアップするための設定コピー(自動更新される)
-  PRIVACY-CHECKLIST.md     機密情報の定期確認手順
-  SKILL-PROMOTION-GUIDE.md ルール→Skill化の手順
-  EXTERNAL-SKILL-GUIDE.md  外部Skillを安全に導入する手順
-  HANDOFF-TEMPLATE.md      セッション引き継ぎメモの雛形
-```
 
-## 全体の流れ
+セットアップは既存のClaude設定を丸ごと上書きしません。旧KBのSessionEndフックだけを
+バックアップ後に除去し、共通スキルを `~/.claude/skills/` と `~/.agents/skills/` に配置します。
 
-```
-作業する
-  → 気づきを得る
-  → candidates/ に仮説として自動記録(同じ発見が既にあれば新規作成せず証拠を積み増す)
-  → 昇格条件(下記)のいずれかを満たす
-  → PROMOTION-SUGGESTIONS.md に昇格提案が自動で出る(内容を理解した上での判断)
-  → 手動で rules/ に昇格
-  → Skill化して ~/.claude/skills/ に配置
-  → 次からは関連する作業の時だけ自動で使われる
-```
+## Obsidianとの関係
 
-## 自動化の仕組み(hooks)
+このリポジトリ自体がMarkdownの保管庫なので、`~/knowledge-base` をObsidianのVaultとして
+開けます。Obsidianは人が読む・リンクする・整理するための画面、KBスクリプトとSkillは
+AIが検索・記録・検証するための仕組みです。別の知識を二重保存する必要はありません。
 
-`~/.claude/settings.json` に設定されている。
+## 安全性
 
-| タイミング | 役割 |
-|---|---|
-| SessionStart | `git pull` → `claude-config/`(skills・hooks・commands・settings.json)を`~/.claude/`に反映 → `rules/`の中身と、昇格提案があれば読み込ませる |
-| SessionEnd(`/clear`時) | HANDOFF.md生成 → 候補の自動記録(証拠の積み増し含む) → 昇格提案・統合提案の判定 → 参照実績の記録 → dashboard更新 → `claude-config/`の同期 → Gitへの自動コミット |
-| PostToolUse(Skillの利用時) | どのSkillが何回使われたかを記録 |
+- 認証情報、顧客情報、非公開契約、私的データは保存しない
+- 時点で変わる外部情報は一次資料で再確認する
+- `candidates/` は事実として断定しない
+- push前に検証と機密情報スキャンを実行する
 
-**別PCとの同期について**: SessionStartのたびに、他のPCで加えられたhooks・commands・settings.jsonの変更が自動で取り込まれる(skillsだけは既存ファイルを上書きしない)。2026-08-24に、この同期がskillsにしか効いておらず、hooks/commands/settings.jsonの改善が別PCに伝わっていなかった不具合を修正した。
-
-## 知識の昇格ルール(質のコントロール)
-
-`candidates/` → `rules/` への昇格は意図的に自動化していない。
-理由は、判断を全自動に任せると質の低い思いつきまでルール化されてしまうため。
-
-以下のいずれかの証拠が揃うと、`PROMOTION-SUGGESTIONS.md` に昇格提案が出る(提案が出るだけで、`rules/`への移動は必ず人が行う):
-
-- 最低2つの異なるプロジェクトで同じパターンが観測された(`observed_in`)
-- 同じプロジェクト内で3回以上繰り返し観測された(`observed_count`)
-- `/kb-endorse` で人が内容を確認済みとしてマークした(`endorsed: true`)
-
-「別プロジェクトでの偶然の一致」だけに昇格条件を頼ると、Claude Code自体の癖のように
-そもそも他分野のプロジェクトでは再現しにくい発見が永遠に昇格できなくなる。
-上の3つはどれか1つで足りるOR条件にすることで、この抜け道をふさいでいる。
-
-同じ発見を指す候補が別ファイルに分かれてしまった場合は `MERGE-SUGGESTIONS.md` に
-統合の提案が自動で出る。また、`rules/`・`candidates/`が後のセッションで実際に
-参照・活用されると `.reference_usage.log` に記録され、参照実績のある候補は
-90日ルールでのアーカイブから除外される(使われているものを優先的に残す)。
-
-## 別のパソコンでのセットアップ
-
-`claude-config/SETUP.md` を参照。
-
-## 定期メンテナンス
-
-- 月1回: `PRIVACY-CHECKLIST.md` に沿って機密情報が紛れていないか確認
-- 月1回(上記と同じタイミングでまとめて): `candidates/` を一通り眺めて、
-  昇格できそうなものがないか検討する。`PROMOTION-SUGGESTIONS.md` は
-  同じ発見が複数プロジェクトで見つかった時だけ自動で出るため、それ以外の
-  候補は自分で見に行かないと埋もれたままになる
-- 気づいた時: `PROMOTION-SUGGESTIONS.md` を見て、昇格を検討
-- 気づいた時: `MERGE-SUGGESTIONS.md` を見て、同じ発見を指す候補が
-  分かれていないか確認・統合する
-- `~/knowledge-base/SYNC-CONFLICT.md` が存在する場合: 複数PC間の自動pushが
-  競合して止まっているので、ファイル内の手順に従って手動で解決する
+定期確認には `PRIVACY-CHECKLIST.md` を使います。

@@ -1,15 +1,16 @@
 #!/bin/bash
 # knowledge-base/ の中身を数値化して docs/stats.json と docs/stats-data.js に出力する
 # 使い方: bash scripts/generate_stats.sh
-# Claude Code の SessionEnd hook (/clear 時) から自動実行される想定
+# kb-sync または手動実行時に更新する
 #
 # 前回実行時との差分(新しく増えたファイル)を docs/.manifest.json で
 # 記憶しておき、その差分から「今回の変更」を一言サマリーとして履歴に残す。
 
 set -e
-cd "$(dirname "$0")/.."
+REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$REPO_ROOT"
 
-export KB_DIR="$HOME/knowledge-base"
+export KB_DIR="${KB_DIR:-$REPO_ROOT}"
 export OUT="docs/stats.json"
 export MANIFEST="docs/.manifest.json"
 export NOW="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
@@ -112,6 +113,16 @@ def find_date(content):
     return m.group(1) if m else None
 
 
+def entry_sort_key(path):
+    """Clone時刻に左右されず、記録日とファイル名で常に同じ順序にする。"""
+    content = read_content(path)
+    date = find_date(content)
+    if not date:
+        match = re.match(r'^(\d{4}-\d{2}-\d{2})', os.path.basename(path))
+        date = match.group(1) if match else ''
+    return date, os.path.basename(path)
+
+
 def find_observed_count(content):
     """本文中の `observed_count: N` 行から観測回数を取り出す(無ければ1)"""
     m = re.search(r'^observed_count:\s*(\d+)', content, re.MULTILINE)
@@ -136,8 +147,7 @@ def find_source_url(content):
 
 
 def promotion_readiness(observed_in, observed_count, endorsed):
-    """昇格提案の対象になりうるか(実際の昇格判断はSessionEndフックが行う。
-    ここではダッシュボード表示用に同じ基準を簡易的に再現しているだけ)"""
+    """人が整理する際に、昇格を検討できる証拠が揃っているか。"""
     if len(set(observed_in)) >= 2:
         return True
     if observed_count >= 3:
@@ -192,9 +202,8 @@ def extract_section(content, heading, max_len=90):
 PROBLEM_HEADINGS = {'candidates': '何が起きたか', 'incidents': '何が起きたか', 'external_skill_imports': '何が起きたか'}
 SOLUTION_HEADINGS = {'candidates': 'わかったこと・今の対応', 'incidents': '解決', 'rules': 'ルール', 'external_skill_imports': 'わかったこと・今の対応'}
 
-# rules/candidates が実際のセッションで参照・活用された記録
-# (SessionEndのプロンプト型フックが会話内容から判断して記録する。Skillとして
-# 自動発動した場合は別途 skill_usage.log で数えているのでここには含まれない)
+# rules/candidates が実際に参照・活用された記録
+# (kb-recall後、明示的に記録した場合だけ集計する)
 reference_log_path = os.path.join(kb_dir, '.reference_usage.log')
 reference_records = {}
 if os.path.isfile(reference_log_path):
@@ -220,7 +229,7 @@ total_chars = sum(chars.values())
 items = {}
 for cat, paths in categories.items():
     entries = []
-    for p in sorted(paths, key=os.path.getmtime, reverse=True):
+    for p in sorted(paths, key=entry_sort_key, reverse=True):
         content = read_content(p)
         file_date = find_date(content) or git_added_date(p, kb_dir)
         age_days = days_since(file_date, now_dt)
@@ -260,7 +269,11 @@ for cat, paths in categories.items():
 # 90日以上動きのなかった候補は archive_stale_candidates.py によって
 # candidates/archive/ に移動されている。削除ではなく移動なので、
 # ここで別カテゴリとして読み込み直し、ダッシュボードから引き続き見られるようにする。
-archive_paths = sorted(glob.glob(os.path.join(kb_dir, 'candidates', 'archive', '*.md')), key=os.path.getmtime, reverse=True)
+archive_paths = sorted(
+    glob.glob(os.path.join(kb_dir, 'candidates', 'archive', '*.md')),
+    key=entry_sort_key,
+    reverse=True,
+)
 archived_entries = []
 for p in archive_paths:
     content = read_content(p)
@@ -289,7 +302,7 @@ merge_suggestions = read_content(merge_suggestions_path).strip() or None
 stale_count = sum(1 for e in items.get('candidates', []) if e['stale'])
 promotion_ready_count = sum(1 for e in items.get('candidates', []) if e.get('promotion_ready'))
 
-# Skillが実際に使われた回数(PostToolUse/Skill hookが ~/knowledge-base/.skill_usage.log に記録)
+# 旧方式で記録済みのSkill利用回数(互換表示のため残す)
 usage_log_path = os.path.join(kb_dir, '.skill_usage.log')
 skill_usage_counts = {}
 if os.path.isfile(usage_log_path):
@@ -299,7 +312,7 @@ if os.path.isfile(usage_log_path):
             if len(parts) == 2:
                 skill_usage_counts[parts[1]] = skill_usage_counts.get(parts[1], 0) + 1
 
-# Skillの効果測定(SessionEndのプロンプト型フックが会話内容から判断して記録する)
+# 旧方式で記録済みのSkill効果測定(互換表示のため残す)
 effectiveness_log_path = os.path.join(kb_dir, '.skill_effectiveness.log')
 skill_effectiveness = {}
 if os.path.isfile(effectiveness_log_path):
@@ -406,14 +419,15 @@ if os.path.exists(out_path):
     except (OSError, json.JSONDecodeError):
         history = []
 
-history.append({
-    'date': now,
-    'summary': summary,
-    'rules_count': counts['rules'],
-    'candidates_count': counts['candidates'],
-    'incidents_count': counts['incidents'],
-    'total_chars': total_chars,
-})
+if new_files or (first_run and not history):
+    history.append({
+        'date': now,
+        'summary': summary,
+        'rules_count': counts['rules'],
+        'candidates_count': counts['candidates'],
+        'incidents_count': counts['incidents'],
+        'total_chars': total_chars,
+    })
 history = history[-100:]  # 直近100件だけ保持
 
 data = {
@@ -432,6 +446,10 @@ data = {
     'retired_skills': retired_skills,
     'stale_count': stale_count,
     'promotion_ready_count': promotion_ready_count,
+    'usage': {
+        'reference_total': sum(item['reference_count'] for entries in items.values() for item in entries),
+        'referenced_items': sum(item['reference_count'] > 0 for entries in items.values() for item in entries),
+    },
 }
 
 with open(out_path, 'w', encoding='utf-8') as f:
