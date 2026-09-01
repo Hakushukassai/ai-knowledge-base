@@ -18,6 +18,7 @@ bash claude-config/install.sh
 インストーラーは次を行います。
 
 - `kb-recall`、`kb-capture`、`kb-review`、`kb-sync` をClaude CodeとCodexへ配置
+- CodexへApple・デザイン方針・Refero調査・完成確認の4スキルと共通ルールを配置
 - 旧KBのSessionEnd自動処理だけをバックアップ後に解除
 - このリポジトリのcommit前機密情報チェックを有効化
 - KB検証とダッシュボード更新
@@ -36,6 +37,12 @@ bash claude-config/install.sh
 - `KBをGitHubに同期して`
 
 GitHub同期時に認証を求められた場合だけ、通常のターミナルで `gh auth login` を実行してください。
+
+## Apple Design Resourcesについて
+
+Appleが配布するデザイン素材そのものはKBやGitHubに含めません。
+必要な端末でApple公式から取得し、素材フォルダを `APPLE_DESIGN_RESOURCES_DIR` で指定します。
+詳しくは `codex-config/SETUP.md` を参照してください。
 
 ## Obsidianで見る場合（任意）
 

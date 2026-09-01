@@ -1,0 +1,4 @@
+interface:
+  display_name: "Apple Platform Design"
+  short_description: "Apple HIGと公式素材に基づきApple向けUIを設計・審査する"
+  default_prompt: "$apple-platform-design を使って、このApple向けUIを設計してください。"

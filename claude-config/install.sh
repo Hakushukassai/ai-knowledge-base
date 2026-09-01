@@ -9,6 +9,11 @@ mkdir -p "$HOME/.claude/skills" "$HOME/.agents/skills"
 cp -R "$KB_DIR/agent-skills/." "$HOME/.claude/skills/"
 cp -R "$KB_DIR/agent-skills/." "$HOME/.agents/skills/"
 
+# Codex専用のデザインスキルと共通ルールを安全に追加する。
+if [ -x "$KB_DIR/codex-config/install.sh" ]; then
+  bash "$KB_DIR/codex-config/install.sh"
+fi
+
 # 既存の Godot / UI 系 Claude Code スキルも引き続き使えるようにする。
 if [ -d "$KB_DIR/claude-config/skills" ]; then
   cp -R "$KB_DIR/claude-config/skills/." "$HOME/.claude/skills/"

@@ -1,0 +1,4 @@
+interface:
+  display_name: "UI Quality Gate"
+  short_description: "実装済みUIを証拠付きで検査しリリース可否を判定する"
+  default_prompt: "$ui-quality-gate を使って、実装済みUIのリリース可否を判定してください。"

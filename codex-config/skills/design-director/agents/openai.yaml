@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Director"
+  short_description: "選択済みの方向性を実装可能なUI設計契約へ落とし込む"
+  default_prompt: "$design-director を使って、このUI方針を実装可能な設計契約にしてください。"

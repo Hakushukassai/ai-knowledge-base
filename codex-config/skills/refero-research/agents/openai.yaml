@@ -1,0 +1,7 @@
+interface:
+  display_name: "Refero Research"
+  short_description: "Referoから実例を探し、デザイン判断へ渡す調査スキル"
+  default_prompt: "Use $refero-research to find grounded design references before visual exploration."
+
+policy:
+  allow_implicit_invocation: true

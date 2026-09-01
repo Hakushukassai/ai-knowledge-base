@@ -36,6 +36,7 @@ AIには自然な言葉で次のように依頼します。
 - `scripts/validate_kb.py`: 構造・リンク検証
 - `scripts/generate_stats.sh`: `docs/` のダッシュボード更新
 - `claude-config/`: セットアップと既存Claude向けスキル
+- `codex-config/`: Codex専用のデザインスキル・共通ルール・別端末セットアップ
 
 ## 初回セットアップ
 
@@ -48,6 +49,7 @@ bash ~/knowledge-base/claude-config/install.sh
 
 セットアップは既存のClaude設定を丸ごと上書きしません。旧KBのSessionEndフックだけを
 バックアップ後に除去し、共通スキルを `~/.claude/skills/` と `~/.agents/skills/` に配置します。
+Codexには、KBで管理するデザインスキルと使い分けルールも追加します。
 
 ## Obsidianとの関係
 
